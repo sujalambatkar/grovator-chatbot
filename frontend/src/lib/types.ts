@@ -1,0 +1,65 @@
+export interface MetaEvent {
+  session_id: string;
+  intent: string;
+  shortcut?: boolean;
+}
+
+export interface DoneEvent {
+  answer: string;
+  session_id: string;
+  intent: string;
+  grounded: boolean;
+  sources: string[];
+  refused_reason?: string | null;
+  request_id?: string;
+  cache_hit?: string | null;
+  truncated?: boolean;
+  tokens_total?: number;
+  naive_tokens?: number;
+}
+
+export type StreamEvent =
+  | { type: "meta"; data: MetaEvent }
+  | { type: "token"; data: { t: string } }
+  | { type: "done"; data: DoneEvent }
+  | { type: "error"; data: { message: string } };
+
+export interface Memory {
+  id: string;
+  text: string;
+  type: string;
+  created_at: string;
+  last_used_at: string;
+}
+
+export type Rating = "up" | "down";
+export type FeedbackReason = "wrong" | "unclear" | "unhelpful" | "unsafe" | "other";
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  status: "streaming" | "done" | "error" | "stopped";
+  requestId?: string;
+  sources?: string[];
+  refusedReason?: string | null;
+  grounded?: boolean;
+  rating?: Rating;
+  /** tokens this answer cost (router + answer in/out) and the estimate for a bot without retrieval */
+  tokens?: number;
+  naiveTokens?: number;
+  cacheHit?: string | null;
+}
+
+export interface ContentDoc {
+  source: string;
+  title: string;
+  category: string;
+  order: number;
+  body: string;
+}
+
+export interface ContentResponse {
+  categories: Record<string, string>;
+  docs: ContentDoc[];
+}

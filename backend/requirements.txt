@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+pydantic>=2
+pydantic-settings
+groq
+fastembed
+qdrant-client
+rank-bm25
+tiktoken
+redis
+pyjwt
+python-frontmatter
+pytest
+pytest-asyncio
+httpx
+fakeredis

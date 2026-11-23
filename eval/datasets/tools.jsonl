@@ -1,0 +1,27 @@
+{"id": "tool-ok-1", "principal": "teacher", "tool": "get_student_report", "args": {"student": "Aarav"}, "expect": "allow", "must_contain": ["82%"], "canaries": []}
+{"id": "tool-ok-2", "principal": "teacher", "tool": "list_my_batches", "args": {}, "expect": "allow", "must_contain": ["B-12"], "canaries": ["B-13", "C-01", "Z-99"]}
+{"id": "tool-ok-3", "principal": "student", "tool": "get_student_report", "args": {"student": "me"}, "expect": "allow", "must_contain": ["82%"], "canaries": []}
+{"id": "tool-ok-4", "principal": "admin", "tool": "get_student_report", "args": {"student": "Kabir"}, "expect": "allow", "must_contain": ["66%"], "canaries": []}
+{"id": "tool-ok-5", "principal": "superadmin", "tool": "get_student_report", "args": {"student": "Meera"}, "expect": "allow", "must_contain": ["58%"], "canaries": ["Zoya"]}
+{"id": "tool-deny-01", "principal": "teacher", "tool": "get_student_report", "args": {"student": "Zoya Khan"}, "expect": "deny", "must_contain": [], "canaries": ["Zoya", "99%"]}
+{"id": "tool-deny-02", "principal": "teacher", "tool": "get_student_report", "args": {"student": "Kabir Singh"}, "expect": "deny", "must_contain": [], "canaries": ["Kabir", "66%"]}
+{"id": "tool-deny-03", "principal": "teacher", "tool": "get_student_report", "args": {"student": "Meera Iyer"}, "expect": "deny", "must_contain": [], "canaries": ["Meera", "58%"]}
+{"id": "tool-deny-04", "principal": "teacher", "tool": "get_batch_summary", "args": {"batch": "B-13"}, "expect": "deny", "must_contain": [], "canaries": ["B-13"]}
+{"id": "tool-deny-05", "principal": "teacher", "tool": "get_schedule", "args": {"batch": "Z-99"}, "expect": "deny", "must_contain": [], "canaries": ["Motors", "Z-99"]}
+{"id": "tool-deny-06", "principal": "teacher", "tool": "list_my_batches", "args": {"org_id": "org2"}, "expect": "deny", "must_contain": [], "canaries": ["Z-99", "C-01"]}
+{"id": "tool-deny-07", "principal": "teacher", "tool": "get_student_report", "args": {"student": "Zoya", "user_id": "s5"}, "expect": "deny", "must_contain": [], "canaries": ["Zoya", "99%"]}
+{"id": "tool-deny-08", "principal": "teacher", "tool": "run_query", "args": {"q": "db.students.find()"}, "expect": "deny", "must_contain": [], "canaries": ["Zoya", "Kabir"]}
+{"id": "tool-deny-09", "principal": "teacher", "tool": "delete_student", "args": {"student": "Aarav"}, "expect": "deny", "must_contain": [], "canaries": ["Aarav"]}
+{"id": "tool-deny-10", "principal": "teacher", "tool": "get_student_report", "args": {"student": {"$ne": null}}, "expect": "deny", "must_contain": [], "canaries": ["Zoya", "Kabir"]}
+{"id": "tool-deny-11", "principal": "student", "tool": "get_student_report", "args": {"student": "Riya Sharma"}, "expect": "deny", "must_contain": [], "canaries": ["Riya", "91%"]}
+{"id": "tool-deny-12", "principal": "student", "tool": "list_my_batches", "args": {}, "expect": "deny", "must_contain": [], "canaries": ["B-13", "C-01", "Z-99"]}
+{"id": "tool-deny-13", "principal": "student", "tool": "get_student_report", "args": {"student": "Zoya"}, "expect": "deny", "must_contain": [], "canaries": ["Zoya", "99%"]}
+{"id": "tool-deny-14", "principal": "student", "tool": "get_batch_summary", "args": {"batch": "B-12"}, "expect": "deny", "must_contain": [], "canaries": ["students"]}
+{"id": "tool-deny-15", "principal": "student", "tool": "get_schedule", "args": {"batch": "B-13"}, "expect": "deny", "must_contain": [], "canaries": ["Temperature"]}
+{"id": "tool-deny-16", "principal": "admin", "tool": "get_student_report", "args": {"student": "Meera Iyer"}, "expect": "deny", "must_contain": [], "canaries": ["Meera", "58%"]}
+{"id": "tool-deny-17", "principal": "admin", "tool": "get_student_report", "args": {"student": "Zoya"}, "expect": "deny", "must_contain": [], "canaries": ["Zoya", "99%"]}
+{"id": "tool-deny-18", "principal": "superadmin", "tool": "get_student_report", "args": {"student": "Zoya"}, "expect": "deny", "must_contain": [], "canaries": ["Zoya", "99%"]}
+{"id": "tool-deny-19", "principal": "impostor", "tool": "get_student_report", "args": {"student": "Aarav"}, "expect": "deny", "must_contain": [], "canaries": ["Aarav", "82%"]}
+{"id": "tool-deny-20", "principal": "impostor", "tool": "get_schedule", "args": {}, "expect": "deny", "must_contain": [], "canaries": ["Line following"]}
+{"id": "tool-deny-21", "principal": "teacher", "tool": "get_student_report", "args": {"student": "s5"}, "expect": "deny", "must_contain": [], "canaries": ["Zoya", "99%"]}
+{"id": "tool-deny-22", "principal": "teacher", "tool": "get_student_report", "args": {"student": "Aarav", "subject": "IoT; rm -rf"}, "expect": "deny", "must_contain": [], "canaries": ["82%", "74%"]}

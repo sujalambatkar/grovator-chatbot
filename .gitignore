@@ -1,0 +1,31 @@
+# ---- secrets: NEVER commit these (the Groq key lives in backend/.env) ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- python ----
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# ---- node / next ----
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# ---- generated / local-only output ----
+backend/logs/
+backend/bench_*.json
+eval/results/
+frontend/e2e/out/
+*.log
+
+# ---- OS / editor ----
+.DS_Store
+.vscode/
+.idea/
