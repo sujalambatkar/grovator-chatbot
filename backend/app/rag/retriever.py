@@ -112,3 +112,18 @@ class HybridRetriever:
             h.score = scores.get(h.id, h.score)
         confidence = max((scores.get(i, 0.0) for i in ranked), default=0.0)
         return Retrieval(hits=hits, confidence=confidence, vec=vec)
+
+    async def retrieve_from(self, sources: list[str], p: Principal, vec: list[float], per_source: int = 2,
+                            prefer: list[str] | None = None) -> Retrieval:
+        """DIRECT lookup: the best sections of specific documents only (no search over the whole knowledge base). Used when the
+        question is already known to be about one named device: its guide is the answer, other pages only add tokens (and noise).
+        `prefer` = section headings the question is about ("Troubleshooting"); those sections come first, then the best vector matches."""
+        hits: list[Hit] = []
+        top = 0.0
+        for src in sources:
+            cand = await self.store.vector_search(vec, p, limit=10, source=src)
+            top = max([top, *(h.score for h in cand)])
+            want = [h for name in (prefer or []) for h in cand if f"> {name}" in h.text[:160] or h.text.startswith(f"{name}")]
+            picked = list({h.id: h for h in want + cand}.values())[:per_source]
+            hits += picked
+        return Retrieval(hits=hits, confidence=top, vec=vec)

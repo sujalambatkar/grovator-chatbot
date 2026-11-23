@@ -196,9 +196,9 @@ async def test_follow_ups_keep_the_sensor_in_focus(real_retriever):
     llm = FakeLLM(SENSOR_REPLY)
     svc = build(real_retriever, llm)
     d = await turn(svc, "How do I connect an ultrasonic sensor?", "hw-sess-1")
-    assert d["grounded"] and "TRIG goes to Digital GPIO" in context_of(llm)
+    assert d["grounded"] and "TRIG pin to the Signal pin" in context_of(llm)
     for msg, must in [("What should I do after connecting it?", "does NOT include"),
-                      ("Where do I connect the VCC wire?", "VCC goes to 5V"),
+                      ("Where do I connect the VCC wire?", "VCC pin to 5V"),
                       ("What if it is not working?", "Troubleshooting Ultrasonic Sensor")]:
         d = await turn(svc, msg, "hw-sess-1")
         ctx = context_of(llm)
@@ -374,3 +374,54 @@ async def test_fake_citation_markers_are_removed(real_retriever):
     svc = build(real_retriever, llm)
     d = await turn(svc, "Where does the ultrasonic sensor VCC go?", "hw-sess-13")
     assert "【" not in d["answer"] and "5V" in d["answer"]
+
+
+@pytest.mark.asyncio
+async def test_naming_the_sensor_reads_only_that_sensors_guide(real_retriever):
+    """User report: "i have connected the D0 pin to GPIO, whats next" -> "Which sensor?" -> "for alcohol sensor" cost 958 tokens, searched
+    the whole knowledge base and answered from the Flame Sensor page that was open. Now: the question before the name is the real question,
+    and only the alcohol sensor's own guide is read."""
+    llm = FakeLLM("After wiring, check the datasheet.")
+    svc = build(real_retriever, llm)
+    FLAME = "devices/flame_sensor"
+    d = await turn(svc, "i have connected the module's D0 signal pin to GPIO whats next", "hw-sess-14", page=FLAME)
+    assert d["refused_reason"] == "needs_clarification"
+    d = await turn(svc, "for alcohol sensor", "hw-sess-14", page=FLAME)
+    ctx = context_of(llm)
+    assert d["sources"] == ["Alcohol Sensor: Connection Guide"] or "Alcohol Sensor" in ctx
+    assert "Flame" not in ctx and "DATA" in ctx                       # the open Flame page must not leak in; the alcohol signal is DATA
+    assert "After wiring Alcohol Sensor" in ctx                         # the intent ("what's next") picked the right section
+    assert d["input_tokens"] < 600, d["input_tokens"]
+
+
+@pytest.mark.asyncio
+async def test_direct_lookup_picks_the_section_the_question_is_about(real_retriever):
+    llm = FakeLLM("Check the labels.")
+    svc = build(real_retriever, llm)
+    await turn(svc, "How do I connect the servo?", "hw-sess-15")
+    for msg, heading in [("What if it is not working?", "Troubleshooting Servo"), ("what do I do next?", "After wiring Servo"),
+                         ("what parts do I need?", "Components needed to connect Servo")]:
+        await turn(svc, msg, "hw-sess-15")
+        assert heading in context_of(llm), (msg, context_of(llm)[:200])
+    assert len(llm.calls[-1][-1]["content"]) < 2500
+
+
+@pytest.mark.asyncio
+async def test_how_do_i_connect_this_on_a_device_page_means_that_device(real_retriever):
+    llm = FakeLLM("Connect it.")
+    svc = build(real_retriever, llm)
+    await turn(svc, "How do I connect this to the gateway?", "hw-sess-16", page="devices/buzzer")
+    assert "Buzzer" in context_of(llm) and "Ultrasonic" not in context_of(llm)
+
+
+@pytest.mark.asyncio
+async def test_what_should_i_do_after_is_not_a_lesson_order_question(real_retriever):
+    """Live run: "What should I do after connecting it?" matched the lesson-order rule, searched everything and pulled in the open Flame Sensor page
+    (1,013 tokens). With gateway content there are no lessons, and the question stays inside the sensor's own guide."""
+    llm = FakeLLM("Check the datasheet.")
+    svc = build(real_retriever, llm)
+    await turn(svc, "How do I connect an ultrasonic sensor?", "hw-sess-17", page="devices/flame_sensor")
+    d = await turn(svc, "What should I do after connecting it?", "hw-sess-17", page="devices/flame_sensor")
+    ctx = context_of(llm)
+    assert "Flame" not in ctx and "Ultrasonic" in ctx
+    assert d["input_tokens"] < 700, d["input_tokens"]
