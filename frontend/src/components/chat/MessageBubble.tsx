@@ -45,7 +45,7 @@ export function MessageBubble({ msg, onRate, showTokens = false }: Props) {
           {showTokens && msg.tokens !== undefined && (
             <span data-testid="msg-tokens" className={s.tokenChip}>
               {msg.tokens === 0
-                ? msg.cacheHit ? "0 tokens (from cache)" : "0 tokens (stopped before the model)"
+                ? msg.cacheHit ? "0 tokens (from cache)" : "0 tokens (no model call)"
                 : `${msg.tokens.toLocaleString("en-US")} tokens`}
               {msg.naiveTokens ? ` · naive ≈ ${msg.naiveTokens.toLocaleString("en-US")}` : ""}
             </span>

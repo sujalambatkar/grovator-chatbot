@@ -343,9 +343,13 @@ async def s_conversations(ctx: Ctx) -> None:
     for it in load("conversations.jsonl"):
         for i, t in enumerate(it["turns"]):
             done, seen, ms, tokens = await live_turn(ctx, svc, llm, principal(it["role"]), t["q"], f"eval-{it['id']}-sess")
-            src = accepts(t["expect_source"], done.get("sources", []))
-            words = not t.get("must_contain_any") or any(w in done["answer"].lower() for w in t["must_contain_any"])
-            ctx.add(suite="conversations", id=f"{it['id']}#{i + 1}", passed=bool(done["grounded"] and src and words), tokens=tokens, latency_ms=ms,
+            if t.get("expect_no_sources"):  # chit-chat / unrelated: must NOT drag the previous topic back in
+                src, grounded = not done.get("sources"), True
+            else:
+                src, grounded = accepts(t["expect_source"], done.get("sources", [])), bool(done["grounded"])
+            low = done["answer"].lower()
+            words = (not t.get("must_contain_any") or any(w in low for w in t["must_contain_any"])) and not any(w in low for w in t.get("must_not_contain", []))
+            ctx.add(suite="conversations", id=f"{it['id']}#{i + 1}", passed=bool(grounded and src and words), tokens=tokens, latency_ms=ms,
                     detail=f"{t['q']!r} src_ok={src} words_ok={words} refused={done.get('refused_reason')} sources={done.get('sources')}")
 
 

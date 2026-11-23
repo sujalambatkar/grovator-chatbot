@@ -133,7 +133,9 @@ async def test_smalltalk_uses_router_reply_no_retrieval(retriever):
     llm = FakeLLM(router_fn=lambda u: {"intent": "smalltalk", "query": "hi", "reply": "Hi there! Ready to code?"})
     svc, _ = make_service(retriever, llm)
     done = await turn(svc, make_principal("student"), "hello", "sess-hi")
-    assert done["answer"] == "Hi there! Ready to code?" and llm.calls == []
+    # the router's own wording is NOT shown (a model must never free-write small talk): the fixed redirect is
+    from app.llm.prompts import REDIRECT_REPLY
+    assert done["answer"] == REDIRECT_REPLY and llm.calls == []
 
 
 async def test_router_failure_falls_back_to_retrieval(retriever):

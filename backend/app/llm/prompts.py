@@ -81,3 +81,7 @@ TOOL_PLAN_SYSTEM = (
     "get_schedule {batch?}. student is a name, or \"me\" for the user's own report.\n"
     'Return JSON: {"tool":"","args":{}}'
 )
+
+HOW_ARE_YOU_REPLY = "I'm doing well, thanks for asking! I can help with Govator: its courses, lessons, block coding and tools. What would you like to know?"
+WHO_ARE_YOU_REPLY = "I'm the Govator Assistant, an AI helper for the Govator platform. Ask me about courses, lessons, block coding or the platform tools."
+REDIRECT_REPLY = "Thanks for chatting! I can only help with Govator: its courses, lessons, block coding and tools. What would you like to know?"

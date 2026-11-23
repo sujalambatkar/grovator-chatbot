@@ -538,3 +538,59 @@ async def test_topic_shift_inside_a_followup_reaches_the_model(retriever, first,
     assert d["shortcut"], "premise: the free rewrite handled this follow-up (history was saved)"
     prompt = llm.calls[-1][-1]["content"]
     assert any(t in prompt for t in wanted), (followup, prompt[:1200])
+
+
+# ====================================================================== chit-chat must not be glued onto the previous question
+PREV = "can you summarize the three pages about block coding"
+
+
+@pytest.mark.parametrize("msg", ["hello how are you", "how are you doing today", "hi, how are you?", "what's up", "who are you",
+                                 "what is your name", "are you a robot", "tell me about yourself", "Hello, who are you?"])
+def test_chit_chat_after_a_question_gets_a_free_reply_not_a_followup(msg):
+    r = try_shortcut(msg, True, PREV)
+    assert r is not None and r.intent.value == "smalltalk" and r.reply, (msg, r)
+    assert "summarize" not in (r.query or "")
+
+
+@pytest.mark.parametrize("msg", ["my favourite colour is blue", "what do you like to eat?", "tell me a fun fact", "I am bored today",
+                                 "hello there my friend", "do you like pizza", "i think robots are cool"])
+def test_unrelated_messages_are_not_treated_as_followups(msg):
+    # no pronoun, no platform word, no continuation cue: leave it to the real router
+    assert try_shortcut(msg, True, PREV) is None, msg
+
+
+@pytest.mark.parametrize("msg", ["How are you supposed to connect the IoT kit?", "What are you supposed to do in this lesson?",
+                                 "who are you supposed to ask if the kit does not connect"])
+def test_chit_chat_patterns_do_not_swallow_real_questions(msg):
+    r = try_shortcut(msg, True, PREV)
+    assert r is None or r.intent.value != "smalltalk", (msg, r)
+
+
+@pytest.mark.parametrize("msg", ["what if the number never changes?", "and then?", "why?", "also how do I stop it", "now what about the display",
+                                 "which port does it use?", "how do I repeat that 5 times", "but the LED stays off"])
+def test_real_followups_still_get_the_free_rewrite(msg):
+    r = try_shortcut(msg, True, "How do I read the temperature sensor?")
+    assert r is not None and r.intent.value == "platform_faq" and r.query.startswith("How do I read the temperature sensor?"), (msg, r)
+
+
+async def test_service_answers_chit_chat_without_the_model_and_without_dragging_in_the_old_topic(retriever):
+    llm = FakeLLM(GOOD)
+    svc, _, mm = build(retriever, llm, enable_semantic_cache=False)
+    await mm.store.ensure()
+    await turn(svc, STU, "How do I connect the IoT kit?", "sess-chat-0001")
+    calls = len(llm.calls)
+    for msg, must in [("hello how are you", "doing well"), ("who are you", "Govator Assistant")]:
+        _, d = await turn(svc, STU, msg, "sess-chat-0001")
+        assert d["intent"] == "smalltalk" and must in d["answer"], (msg, d["answer"])
+        assert "IoT" not in d["answer"] and "USB" not in d["answer"]          # the previous topic did not leak in
+    assert len(llm.calls) == calls and llm.router_calls == []                  # no answer-model call, no router call
+
+
+async def test_router_smalltalk_is_never_free_written_by_the_model(retriever):
+    from app.llm.prompts import REDIRECT_REPLY
+    llm = FakeLLM(GOOD, router_fn=lambda u: {"intent": "smalltalk", "query": "x", "reply": "I love pizza! How about you?"})
+    svc, _, mm = build(retriever, llm, enable_router_shortcut=False)
+    await mm.store.ensure()
+    _, d = await turn(svc, STU, "what do you like to eat?", "sess-pizza-0001")
+    assert d["intent"] == "smalltalk" and d["answer"] == REDIRECT_REPLY and "pizza" not in d["answer"].lower()
+    assert llm.calls == [] and not d["sources"]

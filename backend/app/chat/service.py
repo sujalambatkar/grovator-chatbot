@@ -25,7 +25,7 @@ from app.guardrails.input import check_input
 from app.guardrails.output import check_output, cited_sources
 from app.llm.llm_client import LLMClient, LLMError
 from app.llm.prompts import (
-    ANSWER_SYSTEM, BUDGET_REPLY, MY_DATA_REPLY, NO_INFO_REPLY, OFF_TOPIC_REPLY, SMALLTALK_FALLBACK, SUMMARY_SYSTEM, UNSAFE_REPLY,
+    ANSWER_SYSTEM, BUDGET_REPLY, MY_DATA_REPLY, NO_INFO_REPLY, OFF_TOPIC_REPLY, REDIRECT_REPLY, SMALLTALK_FALLBACK, SUMMARY_SYSTEM, UNSAFE_REPLY,
 )
 from app.memory.long_term import MemoryManager
 from app.memory.session import MAX_TURNS, SessionState, SessionStore, Turn, fold_summary
@@ -165,7 +165,10 @@ class ChatService:
             yield self._done(base, text, grounded=False, refused_reason=reason)
             return
         if route.intent is Intent.smalltalk:
-            reply = route.reply or SMALLTALK_FALLBACK
+            # Greetings, thanks and "how are you" are answered by free canned rules (route.shortcut). Anything else the router
+            # calls smalltalk ("what do you like to eat?") gets a fixed redirect: a model must never free-write small talk,
+            # because it invents a personality ("I love pizza!").
+            reply = (route.reply or SMALLTALK_FALLBACK) if route.shortcut else REDIRECT_REPLY
             out = check_output(reply, source_text=reply, secrets=self._secrets(p))  # smalltalk still gets leak/vendor checks
             yield self._done(base, out.text, grounded=False)
             return
