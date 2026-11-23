@@ -2,7 +2,7 @@
 
 | Phase | Status | Headline result |
 |---|---|---|
-| 0 Discovery | done (standalone: no Govator repo available) | assumptions recorded in DISCOVERY.md |
+| 0 Discovery | done (standalone: no Grovator repo available) | assumptions recorded in DISCOVERY.md |
 | 1 Ingestion + RAG | done | 15/15 retrieval Q&A, hybrid BM25+vector, RBAC-filtered |
 | 2 Conversation context | done | Redis sessions, router + rewrite, SSE; 12/12 live follow-ups |
 | 3 Long-term memory | done | 0 cross-user leakage (mutation-verified), PII/health filters |

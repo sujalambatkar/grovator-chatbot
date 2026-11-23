@@ -111,11 +111,19 @@ def _any(rxs: list[re.Pattern], *texts: str) -> re.Match | None:
     return None
 
 
+_MISSPELLED_BRAND = re.compile(r"\bgovator\b", re.I)
+
+
+def fix_brand(text: str) -> str:
+    """The platform is "Grovator"; people often type "Govator". Correct it so retrieval and the model see the real name."""
+    return _MISSPELLED_BRAND.sub("Grovator", text)
+
+
 def check_input(message: str, role: Role, max_chars: int = 1000) -> InputVerdict:
     text = normalise(message)
     leet = text.translate(_LEET)
     redactions = detect_pii(text)
-    clean = redact(text)
+    clean = fix_brand(redact(text))
 
     if len(message) > max_chars:
         return _refuse("too_long", P.GARBAGE_REPLY, clean[:max_chars])

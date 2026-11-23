@@ -1,6 +1,6 @@
-# Govator AI Assistant
+# Grovator AI Assistant
 
-A guardrailed, token-efficient chatbot for **Govator** (Grok Learning's ed-tech platform). It sits on a course page and
+A guardrailed, token-efficient chatbot for **Grovator** (Grok Learning's ed-tech platform). It sits on a course page and
 talks about what is on that page and the rest of the platform: courses, lessons, block coding (every block, sample block
 programs) and platform tools (workspace, simulator, Connect Kit, debug console...). It remembers the conversation, answers
 **only** about the platform, and shows live **how many tokens each answer used compared with a naive bot**.
@@ -9,11 +9,11 @@ programs) and platform tools (workspace, simulator, Connect Kit, debug console..
 * **LLM:** Groq (`openai/gpt-oss-120b` answers, `openai/gpt-oss-20b` router/summary/extraction) via the official SDK
 * **RAG + memory:** `fastembed` (bge-small, local), Qdrant, Redis. Free-tier friendly.
 
-> **Read this first: what is real and what is assumed.** This repo was built *without access to the Govator
+> **Read this first: what is real and what is assumed.** This repo was built *without access to the Grovator
 > codebase*. The JWT claim shape, the data hierarchy (`org > school > batch > student`), the tool/data schema, and
 > the knowledge-base documents are **my assumptions** (see [docs/chatbot/DISCOVERY.md](docs/chatbot/DISCOVERY.md)).
 > The bundled knowledge base and student data are **synthetic**. Before production you must (1) point the auth
-> layer at Govator's real token format, (2) implement `PlatformDataAdapter` against Govator's real API/DB, and
+> layer at Grovator's real token format, (2) implement `PlatformDataAdapter` against Grovator's real API/DB, and
 > (3) ingest real documentation. The app refuses to start in production with the mock adapter.
 
 ## Architecture
@@ -48,7 +48,7 @@ flowchart TD
     API --> R[(Redis<br/>sessions · cache · limits · usage)]
     API --> Q[(Qdrant<br/>knowledge · user_memory)]
     API --> G[Groq API<br/>key lives ONLY here]
-    TOOLS --> A["PlatformDataAdapter<br/>(mock today → real Govator API)"]
+    TOOLS --> A["PlatformDataAdapter<br/>(mock today → real Grovator API)"]
     OUT --> U
 ```
 
@@ -81,14 +81,14 @@ this project and through a naive bot and prints real token counts. No Groq key y
 Optional infra for a persistent setup: `docker compose up -d` (Qdrant + Redis), then set `QDRANT_URL`/`REDIS_URL` and run
 `python -m scripts.ingest`.
 
-## Embedding the widget in the real Govator frontend
+## Embedding the widget in the real Grovator frontend
 
 ```tsx
 import { ChatWidget } from "@/components/chat";   // copy frontend/src/components/chat + src/lib + src/hooks/useChat.ts
 
 <ChatWidget
   apiUrl={process.env.NEXT_PUBLIC_CHATBOT_API_URL!}
-  getToken={() => session.accessToken}   // Govator's own JWT; the widget never mints or stores it
+  getToken={() => session.accessToken}   // Grovator's own JWT; the widget never mints or stores it
   pageId={currentDoc.source}              // the content page being viewed: "explain this lesson" works
   suggestions={["Explain this lesson step by step", "What blocks do I need here?"]}
   showTokenMeter                          // live tokens-used vs naive-bot meter (demo / transparency)
@@ -108,7 +108,7 @@ all), source line, stop button, 1000-char limit, keyboard + screen-reader suppor
 | `GROQ_API_KEY` | – | Groq key. **Backend only.** The frontend build is checked to contain no key. |
 | `ANSWER_MODEL` / `ROUTER_MODEL` / `GUARD_MODEL` | `openai/gpt-oss-120b` / `-20b` / `-safeguard-20b` | Swap when Groq deprecates a model (`scripts.list_groq_models` checks). The brief's Llama chat models are no longer on Groq. |
 | `REASONING_EFFORT` | `low` | gpt-oss hidden reasoning counts as output tokens |
-| `JWT_SECRET`, `JWT_ALGORITHM` | dev default, `HS256` | Must match Govator's token signer. `exp` and `sub` are **required**. |
+| `JWT_SECRET`, `JWT_ALGORITHM` | dev default, `HS256` | Must match Grovator's token signer. `exp` and `sub` are **required**. |
 | `DEMO_MODE` | `false` | `true` enables `POST /demo/session` (login without a token) for the demo page. Refused in production. |
 | `SUMMARY_MODE` | `extractive` | `extractive` = free "earlier questions" list (0 tokens); `llm` = small-model summary |
 | `ENVIRONMENT` | `development` | `production` enables startup checks (refuses weak/default secrets, mock adapter, in-memory stores, localhost CORS) |
@@ -211,7 +211,7 @@ docs/chatbot/{DISCOVERY,DECISIONS,BUGS}.md                     assumptions, 49 d
 
 ## Known limitations
 
-* Everything Govator-specific is assumed or synthetic (above). The mock tools return fake students.
+* Everything Grovator-specific is assumed or synthetic (above). The mock tools return fake students.
 * Lexical grounding is a heuristic (calibrated margin is thin: lowest real support 0.44 vs threshold 0.35); expect occasional safe false refusals and re-calibrate on real docs.
 * Spaced-letter evasion (`i g n o r e`) and masked profanity are not caught by the deterministic rules; they rely on the router.
 * Health/family/name memory filters are keyword rules, not a classifier.

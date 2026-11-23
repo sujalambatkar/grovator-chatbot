@@ -1,6 +1,6 @@
-# Govator AI Assistant: Phase 0 Discovery (standalone mode)
+# Grovator AI Assistant: Phase 0 Discovery (standalone mode)
 
-**Status:** No Govator codebase is available. Nothing here was verified against real code.
+**Status:** No Grovator codebase is available. Nothing here was verified against real code.
 Every item is tagged **[GIVEN]** (stated in the project brief) or **[ASSUMED]** (my design default).
 The chatbot is built as a standalone service behind **adapter interfaces**. When the real
 platform details are known, only the adapters change; the pipeline stays the same.
@@ -9,7 +9,7 @@ platform details are known, only the adapters change; the pipeline stays the sam
 
 | Area | Finding | Tag |
 |---|---|---|
-| Company / product | Govator, edtech platform by Grok Learning Pvt Ltd | GIVEN |
+| Company / product | Grovator, edtech platform by Grok Learning Pvt Ltd | GIVEN |
 | Likely DB | MongoDB (possibly PostgreSQL) | GIVEN (unverified) |
 | Auth | JWT-based RBAC | GIVEN (unverified) |
 | Roles | superadmin / admin / teacher, maybe student | GIVEN (unverified) |
@@ -51,7 +51,7 @@ Planned categories:
 6. Schedule / timetable help
 
 Phase 1 tests need 15 Q&A pairs. **I will write a clearly labelled sample corpus** (synthetic, not real
-Govator content), so retrieval can be tested. Replace it with real docs before production.
+Grovator content), so retrieval can be tested. Replace it with real docs before production.
 
 ## 5. Candidate read-only tools (Phase 4)
 

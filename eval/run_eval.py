@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Govator Assistant eval harness. Runs every test set and prints pass rate, avg tokens/turn and p95 latency.
+"""Grovator Assistant eval harness. Runs every test set and prints pass rate, avg tokens/turn and p95 latency.
 
   python eval/run_eval.py --mode offline     # deterministic, free: retrieval, input rules, access control,
                                              #   output guard, memory isolation (LLM stubbed)
@@ -421,7 +421,7 @@ async def main() -> int:
     retriever = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
     n_chunks = await ingest(Path(settings.knowledge_dir), retriever)
     ctx = Ctx(a.mode, a.pace, settings, retriever)
-    print(f"Govator Assistant eval | mode={a.mode} | {n_chunks} knowledge chunks | models: answer={settings.answer_model if a.mode == 'live' else 'stubbed'}\n")
+    print(f"Grovator Assistant eval | mode={a.mode} | {n_chunks} knowledge chunks | models: answer={settings.answer_model if a.mode == 'live' else 'stubbed'}\n")
 
     for name in chosen:
         t0 = time.perf_counter()

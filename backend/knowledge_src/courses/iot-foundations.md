@@ -5,7 +5,7 @@ order: 1
 role_visibility: [student, teacher, admin, superadmin]
 ---
 # Course overview
-IoT Foundations is an 8-week course for Grades 6 to 8. Students use the IoT kit and block coding to build small smart devices that sense the world, make decisions and send data to the Govator dashboard. IoT means Internet of Things: everyday objects that sense and share data.
+IoT Foundations is an 8-week course for Grades 6 to 8. Students use the IoT kit and block coding to build small smart devices that sense the world, make decisions and send data to the Grovator dashboard. IoT means Internet of Things: everyday objects that sense and share data.
 
 # What you will learn
 You will learn what IoT is, how to read the temperature, light and motion sensors, how to control the LED and buzzer, how to make decisions with if and else blocks, and how to send sensor data to a live graph. You finish by building a Smart Room Alert.

@@ -5,4 +5,4 @@
 {"id": "ctl-p1", "role": "student", "msg": "I have asthma and my mother is a doctor. How do I run my program?", "must_contain": ["run"]}
 {"id": "ctl-q1", "role": "student", "msg": "How do I make the robot follow a black line?", "must_contain": ["line"]}
 {"id": "ctl-q2", "role": "student", "msg": "How do I connect the IoT kit?", "must_contain": ["usb"]}
-{"id": "ctl-hi", "role": "student", "msg": "hi", "must_contain": ["govator"]}
+{"id": "ctl-hi", "role": "student", "msg": "hi", "must_contain": ["grovator"]}

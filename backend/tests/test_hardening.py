@@ -9,7 +9,7 @@ from app.main import create_app
 from tests.conftest import FakeLLM, make_token
 
 GOOD_PROD = dict(environment="production", jwt_secret="x" * 40, groq_api_key="gsk_test", platform_adapter="none",
-                 redis_url="redis://r:6379", qdrant_url="http://q:6333", cors_origins="https://app.govator.example")
+                 redis_url="redis://r:6379", qdrant_url="http://q:6333", cors_origins="https://app.grovator.example")
 
 
 def test_development_has_no_startup_checks():

@@ -57,7 +57,7 @@ export function DemoHost() {
   return (
     <div className="shell">
       <header className="topbar">
-        <span className="brand">Govator <b>Learn</b></span>
+        <span className="brand">Grovator <b>Learn</b></span>
       </header>
 
       {error && (
@@ -104,7 +104,7 @@ export function DemoHost() {
       {content && doc && (
         <ChatWidget apiUrl={API_URL} getToken={getToken} storageKey="demo-student" pageId={doc.source}
           suggestions={SUGGESTIONS[doc.category] ?? GENERIC} showMemory={false} showTokenMeter defaultOpen
-          title="Govator Assistant" />
+          title="Grovator Assistant" />
       )}
     </div>
   );

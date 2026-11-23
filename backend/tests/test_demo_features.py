@@ -114,8 +114,8 @@ async def test_ties_go_to_the_page_being_read_but_clearly_different_topics_do_no
     await turn(svc, STU, "What are the common mistakes?", "sess-tie-0002", LINE_PAGE)
     assert "CONTEXT:\n[1] Robotics Lesson 4: Line Following" in llm.calls[-1][-1]["content"]
     # a question about something else entirely is NOT hijacked by the open page
-    await turn(svc, STU, "How do I log in to Govator?", "sess-tie-0003", TEMP_PAGE)
-    assert "CONTEXT:\n[1] Getting Started on Govator" in llm.calls[-1][-1]["content"]
+    await turn(svc, STU, "How do I log in to Grovator?", "sess-tie-0003", TEMP_PAGE)
+    assert "CONTEXT:\n[1] Getting Started on Grovator" in llm.calls[-1][-1]["content"]
 
 
 async def test_hidden_or_unknown_page_is_ignored_not_trusted(retriever):
@@ -202,15 +202,15 @@ def test_demo_mode_cannot_ship_to_production(retriever):
 async def test_this_platform_is_not_a_pointer_to_the_open_page(retriever, q):
     """Regression (reported from the UI): 'what exactly is this platform' on a lesson page was rewritten as
     '<lesson title>: ...' and the model was given only that lesson, so it (rightly) had no answer."""
-    llm = FakeLLM("Govator is a learning platform for schools: a website and app where students learn coding, electronics and robotics. "
+    llm = FakeLLM("Grovator is a learning platform for schools: a website and app where students learn coding, electronics and robotics. "
                   "You can follow courses, open lessons, build programs in the Block Workspace, test them in the Simulator and track your progress. "
                   "It is made by Grok Learning.")
     svc = build(retriever, llm, enable_semantic_cache=False)
     d = await turn(svc, STU, q, "sess-plat-0001", TEMP_PAGE)
     prompt = llm.calls[-1][-1]["content"]
-    assert "About Govator" in prompt, (q, prompt[:700])
+    assert "About Grovator" in prompt, (q, prompt[:700])
     assert not d["standalone_query"].startswith("IoT Lesson 2"), d["standalone_query"]   # the query was not hijacked
-    assert "[1] About Govator" in prompt                                                 # and the overview leads the context
+    assert "[1] About Grovator" in prompt                                                 # and the overview leads the context
 
 
 @pytest.mark.parametrize("q", ["Explain this lesson step by step", "what do I do in this step", "explain these blocks", "what is this program doing"])
@@ -308,3 +308,12 @@ async def test_order_questions_get_the_whole_list_not_a_compressed_excerpt(retri
     await turn(svc, STU, q, "sess-list-0001")
     prompt = llm.calls[-1][-1]["content"]
     assert all(n in prompt for n in needs), (q, [n for n in needs if n not in prompt])
+
+
+@pytest.mark.parametrize("q", ["what exactly is govator", "who made Govator?", "what can I do on govator"])
+async def test_the_misspelled_platform_name_still_finds_the_about_page(retriever, q):
+    llm = FakeLLM("Grovator is a learning platform for schools. It is made by Grok Learning.")
+    svc = build(retriever, llm, enable_semantic_cache=False)
+    await turn(svc, STU, q, "sess-brand-0001")
+    prompt = llm.calls[-1][-1]["content"]
+    assert "About Grovator" in prompt and "govator" not in prompt.lower().replace("grovator", ""), (q, prompt[:600])

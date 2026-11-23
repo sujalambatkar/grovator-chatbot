@@ -3,13 +3,13 @@
 Guidance for Claude Code when working in this repo. Read `README.md` for the full picture; this file is the short, practical version.
 
 ## What this is
-A guardrailed, token-efficient chatbot for **Govator** (Grok Learning's ed-tech platform). A Next.js demo page shows course content (courses, lessons, block reference, platform tools); a chat widget answers questions about that content and the platform, remembers the conversation, refuses anything off-topic, and shows tokens used vs. a naive bot.
+A guardrailed, token-efficient chatbot for **Grovator** (Grok Learning's ed-tech platform). A Next.js demo page shows course content (courses, lessons, block reference, platform tools); a chat widget answers questions about that content and the platform, remembers the conversation, refuses anything off-topic, and shows tokens used vs. a naive bot.
 
 - `backend/` FastAPI + RAG (Qdrant, fastembed, Redis) + Groq LLM. Python 3.11.
 - `frontend/` Next.js (App Router, TypeScript) demo page + `ChatWidget`. Node >= 18.18.
 - `eval/` data-driven eval harness (JSONL test sets). `docs/chatbot/` decisions + bug diary.
 
-**Everything Govator-specific is assumed or synthetic**: the knowledge base (`backend/knowledge_src/`), the student data (`app/tools/mock_adapter.py`), the JWT claim shape. Do not present them as real Govator data.
+**Everything Grovator-specific is assumed or synthetic**: the knowledge base (`backend/knowledge_src/`), the student data (`app/tools/mock_adapter.py`), the JWT claim shape. Do not present them as real Grovator data.
 
 ## Setup (first time)
 ```bash

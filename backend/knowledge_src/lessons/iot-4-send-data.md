@@ -5,7 +5,7 @@ order: 14
 role_visibility: [student, teacher, admin, superadmin]
 ---
 # Goal
-Send the temperature to the Govator dashboard and read the live graph.
+Send the temperature to the Grovator dashboard and read the live graph.
 
 # Steps
 1. Make sure the kit is connected and the temperature sensor is in port 1.

@@ -21,7 +21,7 @@ from app.llm.prompts import EXTRACT_SYSTEM
 from app.rag.embeddings import embed_docs
 from app.rag.store import VECTOR_SIZE
 
-log = logging.getLogger("govator.memory")
+log = logging.getLogger("grovator.memory")
 
 MEMORY_TYPES = {"preference", "context", "goal", "skill"}
 MAX_CANDIDATES = 3

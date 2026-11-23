@@ -52,8 +52,8 @@ WORKLOAD = [
     (S1, "bench-blocks", "what about variables in it?", FAQ, "Loops and Conditions in Block Coding"),
     (S1, "bench-proj", "Where are my saved programs?", FAQ, "Projects, Progress and Getting Help"),
     (S1, "bench-proj", "can I get a deleted one back?", FAQ, "Projects, Progress and Getting Help"),
-    (S1, "bench-login", "How do I log in?", FAQ, "Getting Started on Govator"),
-    (S1, "bench-login", "I forgot it", FAQ, "Getting Started on Govator"),
+    (S1, "bench-login", "How do I log in?", FAQ, "Getting Started on Grovator"),
+    (S1, "bench-login", "I forgot it", FAQ, "Getting Started on Grovator"),
     # a cohort of different students asking the same FAQs as their first message (cache opportunity)
     (student(1), "co-1", "How do I connect the IoT kit?", FAQ, "IoT Kit Guide"),
     (student(2), "co-2", "how can i connect my iot kit to the computer", FAQ, "IoT Kit Guide"),
@@ -61,8 +61,8 @@ WORKLOAD = [
     (student(4), "co-4", "How do I connect the IoT kit?", FAQ, "IoT Kit Guide"),
     (student(5), "co-5", "My robot is not moving, what should I check?", FAQ, "Robotics Foundation Kit Guide"),
     (student(6), "co-6", "Why is my robot not moving?", FAQ, "Robotics Foundation Kit Guide"),
-    (student(7), "co-7", "How do I log in?", FAQ, "Getting Started on Govator"),
-    (student(8), "co-8", "how do i log in to govator", FAQ, "Getting Started on Govator"),
+    (student(7), "co-7", "How do I log in?", FAQ, "Getting Started on Grovator"),
+    (student(8), "co-8", "how do i log in to grovator", FAQ, "Getting Started on Grovator"),
     # live data (never cached; answered by code from tools)
     (T1, "bench-t1", "Show Aarav's report", "my_data", None),
     (T1, "bench-t1b", "What is my schedule?", "my_data", None),

@@ -3,7 +3,7 @@ import type { ContentResponse, FeedbackReason, Memory, Rating, StreamEvent } fro
 
 export interface ApiConfig {
   baseUrl: string;
-  /** Returns the user's Govator JWT. The widget never mints, stores or inspects it. */
+  /** Returns the user's Grovator JWT. The widget never mints, stores or inspects it. */
   getToken: () => string | null | Promise<string | null>;
 }
 
@@ -133,7 +133,7 @@ export async function fetchContent(cfg: ApiConfig): Promise<ContentResponse> {
   return (await (await call(cfg, "/content")).json()) as ContentResponse;
 }
 
-/** Demo-only auto login (backend must run with DEMO_MODE=true). Not used by a real Govator integration. */
+/** Demo-only auto login (backend must run with DEMO_MODE=true). Not used by a real Grovator integration. */
 export async function demoSession(baseUrl: string, role: "student" | "teacher"): Promise<{ token: string; role: string; name: string }> {
   let res: Response;
   try {

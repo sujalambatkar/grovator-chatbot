@@ -2,7 +2,7 @@
 
 | # | Decision | Why |
 |---|---|---|
-| D1 | Build standalone with adapter interfaces (`PlatformDataAdapter`, `AuthProvider`) | No Govator codebase available; keeps platform-specific guesses isolated |
+| D1 | Build standalone with adapter interfaces (`PlatformDataAdapter`, `AuthProvider`) | No Grovator codebase available; keeps platform-specific guesses isolated |
 | D2 | Mock data and a synthetic knowledge corpus for dev/tests, labelled as synthetic | Avoids inventing real platform behaviour while allowing tests |
 | D3 | Model names come from env (`ROUTER_MODEL`, `ANSWER_MODEL`, `GUARD_MODEL`) | Groq deprecates models |
 | D4 | Qdrant embedded (`:memory:`) for tests, docker Qdrant for dev (`QDRANT_URL`) | Fast hermetic tests; per-user choice from brief |
@@ -18,7 +18,7 @@
 | D14 | Optional Phase 4 input screen: `meta-llama/llama-prompt-guard-2-86m` (still Llama, still available) | Cheap injection classifier before any chat model |
 | D15 | One event generator (`ChatService.events`) feeds both `/chat` and `/chat/stream` (SSE: `meta`, `token`*, `done` / `error`) | No divergence between streaming and non-streaming behaviour |
 | D16 | Router = one 20B call returning `{intent, query, reply}`; smalltalk is answered by the router itself (no retrieval, no big model). Unsafe / off_topic / my_data return fixed templates | Fewest calls per path. `my_data` stays a stub until Phase 4 tools |
-| D17 | Session key `govator:sess:{user_id}:{session_id}`; refusals/smalltalk write no memory; the turn is saved synchronously and the summary updated in the background (re-read before write) | A guessed session_id can't cross users; injected junk doesn't persist. Race window if the user sends a follow-up before the summary lands (they then still get the 2 raw turns) |
+| D17 | Session key `grovator:sess:{user_id}:{session_id}`; refusals/smalltalk write no memory; the turn is saved synchronously and the summary updated in the background (re-read before write) | A guessed session_id can't cross users; injected junk doesn't persist. Race window if the user sends a follow-up before the summary lands (they then still get the 2 raw turns) |
 | D18 | Answer prompt budget enforced in `prompting.py`: drop oldest turn, then summary, shrink context; total input <= 1200 | Brief's hard budget |
 | D19 | Router failure fails open to retrieval using `previous_user_msg + message` as the query; the confidence gate still blocks unrelated questions | Found live: raw follow-up under a rate-limited router lost context and missed the right doc |
 | D20 | ANSWER_SYSTEM says "under 120 words"; `finish_reason == "length"` is surfaced as `truncated` | Live run: 1 of 12 answers hit the 350 cap and was cut off. After the fix 0 of 36 |
@@ -73,3 +73,5 @@
 | D69 | Tests pin their own env (`DEMO_MODE=false`, `SUMMARY_MODE=llm`, optimisation flags off for legacy suites) | A developer's local `.env` must never change test results |
 | D70 | **Lesson sequence is content, stated once and checked.** A `Learning Path: Lesson Order` page lists both courses in order (lessons AND the activities between them), and every lesson page ends with `Previous lesson:` / `Next lesson:` lines. A test compares those lines with the real `order` front-matter, so the page and the catalog can never disagree | The bot answered "I don't have information about the lesson that follows" because nothing in the content said what comes next |
 | D71 | Order questions ("what comes after X", "first/last lesson", "in what order") get an extra free search aimed at the learning path (2x weight) and are NOT sentence-compressed. "what comes next" / "previous lesson" point at the open lesson unless they name another ("next lesson after X") | Pages that merely mention the named lesson crowd out the sequence chunk; compression truncated the list ("...and so on") |
+| D72 | Compression defaults widened: keep sentences >= 0.8 x the best (was 0.9), up to 3 core sentences (was 2). Calibrated on 22 key-fact questions incl. 8 troubleshooting ones: old setting lost 1/22, every wider setting kept 22/22; chosen 0.8/3 for a safety margin of ~0.05 over the cut-off (0.85/3 passed with only 0.009). Context saving 19% -> 14% | Renaming "Govator" to "Grovator" nudged embeddings and flipped "unplug the USB cable" out of the context for "the kit will not connect": the margin was razor-thin. Troubleshooting answers are "If it does not..." sentences that rank below the generic setup sentence |
+| D73 | The platform is **Grovator**. "Govator" (a common misspelling) in a user message is corrected to "Grovator" at the input guard, so retrieval and the model see the real name | The product name was misspelled throughout the first versions; users make the same mistake |

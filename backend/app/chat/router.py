@@ -9,7 +9,7 @@ from app.llm.llm_client import LLMClient, LLMError
 from app.llm.prompts import ROUTER_SYSTEM
 from app.rag.tokens import truncate_tokens
 
-log = logging.getLogger("govator.router")
+log = logging.getLogger("grovator.router")
 
 
 class Intent(str, Enum):

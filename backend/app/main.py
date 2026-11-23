@@ -57,7 +57,7 @@ def create_app(llm=None, retriever: HybridRetriever | None = None, redis=None, a
         yield
         await app.state.service.drain()
 
-    app = FastAPI(title="Govator AI Assistant", lifespan=lifespan)
+    app = FastAPI(title="Grovator AI Assistant", lifespan=lifespan)
     app.state.settings = settings
     origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip() and o.strip() != "*"]
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=False,

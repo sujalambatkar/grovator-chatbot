@@ -99,3 +99,15 @@ def test_too_long_rejected():
 def test_creative_writing_requests_are_refused_without_an_llm(msg):
     v = check_input(msg, Role.student)
     assert not v.allowed and v.reason == "off_topic" and v.reply
+
+
+# ---- the platform is "Grovator"; people often type "Govator" and the bot must still understand them
+@pytest.mark.parametrize("raw,fixed", [
+    ("what is govator?", "what is Grovator?"), ("What is Govator", "What is Grovator"), ("GOVATOR login", "Grovator login"),
+    ("how do I use govator's simulator", "how do I use Grovator's simulator"), ("who made Govator?", "who made Grovator?"),
+    ("what is grovator?", "what is grovator?"),            # already right: untouched
+    ("the governor of the lab", "the governor of the lab"),  # a different word: untouched
+])
+def test_common_misspelling_of_the_platform_name_is_corrected(raw, fixed):
+    v = check_input(raw, Role.student)
+    assert v.allowed and v.clean == fixed, (raw, v.clean)

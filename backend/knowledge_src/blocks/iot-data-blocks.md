@@ -5,7 +5,7 @@ order: 37
 role_visibility: [student, teacher, admin, superadmin]
 ---
 # What IoT data blocks do
-IoT data blocks are teal. They connect your kit to the Govator dashboard.
+IoT data blocks are teal. They connect your kit to the Grovator dashboard.
 
 # send data
 Sends one reading to My Dashboard. Type a name such as temperature and drop in a value such as the temperature value block. Always wait at least 1 second between sends.

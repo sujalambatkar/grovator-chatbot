@@ -52,12 +52,12 @@ CONVERSATIONS = {
         ("what are variables there?", "What are variables in block coding?", "Loops and Conditions in Block Coding"),
     ],
     "projects": [
-        ("Where are my saved programs?", "Where are my saved projects in Govator?", "Projects, Progress and Getting Help"),
-        ("can I get deleted ones back?", "Can I recover a deleted project in Govator?", "Projects, Progress and Getting Help"),
+        ("Where are my saved programs?", "Where are my saved projects in Grovator?", "Projects, Progress and Getting Help"),
+        ("can I get deleted ones back?", "Can I recover a deleted project in Grovator?", "Projects, Progress and Getting Help"),
     ],
     "login": [
-        ("How do I log in?", "How do I log in to Govator?", "Getting Started on Govator"),
-        ("I forgot it", "What do I do if I forgot my Govator password?", "Getting Started on Govator"),
+        ("How do I log in?", "How do I log in to Grovator?", "Getting Started on Grovator"),
+        ("I forgot it", "What do I do if I forgot my Grovator password?", "Getting Started on Grovator"),
     ],
 }
 
@@ -104,9 +104,9 @@ async def test_session_isolated_per_user_and_has_ttl(retriever):
     await turn(svc, b, "What is block coding?", "shared-sid-1")  # same session_id, different user
     assert "SUMMARY: (none)" in llm.router_calls[1]
     assert "log in" not in llm.router_calls[1].lower()
-    assert 0 < await redis.ttl("govator:sess:alice:shared-sid-1") <= get_settings().session_ttl_s
-    keys = {k async for k in redis.scan_iter("govator:sess:*")}
-    assert keys == {"govator:sess:alice:shared-sid-1", "govator:sess:bob:shared-sid-1"}
+    assert 0 < await redis.ttl("grovator:sess:alice:shared-sid-1") <= get_settings().session_ttl_s
+    keys = {k async for k in redis.scan_iter("grovator:sess:*")}
+    assert keys == {"grovator:sess:alice:shared-sid-1", "grovator:sess:bob:shared-sid-1"}
 
 
 async def test_answer_prompt_respects_input_budget_with_huge_history(retriever):
@@ -124,9 +124,9 @@ async def test_answer_prompt_respects_input_budget_with_huge_history(retriever):
 async def test_canned_intents_skip_answer_model_and_memory(retriever, intent, expected):
     llm = FakeLLM(router_fn=lambda u: {"intent": intent, "query": "x"})
     svc, redis = make_service(retriever, llm)
-    done = await turn(svc, make_principal("student"), "whatever", "sess-canned")
+    done = await turn(svc, make_principal("student"), "show me my marks" if intent == "my_data" else "whatever", "sess-canned")
     assert done["answer"] == expected and not done["grounded"] and llm.calls == []
-    assert await redis.keys("govator:sess:*") == []  # refusals leave no memory
+    assert await redis.keys("grovator:sess:*") == []  # refusals leave no memory
 
 
 async def test_smalltalk_uses_router_reply_no_retrieval(retriever):

@@ -28,9 +28,9 @@ export function Composer({ busy, onSend, onStop, focusSignal }: Props) {
         <div className={`${s.counter} ${over ? s.counterWarn : ""}`} aria-live="polite">{text.length}/{MAX_CHARS}</div>
       )}
       <form className={s.composer} onSubmit={(e) => { e.preventDefault(); submit(); }}>
-        <label className={s.srOnly} htmlFor="govator-chat-input">Message</label>
+        <label className={s.srOnly} htmlFor="grovator-chat-input">Message</label>
         <textarea
-          id="govator-chat-input" ref={ref} className={s.textarea} rows={1} value={text} placeholder="Ask about kits, block coding…"
+          id="grovator-chat-input" ref={ref} className={s.textarea} rows={1} value={text} placeholder="Ask about kits, block coding…"
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); submit(); } }}
           data-testid="composer-input"

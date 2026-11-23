@@ -8,7 +8,7 @@ from typing import Any, AsyncIterator, Protocol
 
 from app.config import Settings
 
-log = logging.getLogger("govator.llm")
+log = logging.getLogger("grovator.llm")
 
 
 @dataclass

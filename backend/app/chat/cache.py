@@ -49,7 +49,7 @@ class SemanticCache:
 
     @staticmethod
     def _key(p: Principal, kb_version: str) -> str:
-        return f"govator:cache:{kb_version}:{p.role.value}:{p.org_id}:{p.school_id or '*'}"
+        return f"grovator:cache:{kb_version}:{p.role.value}:{p.org_id}:{p.school_id or '*'}"
 
     async def lookup(self, p: Principal, vec: list[float], kb_version: str) -> CacheHit | None:
         raw = await self.r.hgetall(self._key(p, kb_version))

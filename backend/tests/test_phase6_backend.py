@@ -9,7 +9,7 @@ from app.config import Settings
 from app.main import create_app
 from tests.conftest import FakeLLM, make_token
 
-GOOD = "Connect the controller board to your computer with the USB cable. Open the IoT subject in Govator and press Connect Kit."
+GOOD = "Connect the controller board to your computer with the USB cable. Open the IoT subject in Grovator and press Connect Kit."
 Q = "How do I connect the IoT kit?"
 ON = dict(enable_semantic_cache=False, enable_router_shortcut=True, lazy_summary=True, enable_compression=True, usage_log_dir="",
           rate_limit_user_per_min=1000, rate_limit_ip_per_min=1000)

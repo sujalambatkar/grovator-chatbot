@@ -5,7 +5,7 @@ from app.config import get_settings
 from tests.conftest import make_principal
 
 QA = [
-    ("student", "How do I log in to Govator?", "student/getting-started.md"),
+    ("student", "How do I log in to Grovator?", "student/getting-started.md"),
     ("student", "I forgot my password, what do I do?", "student/getting-started.md"),
     ("student", "What is block coding?", "student/block-coding-basics.md"),
     ("student", "My blocks are not running, what's wrong?", "student/block-coding-basics.md"),

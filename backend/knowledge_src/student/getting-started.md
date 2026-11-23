@@ -1,9 +1,9 @@
 ---
-title: Getting Started on Govator
+title: Getting Started on Grovator
 role_visibility: [student, teacher, admin, superadmin]
 ---
 # Logging in
-Open the Govator app and sign in with the username and password given by your school. If you forgot your password, ask your teacher to reset it. Do not share your password with friends.
+Open the Grovator app and sign in with the username and password given by your school. If you forgot your password, ask your teacher to reset it. Do not share your password with friends.
 
 # Your dashboard
 After login you see your dashboard. It shows your subjects, such as IoT and Robotics Foundation, and the lessons you can continue. Tap a subject card to open its lessons.

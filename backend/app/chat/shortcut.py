@@ -17,18 +17,18 @@ _GREET = r"(?:(?:hi|hello|hey)\W+)?"
 _HOW_ARE_YOU = re.compile(rf"^\W*{_GREET}(?:how are you|how'?s it going|how do you do|what'?s up|how have you been)(?:\s+(?:doing|going|today|now|there|buddy|friend|bot))*\W*$", re.I)
 _WHO_ARE_YOU = re.compile(rf"^\W*{_GREET}(?:who are you|what are you|what'?s your name|what is your name|tell me about yourself|introduce yourself|"
                           r"are you (?:a |an )?(?:bot|robot|ai|human|real|person|chatbot))(?:\s+\w+){0,2}\W*$", re.I)
-THANKS_REPLY = "You're welcome! Ask me anything about Govator, its kits or block coding."
+THANKS_REPLY = "You're welcome! Ask me anything about Grovator, its kits or block coding."
 
 # Platform-specific words only. Generic words ("if", "run", "line", "turn", "display", "log"...) are deliberately NOT here:
 # they appear in follow-ups like "what if the number never changes?" and must not make a message look standalone.
 _FAQ_WORDS = set("""kit kits block blocks robot robotics sensor sensors iot loop loops repeat variable variables
 project projects program programs connect connecting motor motors led buzzer workspace palette lesson lessons
 login password battery usb distance temperature motion simulator condition conditions forever debug blockly
-govator course module""".split())
+grovator course module""".split())
 _DATA_WORDS = set("""mark marks score scores grade grades report reports progress attendance schedule timetable
 batch batches student students rank leaderboard performance result results class classes school org
 organisation organization teacher teachers admin users user""".split())
-_ANAPHORA = re.compile(r"\b(?:it|its|that|this|those|these|them|they|he|she|him|her|again|also|same|other|another|"
+_ANAPHORA = re.compile(r"\b(?:it|its|that|this|those|these|them|they|he|she|him|her|again|also|same|other|another|(?:a|the|which|that|this) (?:\w+ )?one|"
                        r"what about|how about|and then|and how|and what)\b", re.I)
 # A message is only a FOLLOW-UP if it shows it: a pronoun (_ANAPHORA), a platform word, or a continuation cue at the start.
 # Without that evidence ("my favourite colour is blue") it must not be glued onto the previous question: the router decides.
@@ -41,7 +41,7 @@ _QSTART = re.compile(r"^\s*(?:how|what|where|why|when|which|can|could|do|does|is
 # "explain this lesson", "what do I do here": only meaningful together with the page the user is on
 # "this"/"these" point at the page only when they are not followed by a word that names the platform itself:
 # "explain THIS LESSON" is about the open page, "what is THIS PLATFORM" is not.
-_NOT_THE_PAGE = r"platform|website|site|app|application|govator|system|chatbot|bot|software|company|school"
+_NOT_THE_PAGE = r"platform|website|site|app|application|grovator|system|chatbot|bot|software|company|school"
 _NEXT_OF_THE_PAGE = (r"what(?:'s| is)? (?:comes |is )?next|what (?:should|do|can) i (?:do|learn|study|try) next|"
                      r"(?:the )?next (?:lesson|step|page|one)(?!\s+(?:after|before|from))|(?:the )?previous (?:lesson|page|one)(?!\s+(?:before|to|of))")
 DEICTIC = re.compile(rf"\b(?:this(?!\s+(?:{_NOT_THE_PAGE})\b)|these|here|above|current|the page|the lesson|the program|step \d+|{_NEXT_OF_THE_PAGE})\b", re.I)
@@ -81,3 +81,18 @@ SEQUENCE_Q = re.compile(
     r"|\b(?:next|previous|first|last|final) (?:lesson|module|activity|course|project)\b"
     r"|\b(?:lesson|module|course) (?:order|sequence)\b|\b(?:what|which|in what|in which) order\b|\bsequence of\b"
     r"|\b(?:after|before) (?:the )?[\w' -]{2,40}(?:lesson|module|activity)\b", re.I)
+
+
+_CAPITALISED = re.compile(r"\b[A-Z][a-z]{2,}")
+
+
+def looks_like_data_request(message: str) -> bool:
+    """Evidence that a message is about PEOPLE'S data (marks, reports, a student, a batch): a data word, or a capitalised
+    name that is not the first word. The router alone is not trusted for this: when it says "data lookup" about "can I
+    get a deleted one back?" the user would be told about student reports. A typed-lowercase name loses the data path
+    (a safe failure: it becomes a normal question and the retrieval gate declines it)."""
+    if set(re.findall(r"[a-z']+", message.lower())) & _DATA_WORDS:
+        return True
+    first_end = len(message) - len(message.lstrip())
+    return any(m.start() > first_end + 1 and m.group() not in {"IoT", "Grovator", "Connect", "Kit", "Run", "Save", "Stop", "Events"}
+               for m in _CAPITALISED.finditer(message)) if message else False

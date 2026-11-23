@@ -207,7 +207,7 @@ async def test_preference_memory_rides_along_on_unrelated_question(retriever):
     await store.ensure()
     p = make_principal("student")
     await mm.save(p, [("Prefers short step-by-step answers", "preference")], "s")
-    await run_turn(svc, p, "How do I log in to Govator?", "sess-pref-01")
+    await run_turn(svc, p, "How do I log in to Grovator?", "sess-pref-01")
     assert "Prefers short step-by-step answers" in llm.calls[-1][-1]["content"]
 
 

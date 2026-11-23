@@ -16,7 +16,7 @@ class RateLimiter:
 
     async def hit(self, key: str, limit: int) -> tuple[bool, int]:
         now = time.time()
-        k = f"govator:rl:{key}:{int(now // self.window)}"
+        k = f"grovator:rl:{key}:{int(now // self.window)}"
         n = await self.r.incr(k)
         if n == 1:
             await self.r.expire(k, self.window + 5)
@@ -32,7 +32,7 @@ class TokenBudget:
     @staticmethod
     def _keys(p: Principal) -> tuple[str, str]:
         day = datetime.now(timezone.utc).strftime("%Y%m%d")
-        return f"govator:tok:u:{p.org_id}:{p.user_id}:{day}", f"govator:tok:o:{p.org_id}:{day}"
+        return f"grovator:tok:u:{p.org_id}:{p.user_id}:{day}", f"grovator:tok:o:{p.org_id}:{day}"
 
     async def usage(self, p: Principal) -> tuple[int, int]:
         uk, ok = self._keys(p)

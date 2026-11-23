@@ -37,7 +37,7 @@ class SessionStore:
 
     @staticmethod
     def _key(user_id: str, session_id: str) -> str:
-        return f"govator:sess:{user_id}:{session_id}"
+        return f"grovator:sess:{user_id}:{session_id}"
 
     async def get(self, user_id: str, session_id: str) -> SessionState:
         raw = await self.r.get(self._key(user_id, session_id))

@@ -10,12 +10,13 @@ import re
 import time
 import uuid
 from collections.abc import AsyncIterator
+from dataclasses import replace as dc_replace
 from typing import Any
 
 from app.chat.cache import SemanticCache, cacheable
 from app.chat.prompting import build_answer_messages
 from app.chat.router import Intent, route_message
-from app.chat.shortcut import DEICTIC, SEQUENCE_Q, try_shortcut
+from app.chat.shortcut import DEICTIC, SEQUENCE_Q, looks_like_data_request, try_shortcut
 from app.content.catalog import ContentCatalog, Doc
 from app.config import Settings
 from app.core.abuse import TokenBudget
@@ -38,7 +39,7 @@ from app.tools.executor import run_tool
 from app.tools.planner import plan_tool
 from app.tools.types import Scope
 
-log = logging.getLogger("govator.chat")  # NEVER log raw user text
+log = logging.getLogger("grovator.chat")  # NEVER log raw user text
 
 Event = dict[str, Any]
 
@@ -155,6 +156,9 @@ class ChatService:
             recent = [t.user for t in state.turns[-2:]] if self.s.lazy_summary else [t.user for t in state.turns[-1:]]
             route = await route_message(self.llm, self.s, state.summary, recent, message)
             await self._record(p, route.input_tokens + route.output_tokens, "router")
+            if route.intent is Intent.my_data and not looks_like_data_request(message):
+                # the small router is not trusted to start a data lookup on its own (it slipped on "can I get a deleted one back?")
+                route = dc_replace(route, intent=Intent.platform_faq, query=route.query or message)
         base = {"session_id": sid, "intent": route.intent.value, "router_tokens": route.input_tokens + route.output_tokens,
                 "shortcut": route.shortcut, "naive_tokens": naive0}
         yield {"type": "meta", **base}

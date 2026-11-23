@@ -30,7 +30,7 @@ _No bugs yet._
 - Spaced-letter evasion ("i g n o r e") and masked profanity ("f***") are not caught by L1; they rely on the router / output guard. Covered live (router) but not deterministically.
 - Health/family/name filters are keyword rules, not a classifier.
 - Lexical grounding is a heuristic (margin 0.12 over the lowest real answer seen); expect occasional safe false refusals.
-- The mock data and tool shapes are assumptions about Govator's schema; the real adapter must be written against the real API/DB.
+- The mock data and tool shapes are assumptions about Grovator's schema; the real adapter must be written against the real API/DB.
 
 ## Phase 5
 1. **False refusal in the baseline benchmark** (turn "and how do I make it follow a line?"): the Phase 4 numeric guard rejected a real answer because it contained a number > 10 absent from the context. Rule narrowed to performance claims (D46); the strict rule for tool data is unchanged.
@@ -54,7 +54,7 @@ _No bugs yet._
 
 ### Known limitations (Phase 6)
 - Widget verified in headless Chromium only (desktop light/dark, phone viewport), not on real devices, Safari or Firefox. No automated accessibility audit (axe); labels/roles/focus were checked by hand and by a few assertions.
-- The widget is a copy-in component, not a published package; integrating with Govator's real frontend and auth is untested because that code was not available.
+- The widget is a copy-in component, not a published package; integrating with Grovator's real frontend and auth is untested because that code was not available.
 - The full 66-turn live eval was not re-run end-to-end after the final numeric-guard fix (affected suites were: 20/20).
 
 ## Phase 7 (demo-first rework)

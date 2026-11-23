@@ -39,7 +39,7 @@ class UsageTracker:
 
     @staticmethod
     def _key(p_org: str, school: str | None, day: str, kind: str = "agg") -> str:
-        return f"govator:usage:{kind}:{p_org}:{school or '-'}:{day}"
+        return f"grovator:usage:{kind}:{p_org}:{school or '-'}:{day}"
 
     async def tokens(self, p: Principal, component: str, n: int) -> None:
         if n > 0 and component in COMPONENTS:
@@ -47,19 +47,19 @@ class UsageTracker:
 
     async def remember_request(self, p: Principal, rid: str, rec: dict) -> None:
         """Short-lived link request_id -> (user, scope, intent) so feedback can be validated. No text stored."""
-        await self.r.set(f"govator:req:{rid}", json.dumps({
+        await self.r.set(f"grovator:req:{rid}", json.dumps({
             "user": user_hash(p), "org": p.org_id, "school": p.school_id,
             "intent": rec.get("intent", "unknown"), "cache_hit": bool(rec.get("cache_hit"))}), ex=86400)
 
     async def feedback(self, p: Principal, rid: str, rating: str, reason: str | None) -> bool:
         """Record one rating per request (changeable). Only the user who made the request may rate it."""
-        raw = await self.r.get(f"govator:req:{rid}")
+        raw = await self.r.get(f"grovator:req:{rid}")
         if not raw:
             return False
         meta = json.loads(raw)
         if meta["user"] != user_hash(p) or meta["org"] != p.org_id:
             return False  # someone else's request: indistinguishable from "not found"
-        fb_key, why_key = f"govator:fb:{rid}", f"govator:fbr:{rid}"
+        fb_key, why_key = f"grovator:fb:{rid}", f"grovator:fbr:{rid}"
         old, old_reason = await self.r.get(fb_key), await self.r.get(why_key)
         new_reason = reason if rating == "down" else None
         if old == rating and (new_reason is None or new_reason == old_reason):

@@ -53,8 +53,8 @@ class Settings(BaseSettings):
     enable_router_shortcut: bool = True
     lazy_summary: bool = True          # fold a turn into the summary only when it leaves the 2-turn window
     enable_compression: bool = True
-    compress_keep_ratio: float = 0.9   # keep sentences scoring >= ratio * best sentence in the chunk
-    compress_max_sents: int = 2         # core (best-matching) sentences per chunk
+    compress_keep_ratio: float = 0.8   # keep sentences scoring >= ratio * best sentence in the chunk
+    compress_max_sents: int = 3         # core (best-matching) sentences per chunk
     compress_window: int = 1            # plus this many neighbours on each side
     compress_chunk_min: float = 0.6    # drop chunks whose best sentence scores below this (rank 1 always kept)
     usage_log_dir: str = "logs"        # JSONL per-request log; "" disables

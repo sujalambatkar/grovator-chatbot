@@ -1,5 +1,5 @@
-{"id": "faq-01", "role": "student", "q": "How do I log in to Govator?", "expect_source": "Getting Started on Govator", "must_contain_any": ["username", "password"]}
-{"id": "faq-02", "role": "student", "q": "I forgot my password, what do I do?", "expect_source": "Getting Started on Govator", "must_contain_any": ["teacher"]}
+{"id": "faq-01", "role": "student", "q": "How do I log in to Grovator?", "expect_source": "Getting Started on Grovator", "must_contain_any": ["username", "password"]}
+{"id": "faq-02", "role": "student", "q": "I forgot my password, what do I do?", "expect_source": "Getting Started on Grovator", "must_contain_any": ["teacher"]}
 {"id": "faq-03", "role": "student", "q": "What is block coding?", "expect_source": "Block Coding Basics", "must_contain_any": ["block"]}
 {"id": "faq-04", "role": "student", "q": "My blocks are not running, what's wrong?", "expect_source": "Block Coding Basics", "must_contain_any": ["events", "snap", "loose", "connected"]}
 {"id": "faq-05", "role": "student", "q": "How do I make the robot repeat something 4 times?", "expect_source": ["Loops and Conditions in Block Coding", "Blocks: Control (loops and conditions)", "Robotics Lesson 2: Move and Turn"], "must_contain_any": ["repeat"]}
@@ -16,10 +16,10 @@
 {"id": "faq-16", "role": "student", "q": "Can I get a deleted project back?", "expect_source": "Projects, Progress and Getting Help", "must_contain_any": ["cannot", "can't", "not", "teacher"]}
 {"id": "faq-17", "role": "student", "q": "How do I read the temperature sensor?", "expect_source": ["IoT Kit Guide", "IoT Lesson 2: Temperature Sensor", "Blocks: Sensors"], "must_contain_any": ["temperature"]}
 {"id": "faq-18", "role": "student", "q": "How do I use the distance sensor on the robot?", "expect_source": ["Robotics Foundation Kit Guide", "Robotics Lesson 3: Distance Sensor", "Blocks: Sensors", "Course: Robotics Foundation"], "must_contain_any": ["distance"]}
-{"id": "faq-19", "role": "student", "q": "What is Govator?", "expect_source": ["About Govator"], "must_contain_any": ["learning", "platform"]}
-{"id": "faq-20", "role": "student", "q": "what exactly is this platform", "expect_source": ["About Govator"], "must_contain_any": ["learning", "school"]}
-{"id": "faq-21", "role": "student", "q": "who made this app?", "expect_source": ["About Govator"], "must_contain_any": ["grok"]}
-{"id": "faq-22", "role": "student", "q": "what can I do on this site?", "expect_source": ["About Govator"], "must_contain_any": ["course", "lesson"]}
+{"id": "faq-19", "role": "student", "q": "What is Grovator?", "expect_source": ["About Grovator"], "must_contain_any": ["learning", "platform"]}
+{"id": "faq-20", "role": "student", "q": "what exactly is this platform", "expect_source": ["About Grovator"], "must_contain_any": ["learning", "school"]}
+{"id": "faq-21", "role": "student", "q": "who made this app?", "expect_source": ["About Grovator"], "must_contain_any": ["grok"]}
+{"id": "faq-22", "role": "student", "q": "what can I do on this site?", "expect_source": ["About Grovator"], "must_contain_any": ["course", "lesson"]}
 {"id": "faq-23", "role": "student", "q": "What is the next lesson after LED and Buzzer?", "expect_source": ["Learning Path: Lesson Order", "IoT Lesson 3: LED and Buzzer"], "must_contain_any": ["send data", "lesson 4", "dashboard"]}
 {"id": "faq-24", "role": "student", "q": "What comes after Move and Turn?", "expect_source": ["Learning Path: Lesson Order", "Robotics Lesson 2: Move and Turn"], "must_contain_any": ["distance"]}
 {"id": "faq-25", "role": "student", "q": "What is the first lesson in Robotics Foundation?", "expect_source": ["Learning Path: Lesson Order", "Course: Robotics Foundation", "Robotics Lesson 1: Meet Your Robot"], "must_contain_any": ["meet your robot"]}

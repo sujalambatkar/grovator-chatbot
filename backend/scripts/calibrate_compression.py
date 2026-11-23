@@ -13,7 +13,7 @@ from scripts.common import make_principal
 
 # (role, question, phrase that MUST survive in the compressed context)
 CASES = [
-    ("student", "How do I log in to Govator?", "username and password"),
+    ("student", "How do I log in to Grovator?", "username and password"),
     ("student", "I forgot my password, what do I do?", "teacher to reset"),
     ("student", "What is block coding?", "snapping"),
     ("student", "My blocks are not running, what's wrong?", "loose blocks"),
@@ -28,6 +28,13 @@ CASES = [
     ("student", "Where are my saved programs?", "my projects"),
     ("teacher", "How do I reset a student's password?", "reset password"),
     ("admin", "How do I assign a teacher to a batch?", "assign teacher"),
+    ("student", "The LED does not light up", "right way round"),
+    ("student", "My square does not close, the robot drifts", "wheels are tight"),
+    ("student", "The number on the display never changes", "wrong port"),
+    ("student", "The robot loses the line on curves", "lower the speed"),
+    ("student", "My program does nothing when I press run", "events block"),
+    ("student", "The alarm never stops", "else part"),
+    ("student", "The kit status light is red", "unplug the usb"),
 ]
 
 

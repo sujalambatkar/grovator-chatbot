@@ -18,7 +18,7 @@ interface Options {
 function load<T>(key: string | undefined, suffix: string, fallback: T): T {
   if (!key || typeof window === "undefined") return fallback;
   try {
-    const raw = window.sessionStorage.getItem(`govator.chat.${key}.${suffix}`);
+    const raw = window.sessionStorage.getItem(`grovator.chat.${key}.${suffix}`);
     return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
     return fallback;
@@ -48,8 +48,8 @@ export function useChat(cfg: ApiConfig, opts: Options = {}) {
   useEffect(() => {
     if (!storageKey || typeof window === "undefined") return;
     try {
-      window.sessionStorage.setItem(`govator.chat.${storageKey}.messages`, JSON.stringify(messages.slice(-40)));
-      if (sessionRef.current) window.sessionStorage.setItem(`govator.chat.${storageKey}.session`, JSON.stringify(sessionRef.current));
+      window.sessionStorage.setItem(`grovator.chat.${storageKey}.messages`, JSON.stringify(messages.slice(-40)));
+      if (sessionRef.current) window.sessionStorage.setItem(`grovator.chat.${storageKey}.session`, JSON.stringify(sessionRef.current));
     } catch {
       /* storage unavailable or full: the chat still works */
     }
@@ -119,8 +119,8 @@ export function useChat(cfg: ApiConfig, opts: Options = {}) {
     setError(null);
     if (storageKey && typeof window !== "undefined") {
       try {
-        window.sessionStorage.removeItem(`govator.chat.${storageKey}.messages`);
-        window.sessionStorage.removeItem(`govator.chat.${storageKey}.session`);
+        window.sessionStorage.removeItem(`grovator.chat.${storageKey}.messages`);
+        window.sessionStorage.removeItem(`grovator.chat.${storageKey}.session`);
       } catch {
         /* ignore */
       }

@@ -1,4 +1,4 @@
-"""Mint a DEV JWT for the widget/demo. In production Govator's own auth issues tokens.
+"""Mint a DEV JWT for the widget/demo. In production Grovator's own auth issues tokens.
 Example: python -m scripts.mint_token --role teacher --user t1 --batches b1"""
 import argparse
 import time

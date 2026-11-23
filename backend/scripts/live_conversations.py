@@ -41,8 +41,8 @@ CONVS = {
                     ("what about variables in it?", "Loops and Conditions in Block Coding")],
     "projects": [("Where are my saved programs?", "Projects, Progress and Getting Help"),
                  ("can I get a deleted one back?", "Projects, Progress and Getting Help")],
-    "login": [("How do I log in?", "Getting Started on Govator"),
-              ("I forgot it", "Getting Started on Govator")],
+    "login": [("How do I log in?", "Getting Started on Grovator"),
+              ("I forgot it", "Getting Started on Grovator")],
 }
 
 

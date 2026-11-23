@@ -10,7 +10,7 @@ import { TokenMeter } from "./TokenMeter";
 import s from "./widget.module.css";
 
 export interface ChatWidgetProps {
-  /** Base URL of the Govator Assistant API (FastAPI). */
+  /** Base URL of the Grovator Assistant API (FastAPI). */
   apiUrl: string;
   /** Returns the signed-in user's JWT. */
   getToken: () => string | null | Promise<string | null>;
@@ -31,7 +31,7 @@ export interface ChatWidgetProps {
 const SUGGESTIONS = ["How do I connect the IoT kit?", "What is block coding?", "My robot is not moving, what should I check?"];
 
 export function ChatWidget({
-  apiUrl, getToken, title = "Govator Assistant", storageKey, defaultOpen = false, onAuthError, pageId,
+  apiUrl, getToken, title = "Grovator Assistant", storageKey, defaultOpen = false, onAuthError, pageId,
   suggestions = SUGGESTIONS, showMemory = true, showTokenMeter = false,
 }: ChatWidgetProps) {
   const [open, setOpen] = useState(defaultOpen);
@@ -71,7 +71,7 @@ export function ChatWidget({
               <MemoryPanel cfg={cfg} />
             ) : messages.length === 0 ? (
               <div className={s.welcome} data-testid="welcome">
-                Hi! I can help you use Govator, its kits and block coding.
+                Hi! I can help you use Grovator, its kits and block coding.
                 <div className={s.suggestions}>
                   {suggestions.map((q) => (
                     <button key={q} type="button" className={s.chip} onClick={() => void send(q)}>{q}</button>
@@ -93,7 +93,7 @@ export function ChatWidget({
           {view === "chat" && <Composer busy={busy} onSend={(t) => void send(t)} onStop={stop} focusSignal={focusSignal} />}
         </section>
       )}
-      <button type="button" className={s.launcher} onClick={toggle} aria-label={open ? "Close Govator Assistant" : "Open Govator Assistant"}
+      <button type="button" className={s.launcher} onClick={toggle} aria-label={open ? "Close Grovator Assistant" : "Open Grovator Assistant"}
         aria-expanded={open} data-testid="launcher">{open ? <CloseIcon /> : <ChatIcon />}</button>
     </div>
   );

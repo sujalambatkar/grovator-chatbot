@@ -1,4 +1,4 @@
-"""Platform data shapes. ASSUMED (see docs/chatbot/DISCOVERY.md): replace with the real Govator schema."""
+"""Platform data shapes. ASSUMED (see docs/chatbot/DISCOVERY.md): replace with the real Grovator schema."""
 from dataclasses import dataclass
 
 from app.core.auth import Principal, Role
