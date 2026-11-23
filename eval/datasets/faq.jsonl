@@ -26,4 +26,4 @@
 {"id": "hw-26", "role": "student", "q": "What is I2C?", "expect_source": ["Electronics Concepts", "Gateway Interface: I2C"], "must_contain_any": ["sda", "scl", "serial"]}
 {"id": "hw-27", "role": "student", "q": "What are the wiring rules for the gateway?", "expect_source": "Gateway Wiring Rules", "must_contain_any": ["label", "voltage", "datasheet"]}
 {"id": "hw-28", "role": "student", "q": "What is the Grovator ESP32 IoT Gateway?", "expect_source": "Grovator ESP32 IoT Gateway: Overview", "must_contain_any": ["gateway", "esp32"]}
-{"id": "hw-29", "role": "student", "q": "Is it safe to connect a 5V signal to an ESP32 GPIO?", "expect_source": ["Gateway Wiring Rules", "Ultrasonic Sensor: Connection Guide"], "must_contain_any": ["level", "not"]}
+{"id": "hw-29", "role": "student", "q": "Is it safe to connect a 5V signal to an ESP32 GPIO?", "expect_source": ["Gateway Wiring Rules", "Ultrasonic Sensor: Connection Guide", "Sound Sensor: Connection Guide", "IR Sensor: Connection Guide", "Buzzer: Connection Guide"], "must_contain_any": ["level", "not"]}

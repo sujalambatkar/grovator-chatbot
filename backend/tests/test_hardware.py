@@ -108,7 +108,7 @@ def test_device_page_only_lists_rules_that_apply_to_its_interface():
 
 def test_gaps_are_stated_not_filled_in():
     body = {d.source: d.body for d in load_hw_docs(REAL)}["devices/ultrasonic_sensor"]
-    assert "does NOT include" in body and "example code" in body and "datasheet" in body
+    assert "Not in the dataset" in body and "example code" in body and "datasheet" in body
     assert "water pump" not in body.lower()
     assert "ECHO" in body and "Verify ECHO signal voltage" in body       # the one documented warning is kept
 
@@ -177,9 +177,13 @@ async def test_every_device_is_retrieved_for_its_own_connection_question(real_re
 
 @pytest.mark.asyncio
 async def test_connection_question_retrieves_wiring_and_gateway_pins_together(real_retriever):
-    res = await real_retriever.retrieve("Where does the VCC wire go on the ultrasonic sensor? (Ultrasonic Sensor)", STU, k=4)
-    text = " ".join(h.text for h in res.hits)
-    assert "VCC goes to 5V" in text
+    q = "Where does the VCC wire go on the ultrasonic sensor? (Ultrasonic Sensor)"
+    res = await real_retriever.retrieve(q, STU, k=4)
+    assert "devices/ultrasonic_sensor" in [h.source for h in res.hits]          # the open search finds the device ...
+    from app.rag.embeddings import embed_query
+    res = await real_retriever.retrieve_from(["devices/ultrasonic_sensor"], STU, await embed_query(q), per_source=2, prefer=["How to wire"])
+    text = " ".join(h.text for h in res.hits)                                   # ... and the direct lookup reads its wiring section
+    assert "VCC to 5V" in text and "GPIO5" in text and len(res.hits) == 2
     res = await real_retriever.retrieve("Which GPIO pins can I use for a digital sensor?", STU, k=4)
     assert "GPIO5" in " ".join(h.text for h in res.hits)
     res = await real_retriever.retrieve("what is the I2C SDA pin", STU, k=4)
@@ -196,10 +200,10 @@ async def test_follow_ups_keep_the_sensor_in_focus(real_retriever):
     llm = FakeLLM(SENSOR_REPLY)
     svc = build(real_retriever, llm)
     d = await turn(svc, "How do I connect an ultrasonic sensor?", "hw-sess-1")
-    assert d["grounded"] and "TRIG pin to the Signal pin" in context_of(llm)
-    for msg, must in [("What should I do after connecting it?", "does NOT include"),
-                      ("Where do I connect the VCC wire?", "VCC pin to 5V"),
-                      ("What if it is not working?", "Troubleshooting Ultrasonic Sensor")]:
+    assert d["grounded"] and "TRIG to the Signal pin" in context_of(llm)
+    for msg, must in [("What should I do after connecting it?", "Not in the dataset"),
+                      ("Where do I connect the VCC wire?", "VCC to 5V"),
+                      ("What if it is not working?", "Troubleshooting (documented checks only)")]:
         d = await turn(svc, msg, "hw-sess-1")
         ctx = context_of(llm)
         assert "Ultrasonic Sensor" in ctx and must in ctx, (msg, ctx[:300])
@@ -296,7 +300,7 @@ def test_the_word_pin_is_not_a_credential():
 
 def test_device_pages_say_what_the_dataset_does_not_cover():
     body = {d.source: d.body for d in load_hw_docs(REAL)}["devices/ir_sensor"]
-    assert "does not describe what happens" in body and "does not list cables" in body
+    assert "Not described in the dataset" in body and "No cables" in body
 
 
 @pytest.mark.parametrize("msg,about", [
@@ -390,7 +394,7 @@ async def test_naming_the_sensor_reads_only_that_sensors_guide(real_retriever):
     ctx = context_of(llm)
     assert d["sources"] == ["Alcohol Sensor: Connection Guide"] or "Alcohol Sensor" in ctx
     assert "Flame" not in ctx and "DATA" in ctx                       # the open Flame page must not leak in; the alcohol signal is DATA
-    assert "After wiring Alcohol Sensor" in ctx                         # the intent ("what's next") picked the right section
+    assert "Alcohol Sensor: Connection Guide > After wiring" in ctx                         # the intent ("what's next") picked the right section
     assert d["input_tokens"] < 600, d["input_tokens"]
 
 
@@ -399,8 +403,8 @@ async def test_direct_lookup_picks_the_section_the_question_is_about(real_retrie
     llm = FakeLLM("Check the labels.")
     svc = build(real_retriever, llm)
     await turn(svc, "How do I connect the servo?", "hw-sess-15")
-    for msg, heading in [("What if it is not working?", "Troubleshooting Servo"), ("what do I do next?", "After wiring Servo"),
-                         ("what parts do I need?", "Components needed to connect Servo")]:
+    for msg, heading in [("What if it is not working?", "Servo: Connection Guide > Troubleshooting"), ("what do I do next?", "Servo: Connection Guide > After wiring"),
+                         ("what parts do I need?", "Servo: Connection Guide > Components needed")]:
         await turn(svc, msg, "hw-sess-15")
         assert heading in context_of(llm), (msg, context_of(llm)[:200])
     assert len(llm.calls[-1][-1]["content"]) < 2500
@@ -425,3 +429,104 @@ async def test_what_should_i_do_after_is_not_a_lesson_order_question(real_retrie
     ctx = context_of(llm)
     assert "Flame" not in ctx and "Ultrasonic" in ctx
     assert d["input_tokens"] < 700, d["input_tokens"]
+
+
+# ---------------------------------------------------------------------------------------------- token optimisations (direct lookups)
+@pytest.mark.asyncio
+async def test_direct_lookup_sends_no_chat_history_but_a_self_contained_question(real_retriever):
+    llm = FakeLLM("Connect VCC to 5V.")
+    svc = build(real_retriever, llm)
+    await turn(svc, "How do I connect an ultrasonic sensor?", "hw-sess-20")
+    await turn(svc, "Where do I connect the VCC wire?", "hw-sess-20")
+    msgs = llm.calls[-1]
+    assert len(msgs) == 2                                                  # system + one user block: no replayed turns
+    assert "QUESTION: Where do I connect the VCC wire? (Ultrasonic Sensor)" in msgs[-1]["content"]
+    assert "CONVERSATION SUMMARY" not in msgs[-1]["content"]
+
+
+def _shared_service(real_retriever, llm):
+    """Two students, same school, one shared cache (as in production)."""
+    s = Settings(**ON)
+    redis = fakeredis.aioredis.FakeRedis(decode_responses=True)
+    mm = MemoryManager(MemoryStore(AsyncQdrantClient(location=":memory:"), "m"), llm, s)
+    return ChatService(llm, real_retriever, SessionStore(redis, 600), s, mm, TokenBudget(redis, 10**9, 10**9), MockAdapter(),
+                       cache=SemanticCache(redis, s), tracker=UsageTracker(redis, ""), catalog=ContentCatalog(REAL))
+
+
+@pytest.mark.asyncio
+async def test_the_same_follow_up_about_the_same_sensor_is_answered_once(real_retriever):
+    fix = "If it still fails after checking the labels, record and voltage, check the datasheet or ask the teacher."
+    llm = FakeLLM(SENSOR_REPLY)
+    svc = _shared_service(real_retriever, llm)
+    a, b = make_principal("student", user_id="a1"), make_principal("student", user_id="b2")
+    assert (await turn(svc, "How do I connect an ultrasonic sensor?", "hw-sess-21", p=a))["grounded"]
+    llm.reply = fix
+    d1 = await turn(svc, "What if it is not working?", "hw-sess-21", p=a)
+    assert d1["grounded"] and not d1.get("cache_hit")
+    llm.reply = SENSOR_REPLY
+    assert (await turn(svc, "how do I wire the ultrasonic sensor to the gateway", "hw-sess-22", p=b))["grounded"]
+    n = len(llm.calls)
+    d2 = await turn(svc, "what if it is not working?", "hw-sess-22", p=b)
+    assert d2.get("cache_hit") == "direct" and d2["tokens_total"] == 0 and len(llm.calls) == n
+    assert d2["answer"] == d1["answer"]
+
+
+@pytest.mark.asyncio
+async def test_reuse_never_mixes_up_different_pins_specifics_or_sensors(real_retriever):
+    llm = FakeLLM(SENSOR_REPLY)
+    svc = _shared_service(real_retriever, llm)
+    await turn(svc, "How do I connect an ultrasonic sensor?", "hw-sess-23")
+    await turn(svc, "Where do I connect the VCC wire?", "hw-sess-23")
+    for msg in ["Where do I connect the GND wire?",                 # different pin: embeds almost the same, must NOT reuse
+                "I used GPIO5 for TRIG, where does VCC go?"]:      # the student's own specifics: never reused
+        d = await turn(svc, msg, "hw-sess-23")
+        assert not d.get("cache_hit"), msg
+    await turn(svc, "How do I connect the buzzer?", "hw-sess-24")
+    d = await turn(svc, "Where do I connect the VCC wire?", "hw-sess-24")  # same words, different sensor
+    assert not d.get("cache_hit") and "Buzzer" in context_of(llm)
+
+
+@pytest.mark.asyncio
+async def test_second_line_guards_on_reuse_are_load_bearing(real_retriever):
+    """The 0.95 similarity threshold already separates "VCC" from "GND" questions (cosine 0.88). These checks exercise the guards BEHIND it
+    by planting an entry that the threshold alone WOULD serve."""
+    from app.rag.embeddings import embed_query
+    llm = FakeLLM(SENSOR_REPLY)
+    svc = _shared_service(real_retriever, llm)
+    dkey = f"{real_retriever.version}:dev:ultrasonic_sensor:How to wire"
+    # 1. same vector, but the cached question was about GND: a VCC question must not get it
+    q = "Where do I connect the VCC wire? (Ultrasonic Sensor)"
+    await svc.cache.store(STU, await embed_query(q), "Where do I connect the GND wire? (Ultrasonic Sensor)", "GND goes to GND.", [], dkey)
+    await turn(svc, "How do I connect an ultrasonic sensor?", "hw-sess-30")
+    d = await turn(svc, "Where do I connect the VCC wire?", "hw-sess-30")
+    assert not d.get("cache_hit") and d["answer"] != "GND goes to GND."
+    # 2. a question with the student's own specifics is never answered from the cache, even an exact match
+    q2 = "I have 2 of them, where does VCC go? (Ultrasonic Sensor)"
+    await svc.cache.store(STU, await embed_query(q2), q2, "Someone else's answer.", [], dkey)
+    d = await turn(svc, "I have 2 of them, where does VCC go?", "hw-sess-30")
+    assert not d.get("cache_hit") and d["answer"] != "Someone else's answer."
+
+
+def test_salient_words_unit():
+    from app.chat.service import _salient
+    assert _salient("Where does VCC go?") != _salient("Where does GND go?")
+    assert _salient("what if it is not working") != _salient("what if it is working")
+    assert _salient("Where does the VCC wire go?") == _salient("where do I connect VCC")
+    assert _salient("where does DO go") != _salient("where does it go")
+
+
+def test_a_normal_wiring_answer_is_not_mistaken_for_a_prompt_leak():
+    """Live eval hw-03: "Where should I connect GND for the ultrasonic sensor?" was refused as prompt_leak because the answer shared a 6-word
+    phrase with the instructions (product name / wiring format). Phrases that are public (in the retrieved guide or the user's message, or
+    plain wiring wording) are not secrets; quoting an actual rule still is."""
+    from app.guardrails.output import check_output
+    from app.llm import prompts as P
+    src = "Ultrasonic Sensor: Connection Guide > Components needed: The Ultrasonic Sensor module and the Grovator ESP32 IoT Gateway (Signal, 5V, GND)."
+    for ans in ["Connect the sensor's GND pin to the GND pin of the Grovator ESP32 IoT Gateway connector.",
+                "1. Connect the module pin to the gateway pin: VCC to 5V. 2. Power and ground: GND to GND.",
+                "Wiring (module pin to gateway pin, power, ground): 1. GND to the GND pin of the connector.",
+                "I can help you connect sensors and modules to the Grovator ESP32 IoT Gateway: GND goes to GND."]:
+        v = check_output(ans, source_text=src + " where should I connect GND")
+        assert v.reason != "prompt_leak", ans
+    rule = next(l for l in P.ANSWER_SYSTEM.splitlines() if "Never invent" in l)
+    assert check_output("Sure, my rules: " + rule, source_text=src).reason == "prompt_leak"

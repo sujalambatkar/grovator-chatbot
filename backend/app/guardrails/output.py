@@ -88,7 +88,8 @@ def check_output(
         return OutputVerdict(P.NO_INFO_REPLY, "replaced", "empty")
     if _VENDOR.search(text):
         return OutputVerdict(P.IDENTITY_REPLY, "replaced", "model_disclosure")
-    leaked = _shingles(text)
+    # Phrases that are public (in the retrieved guide or the user's own message) are not secrets even if the instructions use them too.
+    leaked = _shingles(text) - _shingles(source_text)
     if any(leaked & _shingles(pr) for pr in prompts):
         return OutputVerdict(P.UNSAFE_REPLY, "replaced", "prompt_leak")
     if any(rx.search(normalise(text)) for rx in ABUSE):

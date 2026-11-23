@@ -57,11 +57,23 @@ def _chunks(text: str, words: int = 3) -> list[str]:
 _SECTION_INTENTS = [
     (re.compile(r"not work|n't work|no output|not respon|not detect|troubleshoot|problem|fix|error|fault|nothing|not getting|correct|verify|check", re.I), "Troubleshooting"),
     (re.compile(r"\bafter\b|next|code|program|upload|run\b|read\b|reading|software|set ?up|configure|test", re.I), "After wiring"),
-    (re.compile(r"wrong|mistake|swap|instead", re.I), "What happens if"),
+    (re.compile(r"wrong|mistake|swap|instead", re.I), "Wired to the wrong pins"),
     (re.compile(r"component|need|require|parts|material|cable", re.I), "Components needed"),
     (re.compile(r"safe|safety|voltage|before power|warning|damage|5 ?v signal", re.I), "Safety checks"),
     (re.compile(r"connect|wire|wiring|pin|vcc|gnd|ground|signal|trig|echo|sda|scl|where|how", re.I), "How to wire"),
 ]
+# Direct answers are reused across students only when the question has no specifics of its own ("I used GPIO5", "3 sensors") and asks about
+# the SAME wires/pins: "where does VCC go?" and "where does GND go?" embed almost identically, so they must never share an answer.
+_SPECIFIC = re.compile(r"\d|\bmy name\b|\bi am\b|\bi'm\b", re.I)
+_SALIENT = re.compile(r"\b(?:vcc|gnd|ground|trig|echo|sda|scl|data|d0|signal|power|rx|tx|5v|3\.3v|not|no|never|without)\b|n't", re.I)
+_DO_PIN = re.compile(r"\bDO\b")  # the pin name, uppercase only: "where do I..." is not a pin
+
+
+def _salient(text: str) -> set[str]:
+    out = {m.lower() for m in _SALIENT.findall(text)}
+    return out | ({"do-pin"} if _DO_PIN.search(text) else set())
+
+
 _CLARIFY_STARTS = ("Which sensor or module do you mean", "Do you mean the")
 _CITATION = re.compile(r"【[^】]*】")
 # Hardware conversation: which sensor/module are we talking about? ("it", "what next?", "where does VCC go?")
@@ -266,10 +278,20 @@ class ChatService:
             also = [*(also or []), (seq_text, await embed_query(seq_text))]
         direct = bool(self.hw.devices and focus and not pins and not asks_order
                       and (mentioned or self._is_about_focus(message)) and not _LIST_Q.search(message))
+        reuse = False
         if direct:
             # the device is known: read ITS guide (best 2 sections per device), do not search the whole knowledge base
             asked = f"{state.turns[-1].user} {message}" if answers_clarification else message
             prefer = [h for rx, h in _SECTION_INTENTS if rx.search(asked)]
+            dkey = f"{self.retriever.version}:dev:{'+'.join(focus[:2])}:{'/'.join(prefer[:2])}"
+            reuse = use_cache and not _SPECIFIC.search(asked)
+            if reuse:
+                # the same question about the same device and section, from any student: a verified answer costs 0 tokens
+                hit = await self.cache.lookup(p, vec, dkey)
+                if hit and _salient(hit.question) == _salient(route.query):
+                    async for ev in self._serve_cached(p, sid, state, message, hit, "direct", base, page_doc):
+                        yield ev
+                    return
             res = await self.retriever.retrieve_from([f"devices/{k}" for k in focus[:2]], p, vec, per_source=2, prefer=prefer)
         else:
             res = await self.retriever.retrieve(query, p, k=min(6, self.s.knowledge_top_k + max(0, len(focus) - 1) * 2), vec=vec, also=also,
@@ -286,8 +308,10 @@ class ChatService:
                 if self.s.enable_compression and not asks_order and not self.hw.devices else res.hits)
         mems = await self._recall(p, res.vec)
         messages, used = build_answer_messages(
-            summary=state.summary, turns=state.turns[-1:] if direct else state.turns, hits=hits, question=message,
-            turn_cap=50 if direct else 80,
+            # a direct lookup is self-contained: the question carries the device name and the context is that device's guide, so the
+            # chat history adds tokens but no information (and leaving it out makes the answer reusable across students)
+            summary="" if direct else state.summary, turns=[] if direct else state.turns, hits=hits,
+            question=route.query if direct else message,
             memories=[m.text for m in mems], memory_cap=self.s.memory_prompt_tokens,
             total_budget=self.s.answer_total_budget, context_cap=self.s.context_token_budget,
         )
@@ -349,9 +373,11 @@ class ChatService:
 
         if not blocked:  # never persist a blocked answer into context, summary, memory or cache
             await self._persist_turn(p, sid, state, message, answer)
-            if (use_cache and not had_history and not mems and not truncated and out.action == "pass"
-                    and cacheable(message, answer)):
-                await self.cache.store(p, vec, route.query, answer, sources, version)
+            if use_cache and not mems and not truncated and out.action == "pass" and cacheable(message, answer):
+                if direct and reuse:
+                    await self.cache.store(p, vec, route.query, answer, sources, dkey)
+                elif not direct and not had_history:
+                    await self.cache.store(p, vec, route.query, answer, sources, version)
         if mems:
             self._spawn(self._touch(p, [m.id for m in mems]))
         yield self._done(

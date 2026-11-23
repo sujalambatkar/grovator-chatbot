@@ -161,76 +161,67 @@ class Gateway:
         return f" Each digital GPIO connector has {_fmt(d.get('connector', []))} pins; the digital GPIO pins are {_fmt(d.get('pins', []))}."
 
     def render_device(self, key: str) -> str:
+        """One guide per device. Headings do not repeat the device name: every chunk is already prefixed with the title.
+        Each section is written to be retrieved ON ITS OWN (a direct lookup reads only the 1-2 sections a question needs)."""
         dev = self.devices[key]
         name = pretty(key)
         ik = self.interface_key(key, dev)
-        lines = [f"# {name}: connection record"]
-        lines.append(f"- Interface: {dev.get('interface', 'not stated')}.")
-        for f_, label in (("signal", "Signal pin on the module"), ("connect_to", "Connects to")):
-            if f_ in dev:
-                lines.append(f"- {label}: {dev[f_]}.")
-        if "pins" in dev:
-            lines.append("- Module pins: " + "; ".join(f"{p} goes to {t}" for p, t in dev["pins"].items()) + ".")
-        if "warning" in dev:
-            lines.append(f"- Warning: {dev['warning']}")
-
-        # wiring steps, generated from this device's own fields
-        steps: list[str] = []
         digital = ik == "digital_gpio" or "digital" in _norm(str(dev.get("interface", "")))
-        hint = self._digital_hint() if digital else ""
+
+        # the record itself, compact (every field of the JSON, verbatim)
+        rec = [f"interface {dev.get('interface', 'not stated')}"]
+        if "signal" in dev:
+            rec.append(f"signal pin {dev['signal']}")
+        if "connect_to" in dev:
+            rec.append(f"connects to {dev['connect_to']}")
+        if "pins" in dev:
+            rec.append("pins " + ", ".join(f"{p} to {t}" for p, t in dev["pins"].items()))
+        lines = ["# How to wire", "Record: " + "; ".join(rec) + "."]
+
+        # steps generated from this device's own fields
+        steps: list[str] = []
         if "pins" in dev:
             for p, t in dev["pins"].items():
                 if t.lower().startswith("verify"):
-                    steps.append(f"Check the module's own voltage requirement for {p} (the gateway record says: \"{t}\"); the dataset does not give a value.")
+                    steps.append(f"{p}: check the module's voltage first (record says \"{t}\"; no value given).")
                 elif "digital gpio" in t.lower():
-                    steps.append(f"Connect the module's {p} pin to the Signal pin of an available digital GPIO connector.")
+                    steps.append(f"{p} to the Signal pin of a free digital GPIO connector.")
                 else:
-                    steps.append(f"Connect the module's {p} pin to {t}.")
+                    steps.append(f"{p} to {t}.")
         elif "signal" in dev:
-            steps.append(f"Connect the module's {dev['signal']} signal pin to "
-                         + ("the Signal pin of an available digital GPIO connector." if digital else f"{dev.get('connect_to', 'the gateway')}."))
-            steps.append("Power and ground: the gateway connector provides "
-                         + (_fmt(self.interfaces[ik].get("connector", [])) if ik and "connector" in self.interfaces[ik] else "its own power pins")
-                         + ". The dataset does not list this module's own power pin names or voltage, so match the labels printed on the module and check its datasheet.")
+            steps.append(f"{dev['signal']} to " + ("the Signal pin of a free digital GPIO connector." if digital else f"{dev.get('connect_to', 'the gateway')}."))
+            conn = _fmt(self.interfaces[ik].get("connector", [])) if ik and "connector" in self.interfaces[ik] else ""
+            steps.append((f"Power and ground: the connector provides {conn}; " if conn else "")
+                         + "the module's own power pins and voltage are not documented (check its labels and datasheet).")
         elif "connect_to" in dev:
             steps.append(f"Plug it into the {dev['connect_to']}.")
         if "warning" in dev:
             steps.append(f"Before powering: {dev['warning']}")
-        if steps:
-            lines += ["", f"# How to wire {name}", *(f"{i}. {s}" for i, s in enumerate(steps, 1))]
-            if hint:
-                lines.append(f"Digital GPIO on this gateway: {hint.strip()}")
+        lines += [f"{i}. {st}" for i, st in enumerate(steps, 1)]
+        if ik:  # the gateway side of the connection (relationship to the interface record), one line
+            lines.append(f"Gateway {pretty(ik)}: " + "; ".join(l[2:].rstrip(".") for l in self._iface_lines(ik)) + ".")
 
-        # the gateway side of the connection (relationship to the interface record)
-        if ik:
-            lines += ["", f"# Gateway side for {name}", *self._iface_lines(ik)]
-
-        # components: only what the records name (the module itself and the gateway connector it uses)
         target = dev.get("connect_to") or (_fmt(self.interfaces[ik].get("connector", "")) if ik and "connector" in self.interfaces[ik] else "")
-        lines += ["", f"# Components needed to connect {name}",
-                  f"- The {name} module.", f"- The {self.name}" + (f", using its {target}." if target else "."),
-                  "The dataset does not list cables, jumper wires, power supplies, breadboards or any other part: do not add any."]
+        lines += ["", "# Components needed",
+                  f"The {name} module and the {self.name}" + (f" ({target})." if target else ".")
+                  + " No cables, power supplies or other parts are listed: do not add any."]
 
-        group = self._group(key, dev, ik)
-        rules = self.rules_for(group)
-        lines += ["", f"# Safety checks before powering {name}", *(f"- {r}" for r in rules)]
+        lines += ["", "# Safety checks before powering", *(f"- {r}" for r in self.rules_for(self._group(key, dev, ik)))]
 
         concept = self.concept_for(key)
         if concept:
-            lines += ["", f"# About the {name}", concept]
-        lines += ["", f"# What happens if {name} is wired to the wrong pins",
-                  "The dataset does not describe what happens. Do not predict outcomes. The only documented risk is that 5V signals are not "
-                  "assumed safe for ESP32 GPIOs (use level shifting when required). Tell the student to re-check the connection record above "
-                  "and the labels printed on the gateway."]
-        lines += ["", f"# After wiring {name}: what the dataset does and does not cover",
-                  "The gateway dataset documents only the physical connection and safety rules above. It does NOT include "
-                  f"software or IDE setup, example code or APIs, the expected readings or output, or module-specific troubleshooting for the {name}. "
-                  "Say so honestly: do not invent code or steps; suggest checking the module's datasheet or asking the teacher."]
-        lines += ["", f"# Troubleshooting {name}: documented checks only",
-                  "The dataset has no fault-specific diagnosis. The documented checks are: wiring uses the labels printed on the gateway; "
-                  "each module pin goes where the connection record says; module voltage, signal level, current draw and pinout are compatible with the gateway"
-                  + ("; a GPIO is not used for two functions at once (GPIO32 is digital OR analog, never both). " if digital else ". ")
-                  + "If those are right and it still does not work, the dataset cannot say why: check the module's datasheet or ask the teacher."]
+            lines += ["", "# About", concept]
+        lines += ["", "# Wired to the wrong pins",
+                  "Not described in the dataset; do not predict outcomes. Documented risk: 5V signals may not be safe for ESP32 GPIOs "
+                  "(use level shifting). Re-check the record and the labels printed on the gateway."]
+        lines += ["", "# After wiring (next steps)",
+                  "Not in the dataset: software or IDE setup, example code or APIs, expected readings, module-specific troubleshooting. "
+                  "Do not invent them; suggest the module datasheet or the teacher."]
+        lines += ["", "# Troubleshooting (documented checks only)",
+                  "1. Wiring follows the labels printed on the gateway. 2. Each pin matches the record. "
+                  "3. Module voltage, signal level, current draw and pinout suit the gateway."
+                  + (" 4. GPIO32 is used as digital OR analog, not both." if digital else "")
+                  + " Beyond these the dataset has no diagnosis: check the datasheet or ask the teacher."]
         return "\n".join(lines)
 
     def render_overview(self) -> str:

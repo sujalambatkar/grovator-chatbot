@@ -95,3 +95,12 @@ _No bugs yet._
 - Dataset oddities (reported, not "fixed"): `led_module.signal` is `DO` (D0?), `keypad`/`dc_motor` appear as both interface and device, `water_pump` (motor) and `camera` (usb) have no interface record, motor terminals `M14/M15` look unusual, GPIO32 is listed under both digital and analog, `ldr_module` is typed digital though its concept says it may be analog.
 - Compression and grounding thresholds were calibrated on the old synthetic corpus.
 
+## Phase 10 (token optimisation, 23 Nov 2026)
+1. **A correct GND answer was refused as a prompt leak** (live hw-03): the shorter prompt contained phrases an answer naturally uses ("to the Grovator ESP32 IoT Gateway", "module pin to gateway pin, power, ground"). Prompt lines reworded; phrases also present in the retrieved guide or the user's message no longer count as leaked. Test written first and seen failing.
+2. **"I have asthma ... how do I connect the buzzer?" got "I can't help with that"** (live ctl-p1): the "decline anything else" line made the model over-cautious; one prompt line now says personal details don't make a gateway question off-topic.
+3. **"do" in "where do I connect" was read as the pin name DO** by the reuse guard (over-strict, blocked valid reuse). Found by a unit test; now only an uppercase DO counts.
+4. My first cache-guard tests were vacuous (a 0.95 threshold already separated VCC/GND questions, cosine 0.88); replaced by tests that plant an entry the threshold alone would serve, and mutation-checked.
+
+### Not yet verified live
+The fixes for 1 and 2 pass unit tests and the offline eval, but the final full live eval could not run: Groq's free tier daily limit (200,000 tokens/model/day) was exhausted by the day's eval runs (every call returned 429). Re-run `python ../eval/run_eval.py --mode live` after the quota resets.
+
