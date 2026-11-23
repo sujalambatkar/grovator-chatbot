@@ -28,7 +28,7 @@ export interface ChatWidgetProps {
   showTokenMeter?: boolean;
 }
 
-const SUGGESTIONS = ["How do I connect the IoT kit?", "What is block coding?", "My robot is not moving, what should I check?"];
+const SUGGESTIONS = ["Which sensors can I connect?", "How do I connect the ultrasonic sensor?", "Which pins support analog input?"];
 
 export function ChatWidget({
   apiUrl, getToken, title = "Grovator Assistant", storageKey, defaultOpen = false, onAuthError, pageId,
@@ -71,7 +71,7 @@ export function ChatWidget({
               <MemoryPanel cfg={cfg} />
             ) : messages.length === 0 ? (
               <div className={s.welcome} data-testid="welcome">
-                Hi! I can help you use Grovator, its kits and block coding.
+                Hi! I can help you connect sensors and modules to the Grovator ESP32 IoT Gateway.
                 <div className={s.suggestions}>
                   {suggestions.map((q) => (
                     <button key={q} type="button" className={s.chip} onClick={() => void send(q)}>{q}</button>

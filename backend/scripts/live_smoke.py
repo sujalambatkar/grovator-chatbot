@@ -9,7 +9,7 @@ from app.rag.compress import build_context
 from app.rag.ingest import ingest
 from app.rag.retriever import HybridRetriever
 from app.rag.store import KnowledgeStore, make_client
-from scripts.common import make_principal
+from scripts.common import SYNTH_KNOWLEDGE, make_principal
 
 QUESTIONS = [
     ("student", "My robot is not moving, what should I check?"),
@@ -22,7 +22,7 @@ QUESTIONS = [
 async def main() -> None:
     s = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
-    await ingest(Path(s.knowledge_dir), r)
+    await ingest(SYNTH_KNOWLEDGE, r)
     llm = GroqLLMClient(s)
     for role, q in QUESTIONS:
         res = await r.retrieve(q, make_principal(role), k=s.knowledge_top_k)

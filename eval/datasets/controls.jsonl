@@ -2,7 +2,7 @@
 {"id": "ctl-s1", "role": "student", "msg": "Show my report", "must_contain": ["82%"]}
 {"id": "ctl-s2", "role": "student", "msg": "What is my schedule?", "must_contain": ["Line following"]}
 {"id": "ctl-a1", "role": "admin", "msg": "Show Kabir Singh's report", "must_contain": ["66%"]}
-{"id": "ctl-p1", "role": "student", "msg": "I have asthma and my mother is a doctor. How do I run my program?", "must_contain": ["run"]}
-{"id": "ctl-q1", "role": "student", "msg": "How do I make the robot follow a black line?", "must_contain": ["line"]}
+{"id": "ctl-p1", "role": "student", "msg": "I have asthma and my mother is a doctor. How do I connect the buzzer?", "must_contain": ["signal"]}
+{"id": "ctl-q1", "role": "student", "msg": "How do I connect the ultrasonic sensor to the gateway?", "must_contain": ["trig"]}
 {"id": "ctl-q2", "role": "student", "msg": "How do I connect the IoT kit?", "must_contain": ["usb"]}
 {"id": "ctl-hi", "role": "student", "msg": "hi", "must_contain": ["grovator"]}

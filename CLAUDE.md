@@ -9,7 +9,7 @@ A guardrailed, token-efficient chatbot for **Grovator** (Grok Learning's ed-tech
 - `frontend/` Next.js (App Router, TypeScript) demo page + `ChatWidget`. Node >= 18.18.
 - `eval/` data-driven eval harness (JSONL test sets). `docs/chatbot/` decisions + bug diary.
 
-**Everything Grovator-specific is assumed or synthetic**: the knowledge base (`backend/knowledge_src/`), the student data (`app/tools/mock_adapter.py`), the JWT claim shape. Do not present them as real Grovator data.
+**The knowledge base is the real Grovator ESP32 IoT Gateway dataset** (`backend/knowledge_src/hardware/*.json`, rendered into documents by `app/rag/hardware.py`; nothing is hardcoded per sensor). **The student data** (`app/tools/mock_adapter.py`) and the JWT claim shape are assumed or synthetic. The old dummy courses/lessons/blocks are only a test fixture (`backend/tests/fixtures/knowledge_synthetic/`); the mechanics suites and `eval --corpus synthetic` run on it, `tests/test_hardware.py` and the default eval run on the real dataset. Do not present the synthetic parts (`app/tools/mock_adapter.py`), the JWT claim shape. Do not present them as real Grovator data.
 
 ## Setup (first time)
 ```bash
@@ -42,6 +42,10 @@ cd backend  && .venv/bin/python -m scripts.demo_compare           # measured tok
 ## Where things live (backend/app)
 `chat/` pipeline (`service.py` is the entry), router shortcut, semantic cache, prompt building · `guardrails/` input rules, output guard, PII · `rag/` chunking, hybrid retriever, compression · `memory/` Redis sessions + long-term memory · `tools/` read-only scoped tools + policy · `content/` page catalog · `core/` auth, rate limits, budgets, usage · `api/` routes · `llm/` Groq client + all prompts (`prompts.py`).
 
+## Hardware conversation (gateway dataset)
+- `rag/hardware.py` generates docs (device guide, interface, wiring rules, concepts) plus an alias index; `chat/service.py` keeps the sensor in focus (`SessionState.focus`) so "it / what next / where does VCC go" find the right page, asks a clarifying question when "the sensor" is ambiguous, and `guardrails/output.unsupported_pins` blocks any GPIO number not present in the retrieved records.
+- The dataset has no software/code/expected-output/troubleshooting facts: each device guide says so explicitly, and the bot must say "not documented" rather than invent. Do not add such facts unless they come from real Grovator documentation.
+
 ## Rules that matter (learned the hard way, see `docs/chatbot/BUGS.md`)
 - **Never commit secrets.** `.env*` is gitignored except `.env.example`. Never put the Groq key in the frontend or in any tracked file. Never log raw user messages.
 - **Security is enforced in code, not prompts.** Access scope comes only from the JWT (`core/auth.py`) via retrieval filters and `tools/policy.py`; the LLM never chooses whose data to fetch. Keep it that way.
@@ -51,7 +55,7 @@ cd backend  && .venv/bin/python -m scripts.demo_compare           # measured tok
 - **Prove a regression test can fail**: when you fix a bug, write the test first, watch it fail, then fix. For safety-critical code, mutate the code (disable the rule) and confirm tests/eval fail. Several earlier "passing" tests were vacuous.
 - Retrieval thresholds (`MIN_RETRIEVAL_SCORE`, `GROUNDING_MIN_SUPPORT`, `compress_*`) were calibrated on the small synthetic corpus. Re-calibrate with measurements before changing them; do not guess.
 - When adding knowledge docs, set front-matter `title`, `category`, `order`, `role_visibility`. Teacher/admin docs must not list `student`.
-- **Lesson order is content.** If you add, move or rename a lesson, update `courses/learning-path.md` and the `Previous lesson:` / `Next lesson:` lines on its neighbours; `test_every_lesson_page_states_its_previous_and_next_lesson...` fails if they disagree with the `order` front-matter.
+- **(Legacy fixture only)** Lesson order is content. If you add, move or rename a lesson, update `courses/learning-path.md` and the `Previous lesson:` / `Next lesson:` lines on its neighbours; `test_every_lesson_page_states_its_previous_and_next_lesson...` fails if they disagree with the `order` front-matter.
 - Be honest in reports: say what was and was not run (live Groq vs stubbed), and keep known limitations in `docs/chatbot/BUGS.md`.
 
 ## Gotchas

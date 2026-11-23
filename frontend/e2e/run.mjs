@@ -68,10 +68,9 @@ try {
   await step("page loads with the course content, no token box and no role switch", async () => {
     assert.equal(await page.getByTestId("token-input").count(), 0);
     assert.equal(await page.getByTestId("role-student").count() + await page.getByTestId("role-teacher").count(), 0);
-    assert.match(await page.getByTestId("article-title").innerText(), /Temperature Sensor/);
+    assert.match(await page.getByTestId("article-title").innerText(), /Ultrasonic Sensor/);
     const nav = await page.getByTestId("nav").innerText();
-    for (const g of ["Courses", "Lessons", "Block reference", "Platform tools"]) assert.match(nav, new RegExp(g, "i"));
-    assert.match(await page.getByTestId("code-block").first().innerText(), /forever/);   // a block program renders as code
+    for (const g of ["Gateway", "Sensors and modules", "Concepts"]) assert.match(nav, new RegExp(g, "i"));
     await page.screenshot({ path: path.join(OUT, "01-page.png") });
   }, page);
 
@@ -80,15 +79,15 @@ try {
   }, page);
 
   await step("chat is open with suggestions that match the page", async () => {
-    assert.match(await page.getByTestId("welcome").innerText(), /Explain this lesson step by step/);
+    assert.match(await page.getByTestId("welcome").innerText(), /How do I connect this to the gateway\?/);
     assert.equal(await page.getByTestId("memory-toggle").count(), 0, "memory panel hidden in the demo");
   }, page);
 
-  await step("'explain this lesson' is answered about the open page (page-aware RAG) with its source", async () => {
-    await page.getByRole("button", { name: "Explain this lesson step by step" }).click();
+  await step("'how do I connect this' is answered about the open page (page-aware RAG) with its source", async () => {
+    await page.getByRole("button", { name: "How do I connect this to the gateway?" }).click();
     await until(async () => (await page.getByTestId("send").count()) === 1 && (await bot(page).count()) === 1, 20000, "answer");
-    assert.match(await bot(page).last().innerText(), /temperature|sensor|port 1/i);
-    assert.match(await page.getByTestId("sources").last().innerText(), /Temperature Sensor/);
+    assert.match(await bot(page).last().innerText(), /ultrasonic|VCC|TRIG|connect/i);
+    assert.match(await page.getByTestId("sources").last().innerText(), /Ultrasonic Sensor/);
     await page.screenshot({ path: path.join(OUT, "02-answer.png") });
   }, page);
 
@@ -105,8 +104,8 @@ try {
   await step("naive cost grows with the conversation while ours stays flat", async () => {
     const naive1 = Number((await page.getByTestId("meter-naive").innerText()).replace(/,/g, ""));
     const used1 = Number((await page.getByTestId("meter-used").innerText()).replace(/,/g, ""));
-    await ask(page, "How do I show the temperature on the display?");
-    await ask(page, "What are the common mistakes?");
+    await ask(page, "Where does the VCC wire go?");
+    await ask(page, "What if it is not working?");
     const naive3 = Number((await page.getByTestId("meter-naive").innerText()).replace(/,/g, ""));
     const used3 = Number((await page.getByTestId("meter-used").innerText()).replace(/,/g, ""));
     assert.ok(naive3 > naive1 * 2.9, `naive ${naive1} -> ${naive3}`);                 // 3 turns ≈ 3x the (whole-site) cost, plus history
@@ -115,11 +114,11 @@ try {
   }, page);
 
   await step("switching page changes what the assistant is anchored to", async () => {
-    await page.getByTestId("nav-item").filter({ hasText: "Blocks: Control" }).click();
-    assert.match(await page.getByTestId("article-title").innerText(), /Control/);
-    const text = await ask(page, "Explain these blocks with an example");
-    assert.match(text, /repeat|forever|if|loop|wait/i);
-    assert.match(await page.getByTestId("sources").last().innerText(), /Control/);
+    await page.getByTestId("nav-item").filter({ hasText: "Gateway Wiring Rules" }).click();
+    assert.match(await page.getByTestId("article-title").innerText(), /Wiring Rules/);
+    const text = await ask(page, "Explain these rules");
+    assert.match(text, /label|voltage|GPIO|datasheet|wiring/i);
+    assert.match(await page.getByTestId("sources").last().innerText(), /Wiring Rules/);
   }, page);
 
   await step("off-topic and injection attempts get fixed refusals", async () => {
@@ -132,7 +131,7 @@ try {
   }, page);
 
   await step("HTML in a message is inert", async () => {
-    await ask(page, `<img src=x onerror="window.__xss=1"> what is block coding?`);
+    await ask(page, `<img src=x onerror="window.__xss=1"> what is a sensor?`);
     assert.equal(await page.evaluate(() => window.__xss), undefined);
     assert.equal(await page.getByTestId("chat-panel").locator("img").count(), 0);
   }, page);
@@ -150,7 +149,7 @@ try {
 
   await step("the page stays in the brand blue and white even when the OS prefers dark mode", async () => {
     const d = await open(browser, { colorScheme: "dark" });
-    await ask(d.page, "What is block coding?");
+    await ask(d.page, "What is a sensor?");
     const css = await d.page.evaluate(() => ({
       body: getComputedStyle(document.body).backgroundColor,
       bar: getComputedStyle(document.querySelector(".topbar")).backgroundColor,
@@ -167,7 +166,7 @@ try {
     const m = await open(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
     assert.equal(await m.page.getByTestId("nav").isVisible(), false);
     assert.ok(await m.page.getByLabel("Choose a page").count() === 1);
-    await m.page.getByTestId("composer-input").fill("What is block coding?");
+    await m.page.getByTestId("composer-input").fill("What is a sensor?");
     await m.page.getByTestId("send").click({ timeout: 3000 });                       // fails if something covers the button
     await until(async () => (await bot(m.page).count()) === 1, 15000, "answer on phone");
     const box = await m.page.getByTestId("chat-panel").boundingBox();

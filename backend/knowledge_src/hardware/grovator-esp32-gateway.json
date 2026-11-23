@@ -1,0 +1,205 @@
+{
+  "product": {
+    "name": "Grovator ESP32 IoT Gateway",
+    "purpose": "Educational gateway for connecting sensors, actuators and peripherals to an ESP32.",
+    "scope": ["hardware connections", "sensor wiring", "basic electronics", "student learning"]
+  },
+  "interfaces": {
+    "digital_gpio": {
+    "pins": ["GPIO5", "GPIO4", "GPIO19", "GPIO25","GPIO26", "GPIO18", "GPIO32"],
+    "connector": ["Signal", "5V", "GND"],
+    "rule": "GPIO32 can be used as digital GPIO or analog input, but not both simultaneously."
+    },
+    "analog_input": {
+    "pins": ["GPIO32", "GPIO36"],
+    "connector_labels": ["GPIO32", "GPIO36"],
+    "connector": ["Signal", "5V", "GND"],
+    "rule": "GPIO32 and GPIO36 support analog input. GPIO32 cannot perform digital and analog functions simultaneously."
+    },
+    "i2c": {
+      "SDA": "GPIO21",
+      "SCL": "GPIO22",
+      "connector": ["SDA", "SCL", "3.3V", "GND"]
+    },
+    "uart": {
+      "RX": "GPIO16",
+      "TX": "GPIO17",
+      "connector": ["RX", "TX", "3.3V", "GND"]
+    },
+    "keypad": {
+      "connector": "Dedicated keypad connector",
+      "internal_gpio": ["GPIO33", "GPIO35", "GPIO34", "GPIO39", "GPIO12", "GPIO14", "GPIO2", "GPIO15"]
+    },
+    "dc_motor": {
+      "motor_1": ["M14", "M15"],
+      "motor_2": ["M2", "M12"],
+      "output_voltage": "9 to 12V depending on supplied power",
+      "connection": "Motor interface"
+    },
+    "stepper_motor": {
+      "connection": "Dedicated stepper connector",
+      "note": "Internally connected to the motor interface."
+    }
+  },
+  "devices": {
+    "alcohol_sensor": {
+      "interface": "digital",
+      "signal": "DATA",
+      "connect_to": "Available digital GPIO"
+    },
+    "dht11": {
+      "interface": "digital",
+      "signal": "DATA",
+      "connect_to": "Available digital GPIO"
+    },
+    "flame_sensor": {
+      "interface": "digital",
+      "signal": "D0",
+      "connect_to": "Available digital GPIO"
+    },
+    "hall_effect_sensor": {
+      "interface": "digital",
+      "signal": "D0",
+      "connect_to": "Available digital GPIO"
+    },
+    "ir_sensor": {
+      "interface": "digital",
+      "signal": "D0",
+      "connect_to": "Available digital GPIO"
+    },
+    "soil_moisture_sensor": {
+      "interface": "digital",
+      "signal": "D0",
+      "connect_to": "Available digital GPIO"
+    },
+    "ldr_module": {
+      "interface": "digital",
+      "signal": "D0",
+      "connect_to": "Available digital GPIO"
+    },
+    "raindrop_sensor": {
+      "interface": "digital",
+      "signal": "D0",
+      "connect_to": "Available digital GPIO"
+    },
+    "sound_sensor": {
+      "interface": "digital",
+      "signal": "D0",
+      "connect_to": "Available digital GPIO"
+    },
+    "vibration_sensor": {
+      "interface": "digital",
+      "signal": "D0",
+      "connect_to": "Available digital GPIO"
+    },
+    "metal_detection_sensor": {
+      "interface": "digital",
+      "signal": "D0",
+      "connect_to": "Available digital GPIO"
+    },
+    "buzzer": {
+      "interface": "digital",
+      "signal": "Signal",
+      "connect_to": "Available digital GPIO"
+    },
+    "led_module": {
+      "interface": "digital",
+      "signal": "DO",
+      "connect_to": "Available digital GPIO"
+    },
+    "ultrasonic_sensor": {
+      "interface": "digital",
+      "pins": {
+        "VCC": "5V",
+        "GND": "GND",
+        "TRIG": "Digital GPIO",
+        "ECHO": "Digital GPIO"
+      },
+      "warning": "Verify ECHO signal voltage compatibility before connecting to an ESP32 GPIO."
+    },
+    "i2c_lcd": {
+      "interface": "i2c",
+      "pins": {
+        "VCC": "Verify module voltage",
+        "GND": "GND",
+        "SDA": "Gateway SDA (GPIO21)",
+        "SCL": "Gateway SCL (GPIO22)"
+      }
+    },
+    "pulse_oximeter": {
+      "interface": "i2c",
+      "pins": {
+        "VCC": "Verify module voltage",
+        "GND": "GND",
+        "SDA": "Gateway SDA (GPIO21)",
+        "SCL": "Gateway SCL (GPIO22)"
+      }
+    },
+    "keypad": {
+      "interface": "dedicated",
+      "connect_to": "Dedicated keypad connector"
+    },
+    "servo": {
+      "interface": "digital control",
+      "pins": {
+        "VCC": "5V",
+        "GND": "GND",
+        "Signal": "Available digital GPIO"
+      },
+      "warning": "Use a suitable external supply if required by the servo. Observe current and voltage limits."
+    },
+    "dc_motor": {
+      "interface": "motor",
+      "connect_to": "Motor interface"
+    },
+    "water_pump": {
+      "interface": "motor",
+      "connect_to": "Motor interface"
+    },
+    "stepper_motor": {
+      "interface": "stepper",
+      "connect_to": "Dedicated stepper connector"
+    },
+    "camera": {
+      "interface": "usb",
+      "connect_to": "USB port"
+    }
+  },
+  "wiring_rules": [
+    "Digital output DO/D0 connects to a compatible digital GPIO.",
+    "Analog input GPIO (GPIO32 or GPIO36)",
+    "GPIO32 can be used for digital or analog input, but not both at the same time.",
+    "Use the physical GPIO labels printed on the gateway when wiring.",
+    "I2C devices connect to SDA GPIO21 and SCL GPIO22.",
+    "UART devices connect to the UART interface: RX GPIO16, TX GPIO17.",
+    "Use dedicated connectors for keypad, motor, stepper motor and USB camera.",
+    "Connector labels identify physical wiring points; GPIO mappings identify internal ESP32 connections.",
+    "Check module voltage, signal levels, current draw, pinout and gateway limits before powering.",
+    "Do not assume 5V signals are safe for ESP32 GPIOs. Use level shifting when required.",
+    "If a fact is not documented, do not guess. Ask for the module model or recommend checking its datasheet."
+  ],
+  "concepts": {
+    "sensor": "A device that detects a physical condition and produces a signal representing it.",
+    "actuator": "A device that performs an action, such as moving a motor, sounding a buzzer or switching an output.",
+    "gpio": "A general-purpose input/output pin that can read or control digital signals.",
+    "digital_signal": "A signal represented by discrete logic states, commonly LOW and HIGH.",
+    "analog_signal": "A continuously varying voltage within the supported input range.",
+    "i2c": "A serial communication bus commonly using SDA for data and SCL for clock.",
+    "uart": "A serial communication interface using transmit (TX) and receive (RX) signals.",
+    "microcontroller": "A compact computing device that runs firmware and interfaces with electronic hardware.",
+    "ir_sensor": "An infrared sensor detects infrared radiation or changes in reflected IR, depending on its design. A digital module may provide a threshold-based HIGH/LOW output.",
+    "ultrasonic_sensor": "An ultrasonic sensor estimates distance by transmitting sound pulses and measuring the returning echo.",
+    "dht11": "A digital sensor used to measure temperature and relative humidity.",
+    "ldr": "A light-dependent resistor changes resistance with incident light. A module may provide analog output, digital output, or both."
+  },
+  "answer_policy": {
+    "style": "Concise, clear, student-friendly and practical.",
+    "general_questions": "Answer from general knowledge; explain the concept, working principle and a practical example.",
+    "gateway_questions": "Use retrieved gateway records as the source of truth.",
+    "mixed_questions": "Explain the general concept, then provide the documented gateway connection.",
+    "wiring_answers": "State interface, signal connection, power and ground when known.",
+    "unknowns": "Explicitly identify missing information. Never invent pin mappings, voltage limits, current ratings, capabilities or code APIs.",
+    "safety": "Flag voltage, current and signal-level compatibility when relevant.",
+    "length": "Answer directly. Use numbered steps for wiring instructions. Expand only when asked."
+  }
+}

@@ -24,7 +24,8 @@ THANKS_REPLY = "You're welcome! Ask me anything about Grovator, its kits or bloc
 _FAQ_WORDS = set("""kit kits block blocks robot robotics sensor sensors iot loop loops repeat variable variables
 project projects program programs connect connecting motor motors led buzzer workspace palette lesson lessons
 login password battery usb distance temperature motion simulator condition conditions forever debug blockly
-grovator course module""".split())
+grovator course module pin pins vcc gnd ground gpio wire wires wiring gateway esp32 modules servo ultrasonic i2c uart analog
+digital voltage""".split())
 _DATA_WORDS = set("""mark marks score scores grade grades report reports progress attendance schedule timetable
 batch batches student students rank leaderboard performance result results class classes school org
 organisation organization teacher teachers admin users user""".split())

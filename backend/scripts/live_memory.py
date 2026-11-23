@@ -13,7 +13,7 @@ from app.memory.session import SessionStore
 from app.rag.ingest import ingest
 from app.rag.retriever import HybridRetriever
 from app.rag.store import KnowledgeStore, make_client
-from scripts.common import make_principal
+from scripts.common import SYNTH_KNOWLEDGE, make_principal
 
 MSGS = [  # (message, what we hope is stored / not stored)
     "I'm building a line following robot and I prefer short step-by-step answers. How do I connect the line sensor?",
@@ -27,7 +27,7 @@ MSGS = [  # (message, what we hope is stored / not stored)
 async def main() -> None:
     s = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
-    await ingest(Path(s.knowledge_dir), r)
+    await ingest(SYNTH_KNOWLEDGE, r)
     llm = GroqLLMClient(s)
     store = MemoryStore(AsyncQdrantClient(location=":memory:"), "user_memory")
     await store.ensure()

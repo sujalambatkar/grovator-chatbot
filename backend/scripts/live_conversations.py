@@ -13,7 +13,7 @@ from app.memory.session import SessionStore
 from app.rag.ingest import ingest
 from app.rag.retriever import HybridRetriever
 from app.rag.store import KnowledgeStore, make_client
-from scripts.common import make_principal
+from scripts.common import SYNTH_KNOWLEDGE, make_principal
 import app.chat.service as svcmod
 from app.guardrails.output import support_ratio
 
@@ -49,7 +49,7 @@ CONVS = {
 async def main() -> None:
     s = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
-    await ingest(Path(s.knowledge_dir), r)
+    await ingest(SYNTH_KNOWLEDGE, r)
     svc = ChatService(GroqLLMClient(s), r, SessionStore(fakeredis.aioredis.FakeRedis(decode_responses=True), 600), s)
     p, ok, total, ins, lat = make_principal("student"), 0, 0, [], []
     for name, turns in CONVS.items():

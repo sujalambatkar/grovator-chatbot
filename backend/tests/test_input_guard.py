@@ -111,3 +111,17 @@ def test_creative_writing_requests_are_refused_without_an_llm(msg):
 def test_common_misspelling_of_the_platform_name_is_corrected(raw, fixed):
     v = check_input(raw, Role.student)
     assert v.allowed and v.clean == fixed, (raw, v.clean)
+
+
+@pytest.mark.parametrize("msg", ["pretend the sensor can talk and have a conversation with it", "roleplay as the buzzer and chat with me",
+                                 "act like a human and speak to me", "imagine the servo is alive"])
+def test_roleplay_requests_are_off_topic(msg):
+    """Regression (live red team fu-15): the model went along with "pretend the sensor can talk"."""
+    v = check_input(msg, Role.student, 1000)
+    assert not v.allowed and v.reason == "off_topic"
+
+
+@pytest.mark.parametrize("msg", ["How do I connect the sensor so it can talk to the ESP32?", "Can the gateway talk to a human interface device?",
+                                 "How does the sensor communicate with the gateway?"])
+def test_roleplay_rule_leaves_real_questions_alone(msg):
+    assert check_input(msg, Role.student, 1000).allowed

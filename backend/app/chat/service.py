@@ -16,22 +16,24 @@ from typing import Any
 from app.chat.cache import SemanticCache, cacheable
 from app.chat.prompting import build_answer_messages
 from app.chat.router import Intent, route_message
-from app.chat.shortcut import DEICTIC, SEQUENCE_Q, looks_like_data_request, try_shortcut
+from app.chat.shortcut import DEICTIC, SEQUENCE_Q, _ANAPHORA as _ANAPHORA_WORD, looks_like_data_request, try_shortcut
 from app.content.catalog import ContentCatalog, Doc
 from app.config import Settings
 from app.core.abuse import TokenBudget
 from app.core.auth import Principal
 from app.core.usage import UsageTracker
 from app.guardrails.input import check_input
-from app.guardrails.output import check_output, cited_sources
+from app.guardrails.output import OutputVerdict, check_output, cited_sources, unsupported_pins
 from app.llm.llm_client import LLMClient, LLMError
 from app.llm.prompts import (
     ANSWER_SYSTEM, BUDGET_REPLY, MY_DATA_REPLY, NO_INFO_REPLY, OFF_TOPIC_REPLY, REDIRECT_REPLY, SMALLTALK_FALLBACK, SUMMARY_SYSTEM, UNSAFE_REPLY,
+    UNVERIFIED_PIN_REPLY,
 )
 from app.memory.long_term import MemoryManager
 from app.memory.session import MAX_TURNS, SessionState, SessionStore, Turn, fold_summary
 from app.rag.compress import compress_hits
 from app.rag.embeddings import embed_query
+from app.rag.hardware import hardware_index
 from app.rag.retriever import HybridRetriever
 from app.rag.tokens import count_tokens, truncate_tokens
 from app.tools.adapter import PlatformDataAdapter
@@ -51,6 +53,17 @@ def _chunks(text: str, words: int = 3) -> list[str]:
     return ["".join(parts[i : i + words]) for i in range(0, len(parts), words)]
 
 
+_CITATION = re.compile(r"【[^】]*】")
+# Hardware conversation: which sensor/module are we talking about? ("it", "what next?", "where does VCC go?")
+_GENERIC_ONE = re.compile(r"\b(?:the|a|my|this|that)\s+(?:sensor|module|device|component)\b", re.I)
+_PLURAL_OR_LIST = re.compile(r"\b(?:sensors|modules|devices|components|all|list|which|what)\b", re.I)
+_WIRING = re.compile(r"\b(?:connect\w*|wir\w+|pins?|vcc|gnd|ground|signal|trig|echo|plug\w*|power\w*|output|work\w*|respon\w+)\b", re.I)
+_LIST_Q = re.compile(r"\b(?:sensors|modules|devices|components|everything|all|list|available|supported)\b", re.I)
+_DEFINITION = re.compile(r"^\W*(?:what(?:'s| is| are)|define|explain|tell me about)\b", re.I)
+_PIN_IN_TEXT = re.compile(r"\bGPIO\s?-?\d{1,2}\b", re.I)
+_SINGULAR_REF = re.compile(r"\b(?:it|its|this (?:sensor|module|one|device)|that (?:sensor|module|one|device)|the (?:sensor|module|device))\b", re.I)
+
+
 TOOL_HELP = ("I can look up a student's report, your batches or your schedule. "
              "Tell me which one, for example: \"Show Aarav's report\".")
 
@@ -65,6 +78,7 @@ class ChatService:
         self.llm, self.retriever, self.sessions, self.s = llm, retriever, sessions, settings
         self.memory, self.budget, self.adapter, self.cache, self.tracker = memory, budget, adapter, cache, tracker
         self.catalog = catalog
+        self.hw = hardware_index(settings.knowledge_dir)  # the gateway dataset: device names -> keys (inert if none)
         if memory is not None:
             memory.on_usage = lambda p, n: self._record(p, n, "extract")
         self._pending: set[asyncio.Task] = set()
@@ -128,6 +142,18 @@ class ChatService:
 
         state = await self.sessions.get(p.user_id, sid)
         had_history = bool(state.turns or state.summary)
+        mentioned = self.hw.detect(message) if self.hw.devices else []
+        ask = self._clarify(message, mentioned, state.focus)
+        if ask:  # ambiguous "it"/"the sensor": ask instead of guessing, 0 LLM tokens; the question is kept so the answer has context
+            base = {**base, "intent": Intent.platform_faq.value, "naive_tokens": self._naive(p, None, state, message)}
+            yield {"type": "meta", **base}
+            await self._persist_turn(p, sid, state, message, ask)
+            yield self._done(base, ask, grounded=False, refused_reason="needs_clarification",
+                             naive_tokens=base["naive_tokens"], tokens_total=0)
+            return
+        if mentioned:
+            state.focus = mentioned[:3]  # the sensor(s) now being discussed; saved with the turn
+        focus = list(state.focus)
         page_doc = self.catalog.get(p, page) if (self.catalog and page) else None
         use_cache = self.cache is not None and self.s.enable_semantic_cache
         # The page the user is reading (only if they may see it; unknown and hidden pages are treated the same).
@@ -183,6 +209,14 @@ class ChatService:
 
         # platform_faq: retrieval always runs on the standalone (rewritten) query.
         # Scope comes from the JWT principal only; the LLM never chooses whose data to fetch.
+        glued = route.shortcut and route.query != message
+        if self.hw.devices and focus and (mentioned or self._is_about_focus(message)):
+            # keep the sensor in every search: a follow-up that does not name it ("what should I do after connecting it?") must still
+            # find ITS page, not a similar page of another sensor. (Replaces the free "previous question + message" glue.)
+            labels = " and ".join(self.hw.label(k) for k in focus)
+            base_q = message if route.shortcut else route.query
+            route = dc_replace(route, query=base_q if labels.lower() in base_q.lower() else f"{base_q} ({labels})")
+            glued = False
         query = route.query
         points_at_page = bool(page_doc and DEICTIC.search(message))
         if points_at_page:
@@ -196,14 +230,24 @@ class ChatService:
                 return
 
         # a free follow-up rewrite glues the previous question on: also search the NEW message on its own
-        also = [(message, await embed_query(message))] if (route.shortcut and route.query != message and not points_at_page) else None
+        also = [(message, await embed_query(message))] if (glued and not points_at_page) else None
+        pins = _PIN_IN_TEXT.findall(message) if self.hw.devices else []
+        if pins:
+            # a GPIO the student names ("can I use GPIO21?") must find the page that says what that pin is for (e.g. the I2C interface)
+            pin_text = f"{' '.join(pins)} pin function on the gateway"
+            also = [*(also or []), (pin_text, await embed_query(pin_text))]
+        if self.hw.devices and not mentioned and _LIST_Q.search(message):
+            # "which sensors can I connect?": the answer is the gateway overview (every device and interface), not the few device pages
+            # that happen to match the words best
+            ov = f"About the {self.hw.name}: sensors, actuators and modules the gateway documents; interfaces on the gateway. {message}"
+            also = [*(also or []), (ov, await embed_query(ov))]
         asks_order = bool(SEQUENCE_Q.search(message))
         if asks_order:
             # a question about lesson ORDER: also search the learning path / previous-and-next sections, otherwise pages that merely
             # mention the named lesson ("move and turn") crowd the answer out
             seq_text = f"Learning Path lesson order, previous lesson and next lesson: {route.query}"
             also = [*(also or []), (seq_text, await embed_query(seq_text))]
-        res = await self.retriever.retrieve(query, p, k=self.s.knowledge_top_k, vec=vec, also=also,
+        res = await self.retriever.retrieve(query, p, k=min(6, self.s.knowledge_top_k + max(0, len(focus) - 1) * 2), vec=vec, also=also,
                                             pin_source=page_doc.source if page_doc else None, pin_first=points_at_page)
         naive = self._naive(p, page_doc, state, message)
         if not res.hits or res.confidence < self.s.min_retrieval_score:
@@ -214,38 +258,62 @@ class ChatService:
         # Sentence-level compression keeps only the best sentences, which truncates a LIST the user asked for in full ("in what
         # order..."): order questions get whole chunks. The token budget in build_context still applies.
         hits = (await compress_hits(res.hits, [res.vec, *(v for _, v in (also or []))], self.s)
-                if self.s.enable_compression and not asks_order else res.hits)
+                if self.s.enable_compression and not asks_order and not self.hw.devices else res.hits)
         mems = await self._recall(p, res.vec)
         messages, used = build_answer_messages(
             summary=state.summary, turns=state.turns, hits=hits, question=message,
             memories=[m.text for m in mems], memory_cap=self.s.memory_prompt_tokens,
             total_budget=self.s.answer_total_budget, context_cap=self.s.context_token_budget,
         )
-        raw_parts, final = [], None
-        try:
+        async def generate(msgs):
+            parts, fin = [], None
             # Consume the model stream server-side. NOTHING is sent to the client until the output guard has
             # approved the full text, so a leak can never reach the wire (see DECISIONS D31).
-            async for kind, val in self.llm.answer_stream(messages):
+            async for kind, val in self.llm.answer_stream(msgs):
                 if kind == "delta":
-                    raw_parts.append(val)
+                    parts.append(val)
                 else:
-                    final = val
+                    fin = val
+            if fin:
+                await self._record(p, fin.input_tokens, "answer_in")
+                await self._record(p, fin.output_tokens, "answer_out")
+            return (fin.text if fin else "".join(parts)).strip(), fin
+
+        try:
+            raw, final = await generate(messages)
         except LLMError as exc:
             log.error("answer_failed cause=%r", exc.__cause__)
             yield {"type": "error", "message": "The assistant is busy right now. Please try again."}
             return
-
-        raw = (final.text if final else "".join(raw_parts)).strip()
-        if final:
-            await self._record(p, final.input_tokens, "answer_in")
-            await self._record(p, final.output_tokens, "answer_out")
+        raw = _CITATION.sub("", raw)  # the model sometimes emits fake citation markers
 
         # L7: authoritative output check on the full text. Context = what the model was legitimately given.
         source = "\n".join([*(h.text for h in used), message, state.summary,
                             *(f"{t.user} {t.assistant}" for t in state.turns)])
         full_knowledge = "\n".join(h.text for h in res.hits)  # uncompressed: numbers from dropped sentences are still knowledge
-        out = check_output(raw, source_text=source, secrets=self._secrets(p), min_support=self.s.grounding_min_support,
-                           numbers_source=source + "\n" + full_knowledge)
+
+        def verdict(text):
+            o = check_output(text, source_text=source, secrets=self._secrets(p), min_support=self.s.grounding_min_support,
+                             numbers_source=source + "\n" + full_knowledge)
+            bad = unsupported_pins(o.text, full_knowledge, message) if (o.action != "replaced" and self.hw.devices) else []
+            return o, bad
+
+        out, bad_pins = verdict(raw)
+        if bad_pins:
+            # an invented pin ("e.g. GPIO15") is never shown. One strict retry; if it still invents, a fixed safe reply.
+            log.warning("unsupported_pin_retry n=%d", len(bad_pins))
+            strict = [*messages[:-1], {"role": "user", "content": messages[-1]["content"] +
+                      "\n\nDo not name any GPIO number that is not written in the CONTEXT. Do not give examples. If a pin is not documented, say so."}]
+            try:
+                raw2, final2 = await generate(strict)
+                if final and final2:
+                    final = dc_replace(final2, input_tokens=final.input_tokens + final2.input_tokens,
+                                       output_tokens=final.output_tokens + final2.output_tokens)
+                out, bad_pins = verdict(_CITATION.sub("", raw2))
+            except LLMError:
+                pass
+        if bad_pins:
+            out = OutputVerdict(UNVERIFIED_PIN_REPLY, "replaced", "unsupported_pin")
         for chunk in _chunks(out.text):
             yield {"type": "token", "t": chunk}
         answer = out.text
@@ -269,6 +337,30 @@ class ChatService:
         )
 
     # ------------------------------------------------------------------ helpers
+    @staticmethod
+    def _is_about_focus(message: str) -> bool:
+        """Does this message continue the sensor conversation ("what next?", "where does VCC go?"), or change the subject to something
+        general ("which sensors can I connect?", "what is I2C?")? Only the first kind gets the sensor's name added to the search."""
+        if _LIST_Q.search(message):
+            return False
+        if _SINGULAR_REF.search(message) or _ANAPHORA_WORD.search(message):
+            return True
+        if _DEFINITION.match(message) and not _WIRING.search(message):
+            return False
+        return len(message.split()) <= 9
+
+    def _clarify(self, message: str, mentioned: list[str], focus: list[str]) -> str | None:
+        """A question that needs a specific sensor but does not say which, and the chat gives no clue (or two clues)."""
+        if not self.hw.devices or mentioned:
+            return None
+        if not focus and _GENERIC_ONE.search(message) and _WIRING.search(message) and not _PLURAL_OR_LIST.search(message):
+            return (f"Which sensor or module do you mean? For example: {', '.join(self.hw.examples())}. "
+                    f"Tell me its name and I'll explain how to connect it to the {self.hw.name}.")
+        if len(focus) > 1 and _SINGULAR_REF.search(message) and _WIRING.search(message):
+            names = " or ".join(self.hw.label(k) for k in focus[:3])
+            return f"Do you mean the {names}? Tell me which one and I'll continue."
+        return None
+
     async def _serve_cached(self, p, sid, state, message, hit, kind, base, page_doc: Doc | None = None) -> AsyncIterator[Event]:
         """A cache hit: 0 LLM tokens. The turn is still recorded so follow-ups keep working."""
         naive = self._naive(p, page_doc, state, message)

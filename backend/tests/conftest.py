@@ -24,7 +24,10 @@ from app.rag.retriever import HybridRetriever
 from app.rag.store import KnowledgeStore, make_client
 from app.rag.tokens import count_tokens
 
-KNOWLEDGE_DIR = Path(__file__).resolve().parent.parent / "knowledge_src"
+# The mechanics suites run against a small SYNTHETIC corpus (a fixture), not the real gateway dataset in knowledge_src/.
+# Hardware behaviour is tested separately (test_hardware.py) against the real dataset.
+KNOWLEDGE_DIR = Path(__file__).resolve().parent / "fixtures" / "knowledge_synthetic"
+os.environ["KNOWLEDGE_DIR"] = str(KNOWLEDGE_DIR)
 
 
 class FakeLLM:

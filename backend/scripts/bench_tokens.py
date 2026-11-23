@@ -27,7 +27,7 @@ from app.rag.ingest import ingest
 from app.rag.retriever import HybridRetriever
 from app.rag.store import KnowledgeStore, make_client
 from app.tools.mock_adapter import MockAdapter
-from scripts.common import make_principal
+from scripts.common import SYNTH_KNOWLEDGE, make_principal
 
 PACE_S = 7.0
 S1 = make_principal("student", user_id="s1", batch_ids=["b1"])
@@ -118,7 +118,7 @@ def build_service(llm, retriever, s):
 async def main(label: str) -> None:
     s = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
-    await ingest(Path(s.knowledge_dir), r)
+    await ingest(SYNTH_KNOWLEDGE, r)
     llm = Metered(GroqLLMClient(s))
     svc, mm, redis = build_service(llm, r, s)
     await mm.store.ensure()

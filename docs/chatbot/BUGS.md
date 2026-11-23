@@ -80,3 +80,18 @@ _No bugs yet._
 4. **"After move and turn" retrieved the move-and-turn lesson, not the sequence**; fixed with an order-question search (D71).
 5. **Order list truncated with "(and so on...)"** found by reading the live answer, not by a test: sentence compression keeps only the best sentences of a list. Order questions are no longer compressed.
 6. My eval check for the chit-chat case banned the word "block", which the canned reply legitimately contains; it now checks for the leaked summary instead.
+
+## Phase 9 (real gateway dataset, found by live Groq runs)
+1. **"no GPIO pin is used twice" became "no GPIO [CREDENTIAL] used twice"**: `pin is ...` matched the PIN-code rule. Narrowed to PIN/OTP followed by 3-8 digits (regression test in `test_hardware.py`; written after the live failure, mutation-checked only for the other new rules).
+2. **"Which sensors can I connect?" after an ultrasonic chat listed only the ultrasonic sensor**: the sensor name was added to every follow-up search. Only continuations get it now. A list question was then still answered with 3 sensors because only 3 device pages were retrieved: list questions get an extra overview search.
+3. **The model invented jumper wires, a power source and short-circuit outcomes** ("components needed", "what if wrong pins"): the device guides now state explicitly that the dataset lists no such things.
+4. **"Can I use GPIO21?" could not say what GPIO21 is for** (the I2C page was not retrieved): a GPIO named by the student is now also searched on its own.
+5. A made-up pin was blocked once in a live run (before the fix of 4) with the generic safe reply; the answer is deliberately conservative.
+
+### Known limitations (Phase 9)
+- The model sometimes adds general electronics knowledge that is true but not in the records (e.g. "ESP32 GPIOs are 3.3 V tolerant"); the pin guard and lexical grounding do not catch non-pin facts.
+- The VCC of an I2C module: the records say "verify module voltage" while the gateway I2C connector lists 3.3V; the model may combine them. Not wrong per the records, but not stated either.
+- No software, code, expected output, fault diagnosis, cables, wiring diagrams or separate kits exist in the dataset; "what next" and troubleshooting answers can only repeat the documented safety checks and refer to the datasheet or teacher.
+- Dataset oddities (reported, not "fixed"): `led_module.signal` is `DO` (D0?), `keypad`/`dc_motor` appear as both interface and device, `water_pump` (motor) and `camera` (usb) have no interface record, motor terminals `M14/M15` look unusual, GPIO32 is listed under both digital and analog, `ldr_module` is typed digital though its concept says it may be analog.
+- Compression and grounding thresholds were calibrated on the old synthetic corpus.
+

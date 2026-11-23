@@ -9,7 +9,7 @@ from app.rag.ingest import ingest
 from app.rag.retriever import HybridRetriever
 from app.rag.store import KnowledgeStore, make_client
 from app.rag.tokens import count_tokens
-from scripts.common import make_principal
+from scripts.common import SYNTH_KNOWLEDGE, make_principal
 
 # (role, question, phrase that MUST survive in the compressed context)
 CASES = [
@@ -41,7 +41,7 @@ CASES = [
 async def main() -> None:
     base = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
-    await ingest(Path(base.knowledge_dir), r)
+    await ingest(SYNTH_KNOWLEDGE, r)
     s = Settings(**{k: v for k, v in base.model_dump().items()})
     for arg in [a for x in sys.argv[1:] for a in x.split()]:
         k, v = arg.split("=")

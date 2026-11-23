@@ -10,10 +10,12 @@ from pathlib import Path
 import frontmatter
 
 from app.core.auth import Principal
+from app.rag.hardware import load_hw_docs
 from app.rag.tokens import count_tokens
 
-CATEGORY_ORDER = ["courses", "lessons", "blocks", "tools", "help"]
-CATEGORY_LABEL = {"courses": "Courses", "lessons": "Lessons", "blocks": "Block reference", "tools": "Platform tools", "help": "Help"}
+CATEGORY_ORDER = ["gateway", "interfaces", "devices", "concepts", "courses", "lessons", "blocks", "tools", "help"]
+CATEGORY_LABEL = {"gateway": "Gateway", "interfaces": "Gateway interfaces", "devices": "Sensors and modules", "concepts": "Concepts",
+                  "courses": "Courses", "lessons": "Lessons", "blocks": "Block reference", "tools": "Platform tools", "help": "Help"}
 ALL_ROLES = ["student", "teacher", "admin", "superadmin"]
 
 
@@ -48,6 +50,9 @@ class ContentCatalog:
                 role_visibility=list(post.get("role_visibility", ALL_ROLES)),
                 org_id=str(post.get("org_id", "*")), school_id=str(post.get("school_id", "*")),
                 tokens=count_tokens(body)))
+        for h in load_hw_docs(root):
+            self.docs.append(Doc(source=h.source, title=h.title, category=h.category, order=h.order, body=h.body,
+                                 role_visibility=h.role_visibility, tokens=count_tokens(h.body)))
         self._by_source = {d.source: d for d in self.docs}
         self._total_cache: dict[tuple, int] = {}
 

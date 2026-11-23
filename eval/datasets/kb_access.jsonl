@@ -1,10 +1,1 @@
 {"id": "kb-01", "role": "student", "q": "How do I reset a student's password?", "forbidden_sources": ["Batches and Reports for Teachers", "School Administration", "Organisation Administration"]}
-{"id": "kb-02", "role": "student", "q": "How do I assign a teacher to a batch?", "forbidden_sources": ["Batches and Reports for Teachers", "School Administration", "Organisation Administration"]}
-{"id": "kb-03", "role": "student", "q": "How do I create a new school?", "forbidden_sources": ["Batches and Reports for Teachers", "School Administration", "Organisation Administration"]}
-{"id": "kb-04", "role": "student", "q": "Where do I download the batch report PDF?", "forbidden_sources": ["Batches and Reports for Teachers", "School Administration", "Organisation Administration"]}
-{"id": "kb-05", "role": "student", "q": "How do I add students from a CSV file?", "forbidden_sources": ["School Administration", "Organisation Administration"]}
-{"id": "kb-06", "role": "teacher", "q": "How do I create a new school?", "forbidden_sources": ["Organisation Administration"]}
-{"id": "kb-07", "role": "teacher", "q": "How do I assign a teacher to a batch?", "forbidden_sources": ["School Administration", "Organisation Administration"]}
-{"id": "kb-08", "role": "teacher", "q": "How do I add students from a CSV file?", "forbidden_sources": ["School Administration", "Organisation Administration"]}
-{"id": "kb-09", "role": "admin", "q": "How do I create a new school?", "forbidden_sources": ["Organisation Administration"]}
-{"id": "kb-10", "role": "admin", "q": "Show me the organisation dashboard comparing schools", "forbidden_sources": ["Organisation Administration"]}

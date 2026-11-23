@@ -119,3 +119,21 @@ def check_output(
     if support_ratio(text, source_text) < min_support:
         return OutputVerdict(P.NO_INFO_REPLY, "replaced", "ungrounded")
     return OutputVerdict(text, "redacted" if redacted else "pass", "pii_or_id_redacted" if redacted else None)
+
+
+_PIN = re.compile(r"\bGPIO\s?-?(\d{1,2})\b", re.I)
+_NEG = re.compile(r"\b(?:not|n't|no|never|cannot|unsupported|undocumented|isn't|aren't)\b", re.I)
+
+
+def unsupported_pins(answer: str, knowledge: str, user_message: str = "") -> list[str]:
+    """GPIO numbers in the answer that the retrieved gateway records do not contain: a made-up pin is the worst hardware answer.
+    A pin the USER named may be mentioned only inside a sentence that negates it ("GPIO7 is not a documented pin")."""
+    known = {m.group(1) for m in _PIN.finditer(knowledge)}
+    asked = {m.group(1) for m in _PIN.finditer(user_message)}
+    bad = []
+    for sent in re.split(r"(?<=[.!?])\s+|\n+", answer):
+        for m in _PIN.finditer(sent):
+            n = m.group(1)
+            if n not in known and not (n in asked and _NEG.search(sent)):
+                bad.append(f"GPIO{n}")
+    return sorted(set(bad))

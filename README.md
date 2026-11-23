@@ -12,7 +12,7 @@ programs) and platform tools (workspace, simulator, Connect Kit, debug console..
 > **Read this first: what is real and what is assumed.** This repo was built *without access to the Grovator
 > codebase*. The JWT claim shape, the data hierarchy (`org > school > batch > student`), the tool/data schema, and
 > the knowledge-base documents are **my assumptions** (see [docs/chatbot/DISCOVERY.md](docs/chatbot/DISCOVERY.md)).
-> The bundled knowledge base and student data are **synthetic**. Before production you must (1) point the auth
+> The knowledge base is the real Grovator ESP32 IoT Gateway dataset (`backend/knowledge_src/hardware/`). The student data and JWT shape are **synthetic/assumed**. Before production you must (1) point the auth
 > layer at Grovator's real token format, (2) implement `PlatformDataAdapter` against Grovator's real API/DB, and
 > (3) ingest real documentation. The app refuses to start in production with the mock adapter.
 
@@ -202,7 +202,8 @@ the tool policy, input rules, each output-guard rule, memory filters or knowledg
 
 ```
 backend/app/{api,chat,core,guardrails,llm,memory,rag,tools}   FastAPI app (see the architecture diagram)
-backend/knowledge_src/                                         SYNTHETIC knowledge base (replace with real docs)
+backend/knowledge_src/hardware/*.json                           REAL gateway dataset (rendered to docs by app/rag/hardware.py)
+backend/tests/fixtures/knowledge_synthetic/                    old dummy docs, kept only as a test fixture
 backend/tests/ · backend/scripts/                              pytest suite · ingest, mint_token, benchmarks, live checks
 frontend/src/{app,components/chat,hooks,lib} · frontend/e2e/  Next.js widget · browser E2E
 eval/{run_eval.py,datasets/}                                   eval harness + test sets
@@ -211,7 +212,7 @@ docs/chatbot/{DISCOVERY,DECISIONS,BUGS}.md                     assumptions, 49 d
 
 ## Known limitations
 
-* Everything Grovator-specific is assumed or synthetic (above). The mock tools return fake students.
+* The student data (mock tools) and JWT claim shape are assumed. The knowledge base is the real gateway dataset, which documents only physical connections and safety rules: no software setup, example code, expected readings or fault diagnosis, no wiring diagrams, and only one product (the gateway; no separate kits). The bot says so instead of guessing (see `docs/chatbot/DECISIONS.md` D74-D80).
 * Lexical grounding is a heuristic (calibrated margin is thin: lowest real support 0.44 vs threshold 0.35); expect occasional safe false refusals and re-calibrate on real docs.
 * Spaced-letter evasion (`i g n o r e`) and masked profanity are not caught by the deterministic rules; they rely on the router.
 * Health/family/name memory filters are keyword rules, not a classifier.

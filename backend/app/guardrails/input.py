@@ -78,6 +78,8 @@ ADVICE = _rx(
 # Off-topic TASKS (creative writing etc.). Deterministic, 0 tokens. Deliberately narrow: "write a program / the steps" is fine.
 OFF_TOPIC_TASK = _rx(
     r"\b(?:write|compose|make up|create|generate|tell|give|sing|draft)\b(?:\s+\w+){0,4}?\s+(?:poems?|poetry|stor(?:y|ies)|jokes?|songs?|lyrics|essays?|raps?|riddles?|limericks?|haiku|speech)\b",
+    # role-play / make the sensor "talk": a creative task, not a gateway question (live red team fu-15: "pretend the sensor can talk")
+    r"\b(?:pretend|role-?play|act (?:like|as)|imagine)\b[^?.!]{0,60}\b(?:talk|talks|speak|speaks|conversation|chat|human|person|character|alive)\b",
 )
 
 ABUSE = _rx(

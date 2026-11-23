@@ -49,6 +49,11 @@ from app.tools.mock_adapter import MockAdapter  # noqa: E402
 from app.tools.types import Scope  # noqa: E402
 
 DATA = Path(__file__).parent / "datasets"
+SYNTH_DATA = DATA / "synthetic"
+KNOWLEDGE = BACK / "knowledge_src"                                     # default corpus: the real gateway dataset
+SYNTH_KNOWLEDGE = BACK / "tests" / "fixtures" / "knowledge_synthetic"  # --corpus synthetic: the old dummy docs (mechanics only)
+CORPUS_INDEPENDENT = {"tools.jsonl", "redteam.jsonl"}  # security / mock-student-data sets: same for any corpus
+SYNTHETIC = False
 TEMPLATES = {getattr(P, n) for n in dir(P) if n.endswith("_REPLY") or n == "NO_INFO_REPLY"}
 
 
@@ -66,7 +71,15 @@ def principal(name: str) -> Principal:
 
 
 def load(name: str) -> list[dict]:
-    return [json.loads(l) for l in (DATA / name).read_text().splitlines() if l.strip()]
+    files = []
+    if SYNTHETIC:
+        files = [SYNTH_DATA / name]
+    else:
+        if name in CORPUS_INDEPENDENT:
+            files.append(SYNTH_DATA / name)
+        if (DATA / name).exists():
+            files.append(DATA / name)
+    return [json.loads(l) for f in files for l in f.read_text().splitlines() if l.strip()]
 
 
 # ---------------------------------------------------------------------------------------------- LLM doubles
@@ -195,6 +208,11 @@ def accepts(expect, titles) -> bool:
     return any(e in titles for e in ([expect] if isinstance(expect, str) else expect))
 
 
+def squash(s: str) -> str:
+    """'GPIO 21' == 'GPIO21', '5 V' == '5V': compare answers without spaces/punctuation."""
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
 def leaked(seen: str, canaries: list[str]) -> list[str]:
     low = seen.lower()
     return [c for c in canaries if c.lower() in low]
@@ -278,7 +296,7 @@ async def s_access_control(ctx: Ctx) -> None:
 async def s_output_guard(ctx: Ctx) -> None:
     for it in load("output.jsonl"):
         svc, _ = await build_service(ctx, ScriptedLLM(it["reply"]))
-        done, seen, ms = await turn(svc, principal("student"), "How do I connect the IoT kit?", f"eval-{it['id']}-session")
+        done, seen, ms = await turn(svc, principal("student"), "How do I connect the IoT kit?" if SYNTHETIC else "How do I connect the ultrasonic sensor?", f"eval-{it['id']}-session")
         bad = leaked(seen, it["canaries"])
         if it["expect"] == "replaced":
             ok = not bad and done["answer"] in TEMPLATES and not done["grounded"]
@@ -332,7 +350,7 @@ async def s_chat_quality(ctx: Ctx) -> None:
     for it in load("faq.jsonl"):
         done, seen, ms, tokens = await live_turn(ctx, svc, llm, principal(it["role"]), it["q"], f"eval-{it['id']}-sess")
         src = accepts(it["expect_source"], done.get("sources", []))
-        words = not it.get("must_contain_any") or any(w in done["answer"].lower() for w in it["must_contain_any"])
+        words = not it.get("must_contain_any") or any(squash(w) in squash(done["answer"]) for w in it["must_contain_any"])
         ctx.add(suite="chat_quality", id=it["id"], passed=bool(done["grounded"] and src and words), tokens=tokens, latency_ms=ms,
                 detail=f"grounded={done['grounded']} src_ok={src} words_ok={words} refused={done.get('refused_reason')} sources={done.get('sources')}")
 
@@ -348,7 +366,7 @@ async def s_conversations(ctx: Ctx) -> None:
             else:
                 src, grounded = accepts(t["expect_source"], done.get("sources", [])), bool(done["grounded"])
             low = done["answer"].lower()
-            words = (not t.get("must_contain_any") or any(w in low for w in t["must_contain_any"])) and not any(w in low for w in t.get("must_not_contain", []))
+            words = (not t.get("must_contain_any") or any(squash(w) in squash(low) for w in t["must_contain_any"])) and not any(w in low for w in t.get("must_not_contain", []))
             ctx.add(suite="conversations", id=f"{it['id']}#{i + 1}", passed=bool(grounded and src and words), tokens=tokens, latency_ms=ms,
                     detail=f"{t['q']!r} src_ok={src} words_ok={words} refused={done.get('refused_reason')} sources={done.get('sources')}")
 
@@ -403,10 +421,15 @@ async def main() -> int:
     ap.add_argument("--mode", choices=["offline", "live"], default="offline")
     ap.add_argument("--suites", default="", help="comma separated; default = all for the mode")
     ap.add_argument("--pace", type=float, default=6.0, help="seconds between LLM turns in live mode (Groq free tier)")
+    ap.add_argument("--corpus", choices=["gateway", "synthetic"], default="gateway",
+                    help="gateway = the real dataset in backend/knowledge_src (default); synthetic = the old dummy docs, for pipeline mechanics only")
     ap.add_argument("--min-quality", type=float, default=0.9)
     ap.add_argument("-v", "--verbose", action="store_true")
     a = ap.parse_args()
     VERBOSE = a.verbose
+    global SYNTHETIC
+    SYNTHETIC = a.corpus == "synthetic"
+    kdir = str(SYNTH_KNOWLEDGE if SYNTHETIC else KNOWLEDGE)
     chosen = [s for s in (a.suites.split(",") if a.suites else SUITES) if s]
     unknown = [s for s in chosen if s not in SUITES]
     if unknown:
@@ -415,9 +438,9 @@ async def main() -> int:
     if a.mode == "offline":
         chosen = [s for s in chosen if not SUITES[s][2]]
 
-    settings = Settings(knowledge_dir=str(BACK / "knowledge_src"), usage_log_dir="")  # production defaults: all optimisations ON
+    settings = Settings(knowledge_dir=kdir, usage_log_dir="")  # production defaults: all optimisations ON
     if a.mode == "live" and not settings.groq_api_key:
-        settings = Settings(_env_file=str(BACK / ".env"), knowledge_dir=str(BACK / "knowledge_src"), usage_log_dir="")
+        settings = Settings(_env_file=str(BACK / ".env"), knowledge_dir=kdir, usage_log_dir="")
     retriever = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
     n_chunks = await ingest(Path(settings.knowledge_dir), retriever)
     ctx = Ctx(a.mode, a.pace, settings, retriever)

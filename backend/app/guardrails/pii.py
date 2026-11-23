@@ -7,7 +7,8 @@ _HARD: dict[str, re.Pattern] = {
     "phone": re.compile(r"(?<!\d)(?:\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}(?!\d)|\+\d{1,3}[\s-]?\d[\d\s-]{7,}\d"),
     "jwt": re.compile(r"eyJ[\w-]{5,}\.[\w-]{5,}\.[\w-]{5,}"),
     "api_key": re.compile(r"\b(?:gsk|sk|pk|ghp|xox[a-z])[-_][A-Za-z0-9_-]{16,}"),
-    "credential": re.compile(r"\b(?:password|passcode|passwd|pin|otp|secret|token)\b\s*(?:is|was|=|:)\s*\S+", re.I),
+    # "pin" is also a hardware word ("the SDA pin is GPIO21"): as a credential it is only a PIN/OTP when a code (3-8 digits) follows.
+    "credential": re.compile(r"\b(?:(?:password|passcode|passwd|secret|token)\b\s*(?:is|was|=|:)\s*\S+|(?:pin|otp)\b\s*(?:is|was|=|:)\s*\d{3,8}\b)", re.I),
 }
 
 # Not machine identifiers, but must never be written to long-term memory (esp. for school students).

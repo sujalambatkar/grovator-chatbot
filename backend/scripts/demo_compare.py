@@ -31,15 +31,15 @@ from app.rag.tokens import count_tokens
 from app.tools.mock_adapter import MockAdapter
 from scripts.common import make_principal
 
-PAGE = "lessons/iot-2-temperature-sensor.md"
+PAGE = "devices/ultrasonic_sensor"
 PACE = 9.0
 CONVO = [
-    "Explain this lesson step by step",
-    "what if the number never changes?",
-    "which block do I use to show it on the display?",
-    "and how would I make the LED turn on when it gets hot?",   # lives in ANOTHER lesson
-    "Which port does the sensor go in again?",                  # needs memory of this chat
-    "How do I connect my robot to the computer?",               # a different course entirely
+    "How do I connect this to the gateway?",
+    "What should I do after connecting it?",
+    "Where does the VCC wire go?",
+    "What if it is not working?",
+    "How do I connect the I2C LCD?",                            # a DIFFERENT device page than the open one
+    "Which pins does it use again?",                            # needs memory of this chat (the LCD)
     "Write me a poem about pizza",                              # off-topic: must be refused
 ]
 

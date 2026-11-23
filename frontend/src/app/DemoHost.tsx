@@ -7,15 +7,15 @@ import type { ContentDoc, ContentResponse } from "@/lib/types";
 
 const API_URL = (process.env.NEXT_PUBLIC_CHATBOT_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 const ROLE = "student" as const; // the demo always runs as a student; access control is enforced by the server
-const DEFAULT_PAGE = "lessons/iot-2-temperature-sensor.md";
+const DEFAULT_PAGE = "devices/ultrasonic_sensor";
 
 const SUGGESTIONS: Record<string, string[]> = {
-  lessons: ["Explain this lesson step by step", "What blocks do I need here?", "What are the common mistakes in this lesson?", "Give me a challenge to try"],
-  blocks: ["Explain these blocks with an example", "Which sample program uses these blocks?"],
-  courses: ["What will I learn in this course?", "How am I assessed?", "Which lesson should I start with?"],
-  tools: ["How do I use this tool?", "Give me a tip for using this tool"],
+  devices: ["How do I connect this to the gateway?", "Which pins does it use?", "What should I do after connecting it?", "What if it is not working?"],
+  interfaces: ["Which devices use this interface?", "Which pins does it use?"],
+  gateway: ["Which sensors can I connect?", "What are the wiring rules?"],
+  concepts: ["Explain these concepts with an example"],
 };
-const GENERIC = ["What is block coding?", "How do I connect the IoT kit?", "My robot is not moving, what should I check?"];
+const GENERIC = ["Which sensors can I connect?", "How do I connect the ultrasonic sensor?", "Which pins support analog input?"];
 
 export function DemoHost() {
   const [content, setContent] = useState<ContentResponse | null>(null);
@@ -35,7 +35,7 @@ export function DemoHost() {
         const c = await fetchContent({ baseUrl: API_URL, getToken });
         if (cancelled) return;
         setContent(c);
-        setSelected((prev) => (c.docs.some((d) => d.source === prev) ? prev : c.docs.find((d) => d.category === "lessons")?.source ?? c.docs[0]?.source ?? ""));
+        setSelected((prev) => (c.docs.some((d) => d.source === prev) ? prev : c.docs.find((d) => d.category === "devices")?.source ?? c.docs[0]?.source ?? ""));
       } catch (e) {
         if (!cancelled) setError(e instanceof ApiError ? e.message : "Something went wrong loading the page.");
       }

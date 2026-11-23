@@ -7,6 +7,7 @@ import frontmatter
 
 from app.rag.chunking import Chunk, chunk_document
 from app.rag.embeddings import embed_docs
+from app.rag.hardware import load_hw_docs
 from app.rag.retriever import HybridRetriever
 
 ALL_ROLES = ["student", "teacher", "admin", "superadmin"]
@@ -28,6 +29,9 @@ def load_documents(root: Path) -> list[Chunk]:
             org_id=post.get("org_id", "*"), school_id=post.get("school_id", "*"),
             updated_at=str(post.get("updated_at", datetime.now(timezone.utc).date())),
         )
+    for d in load_hw_docs(root):  # structured gateway dataset (JSON) -> documents, generated from the records
+        chunks += chunk_document(d.body, title=d.title, source=d.source, role_visibility=d.role_visibility,
+                                 updated_at=str(datetime.now(timezone.utc).date()))
     return chunks
 
 

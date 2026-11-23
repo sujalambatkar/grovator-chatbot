@@ -18,6 +18,7 @@ class Turn:
 class SessionState:
     summary: str = ""
     turns: list[Turn] = field(default_factory=list)
+    focus: list[str] = field(default_factory=list)  # device keys being discussed (so 'it', 'what next?' resolve)
     history_tokens: int = 0  # tokens of every completed turn: what a 'send the full chat every time' bot would resend
 
 
@@ -44,7 +45,8 @@ class SessionStore:
         if not raw:
             return SessionState()
         d = json.loads(raw)
-        return SessionState(d.get("summary", ""), [Turn(**t) for t in d.get("turns", [])], int(d.get("history_tokens", 0)))
+        return SessionState(summary=d.get("summary", ""), turns=[Turn(**t) for t in d.get("turns", [])],
+                            focus=list(d.get("focus", [])), history_tokens=int(d.get("history_tokens", 0)))
 
     async def save(self, user_id: str, session_id: str, state: SessionState) -> None:
         state.turns = state.turns[-MAX_TURNS:]
