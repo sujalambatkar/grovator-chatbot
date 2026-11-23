@@ -148,10 +148,18 @@ try {
     assert.deepEqual(errors.filter((e) => !/favicon/i.test(e)), []);
   });
 
-  await step("dark mode renders", async () => {
+  await step("the page stays in the brand blue and white even when the OS prefers dark mode", async () => {
     const d = await open(browser, { colorScheme: "dark" });
     await ask(d.page, "What is block coding?");
-    await d.page.screenshot({ path: path.join(OUT, "04-dark.png") });
+    const css = await d.page.evaluate(() => ({
+      body: getComputedStyle(document.body).backgroundColor,
+      bar: getComputedStyle(document.querySelector(".topbar")).backgroundColor,
+      card: getComputedStyle(document.querySelector(".article")).backgroundColor,
+    }));
+    assert.equal(css.bar, "rgb(40, 76, 138)");     // grovator.com nav blue #284c8a
+    assert.equal(css.card, "rgb(255, 255, 255)");   // white surface
+    assert.equal(css.body, "rgb(246, 250, 254)");   // soft blue-white page tint #f6fafe
+    await d.page.screenshot({ path: path.join(OUT, "04-brand-blue.png") });
     await d.ctx.close();
   });
 

@@ -1,18 +1,19 @@
 .root {
-  --accent: #4f46e5;
+  /* palette sampled from grovator.com: navy text, blue brand, white surfaces. Always light, like the platform. */
+  --accent: #284c8a;
   --accent-ink: #ffffff;
+  --accent-dark: #1a3463;
+  --vivid: #1f46f0;
+  --bright: #4294f7;
   --bg: #ffffff;
-  --bg-soft: #f4f4f7;
-  --ink: #1b1b22;
-  --ink-soft: #62626f;
-  --line: #e3e3ea;
+  --bg-soft: #eef3fb;
+  --ink: #142a61;
+  --ink-soft: #59617d;
+  --line: #d6e0f0;
   --danger: #b42318;
-  --ok: #067647;
+  --ok: #1f46f0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--ink);
-}
-@media (prefers-color-scheme: dark) {
-  .root { --accent: #8b87ff; --accent-ink: #11111a; --bg: #16161d; --bg-soft: #20202a; --ink: #ececf3; --ink-soft: #a3a3b2; --line: #33333f; --danger: #ff8a7a; --ok: #6ce9a6; }
 }
 .launcher {
   display: flex; align-items: center; justify-content: center;
@@ -22,7 +23,7 @@
   box-shadow: 0 6px 24px rgba(0,0,0,.25);
 }
 .launcher:focus-visible, .iconBtn:focus-visible, .send:focus-visible, .chip:focus-visible, .fb:focus-visible, .textarea:focus-visible, .link:focus-visible {
-  outline: 3px solid var(--accent); outline-offset: 2px;
+  outline: 3px solid var(--vivid); outline-offset: 2px;
 }
 .panel {
   position: fixed; right: 20px; bottom: 88px; z-index: 2147483000;
@@ -39,7 +40,7 @@
 .header { display: flex; align-items: center; gap: 4px; padding: 10px 12px; background: var(--accent); color: var(--accent-ink); }
 .title { flex: 1; font-weight: 650; font-size: 15px; }
 .iconBtn { display: inline-flex; align-items: center; background: transparent; border: 0; color: inherit; cursor: pointer; border-radius: 8px; padding: 6px 8px; font-size: 13px; }
-.iconBtn:hover { background: rgba(255,255,255,.18); }
+.iconBtn:hover { background: rgba(255,255,255,.2); }
 .iconBtn[aria-pressed="true"] { background: rgba(255,255,255,.28); }
 .body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
 .row { display: flex; flex-direction: column; max-width: 88%; }
@@ -69,6 +70,7 @@
 .composer { border-top: 1px solid var(--line); padding: 10px; display: flex; gap: 8px; align-items: flex-end; background: var(--bg); }
 .textarea { flex: 1; resize: none; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14px; max-height: 120px; min-height: 40px; }
 .send { border: 0; border-radius: 10px; padding: 0 14px; height: 40px; background: var(--accent); color: var(--accent-ink); font-weight: 600; cursor: pointer; }
+.send:hover:not(:disabled) { background: var(--accent-dark); }
 .send:disabled { opacity: .45; cursor: not-allowed; }
 .counter { font-size: 11.5px; color: var(--ink-soft); padding: 0 12px 6px; text-align: right; }
 .counterWarn { color: var(--danger); }
@@ -85,7 +87,7 @@
 .meterRow { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
 .meterSave { color: var(--ok); font-weight: 700; }
 .bar { height: 6px; border-radius: 999px; background: var(--line); margin: 6px 0 2px; overflow: hidden; }
-.bar i { display: block; height: 100%; background: var(--ok); border-radius: 999px; transition: width .4s ease; }
+.bar i { display: block; height: 100%; background: var(--bright); border-radius: 999px; transition: width .4s ease; }
 .meterWhy { margin-top: 4px; color: var(--ink-soft); }
 .meterWhy summary { cursor: pointer; font-size: 12px; }
 .meterWhy p { margin: 6px 0 2px; line-height: 1.45; font-size: 12px; }
