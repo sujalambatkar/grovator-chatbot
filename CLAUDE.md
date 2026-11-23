@@ -51,6 +51,7 @@ cd backend  && .venv/bin/python -m scripts.demo_compare           # measured tok
 - **Prove a regression test can fail**: when you fix a bug, write the test first, watch it fail, then fix. For safety-critical code, mutate the code (disable the rule) and confirm tests/eval fail. Several earlier "passing" tests were vacuous.
 - Retrieval thresholds (`MIN_RETRIEVAL_SCORE`, `GROUNDING_MIN_SUPPORT`, `compress_*`) were calibrated on the small synthetic corpus. Re-calibrate with measurements before changing them; do not guess.
 - When adding knowledge docs, set front-matter `title`, `category`, `order`, `role_visibility`. Teacher/admin docs must not list `student`.
+- **Lesson order is content.** If you add, move or rename a lesson, update `courses/learning-path.md` and the `Previous lesson:` / `Next lesson:` lines on its neighbours; `test_every_lesson_page_states_its_previous_and_next_lesson...` fails if they disagree with the `order` front-matter.
 - Be honest in reports: say what was and was not run (live Groq vs stubbed), and keep known limitations in `docs/chatbot/BUGS.md`.
 
 ## Gotchas

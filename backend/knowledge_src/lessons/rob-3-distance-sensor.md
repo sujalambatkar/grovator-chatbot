@@ -33,3 +33,7 @@ If the robot crashes, the number 10 may be too small for the speed: try 20. The 
 
 # Quiz
 Question 1: What unit does the distance sensor use? Answer: centimetres. Question 2: Which block stops the robot? Answer: stop all motors.
+
+# Previous and next lessons
+Previous lesson: Robotics Lesson 2: Move and Turn.
+Next lesson: Robotics Lesson 4: Line Following.

@@ -72,3 +72,11 @@ _No bugs yet._
 - The token comparison is one 7-message conversation, one run each, on a 29-page synthetic site; the whole-site figure is an estimate. The page-only baseline is measured.
 - Router-free follow-ups trade some safety-net for cost; the deterministic rules, retrieval gate, grounding guard and prompt cover the cases tested (43/43 live attacks incl. 15 multi-turn), but semantic off-topic requests that avoid the listed words rely on the model declining.
 - The free follow-up rewrite concatenates the previous question; unusual topic switches can still retrieve extra context (harmless, costs a few tokens).
+
+## Phase 8 (reported from the UI)
+1. **"Hello how are you" re-answered the previous question.** The free follow-up rewrite treated ANY message after a question as a follow-up. Now needs evidence (pronoun, platform word, or continuation cue); obvious chit-chat gets a free canned reply (whole-message match only). Tests written first and mutation-checked; live multi-turn eval case added.
+2. **"I love pizza!"**: small talk classified by the router was free-written by the small model, which invented a personality. A model never writes small talk now: a fixed redirect is returned. (My first fix also forgot to set `shortcut=True` on the canned routes, caught by a test.)
+3. **"What is the next lesson after LED and Buzzer?" had no answer**: the lesson order existed nowhere in the content. Added the Learning Path page and Previous/Next sections (D70).
+4. **"After move and turn" retrieved the move-and-turn lesson, not the sequence**; fixed with an order-question search (D71).
+5. **Order list truncated with "(and so on...)"** found by reading the live answer, not by a test: sentence compression keeps only the best sentences of a list. Order questions are no longer compressed.
+6. My eval check for the chit-chat case banned the word "block", which the canned reply legitimately contains; it now checks for the leaked summary instead.

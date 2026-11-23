@@ -36,3 +36,7 @@ Make the display say Hot when the temperature is above 30. You will need an if b
 
 # Quiz
 Question 1: Which block gives the temperature? Answer: temperature value. Question 2: Why add wait 1 seconds? Answer: so the display does not change too fast to read.
+
+# Previous and next lessons
+Previous lesson: IoT Lesson 1: What is IoT? (Module 1).
+Next lesson: IoT Lesson 3: LED and Buzzer. Between them you do the light sensor and motion sensor activities.

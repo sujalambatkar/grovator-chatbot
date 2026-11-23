@@ -25,3 +25,7 @@ Forgetting the green status light means the kit is not connected. If the display
 
 # Quiz
 Question 1: Name the three parts of an IoT device. Answer: a sensor, a controller and a way to share data. Question 2: What colour is the status light when the kit is connected? Answer: green.
+
+# Previous and next lessons
+Previous lesson: none (this is the first lesson of IoT Foundations).
+Next lesson: IoT Lesson 2: Temperature Sensor.

@@ -36,3 +36,7 @@ Add the Wall Stopper check inside the same forever loop so the robot also stops 
 
 # Quiz
 Question 1: Which sensor follows a line? Answer: the line sensor. Question 2: What should the robot do when it does not see the line? Answer: turn slightly until it finds the line.
+
+# Previous and next lessons
+Previous lesson: Robotics Lesson 3: Distance Sensor.
+Next lesson: none (this is the last lesson). After it come the Obstacle Course and the final challenge, Maze Runner.

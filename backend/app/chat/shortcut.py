@@ -42,7 +42,9 @@ _QSTART = re.compile(r"^\s*(?:how|what|where|why|when|which|can|could|do|does|is
 # "this"/"these" point at the page only when they are not followed by a word that names the platform itself:
 # "explain THIS LESSON" is about the open page, "what is THIS PLATFORM" is not.
 _NOT_THE_PAGE = r"platform|website|site|app|application|govator|system|chatbot|bot|software|company|school"
-DEICTIC = re.compile(rf"\b(?:this(?!\s+(?:{_NOT_THE_PAGE})\b)|these|here|above|current|the page|the lesson|the program|step \d+)\b", re.I)
+_NEXT_OF_THE_PAGE = (r"what(?:'s| is)? (?:comes |is )?next|what (?:should|do|can) i (?:do|learn|study|try) next|"
+                     r"(?:the )?next (?:lesson|step|page|one)(?!\s+(?:after|before|from))|(?:the )?previous (?:lesson|page|one)(?!\s+(?:before|to|of))")
+DEICTIC = re.compile(rf"\b(?:this(?!\s+(?:{_NOT_THE_PAGE})\b)|these|here|above|current|the page|the lesson|the program|step \d+|{_NEXT_OF_THE_PAGE})\b", re.I)
 
 
 def try_shortcut(message: str, has_history: bool, last_user: str = "", on_page: bool = False) -> Route | None:
@@ -70,3 +72,12 @@ def try_shortcut(message: str, has_history: bool, last_user: str = "", on_page: 
         # Retrieval, the confidence gate and the grounding guard still protect the answer; no model call needed.
         return Route(Intent.platform_faq, f"{last_user.strip()} {message.strip()}"[:300], shortcut=True)
     return None
+
+
+# Questions about ORDER ("what comes after X", "which lesson is first", "in what order"). Narrow on purpose: "the first step to connect
+# the kit" is not about lesson order. These get an extra search aimed at the Learning Path and the previous/next sections.
+SEQUENCE_Q = re.compile(
+    r"\b(?:what|which)\b[^?.!]*\b(?:comes?|goes?|is|are|do i do|should i do)\b[^?.!]*\b(?:after|before|next)\b"
+    r"|\b(?:next|previous|first|last|final) (?:lesson|module|activity|course|project)\b"
+    r"|\b(?:lesson|module|course) (?:order|sequence)\b|\b(?:what|which|in what|in which) order\b|\bsequence of\b"
+    r"|\b(?:after|before) (?:the )?[\w' -]{2,40}(?:lesson|module|activity)\b", re.I)

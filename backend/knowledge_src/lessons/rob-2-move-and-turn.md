@@ -33,3 +33,7 @@ Make the robot dance: repeat a pattern of forward, turn left, backward, turn rig
 
 # Quiz
 Question 1: How many degrees do you turn for a square? Answer: 90. Question 2: Which block repeats instructions? Answer: repeat.
+
+# Previous and next lessons
+Previous lesson: Robotics Lesson 1: Meet Your Robot.
+Next lesson: Robotics Lesson 3: Distance Sensor.

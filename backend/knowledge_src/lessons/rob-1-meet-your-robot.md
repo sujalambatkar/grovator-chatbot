@@ -25,3 +25,7 @@ A robot that does not move almost always has the battery switch off, the motors 
 
 # Quiz
 Question 1: Which ports do the motors use? Answer: the left motor in port A and the right motor in port B. Question 2: What must be switched on for the motors to run? Answer: the battery pack.
+
+# Previous and next lessons
+Previous lesson: none (this is the first lesson of Robotics Foundation).
+Next lesson: Robotics Lesson 2: Move and Turn.

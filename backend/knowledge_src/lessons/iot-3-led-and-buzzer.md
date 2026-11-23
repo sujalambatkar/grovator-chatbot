@@ -27,3 +27,7 @@ Add a variable called alarms that goes up by 1 every time the alarm sounds.
 
 # Quiz
 Question 1: Which block lets the program choose between two actions? Answer: if else. Question 2: What does the buzzer beep block need? Answer: how many seconds to beep.
+
+# Previous and next lessons
+Previous lesson: IoT Lesson 2: Temperature Sensor.
+Next lesson: IoT Lesson 4: Send Data to the Dashboard. First you do the Smart Night Light activity.

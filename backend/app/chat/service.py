@@ -15,7 +15,7 @@ from typing import Any
 from app.chat.cache import SemanticCache, cacheable
 from app.chat.prompting import build_answer_messages
 from app.chat.router import Intent, route_message
-from app.chat.shortcut import DEICTIC, try_shortcut
+from app.chat.shortcut import DEICTIC, SEQUENCE_Q, try_shortcut
 from app.content.catalog import ContentCatalog, Doc
 from app.config import Settings
 from app.core.abuse import TokenBudget
@@ -193,6 +193,12 @@ class ChatService:
 
         # a free follow-up rewrite glues the previous question on: also search the NEW message on its own
         also = [(message, await embed_query(message))] if (route.shortcut and route.query != message and not points_at_page) else None
+        asks_order = bool(SEQUENCE_Q.search(message))
+        if asks_order:
+            # a question about lesson ORDER: also search the learning path / previous-and-next sections, otherwise pages that merely
+            # mention the named lesson ("move and turn") crowd the answer out
+            seq_text = f"Learning Path lesson order, previous lesson and next lesson: {route.query}"
+            also = [*(also or []), (seq_text, await embed_query(seq_text))]
         res = await self.retriever.retrieve(query, p, k=self.s.knowledge_top_k, vec=vec, also=also,
                                             pin_source=page_doc.source if page_doc else None, pin_first=points_at_page)
         naive = self._naive(p, page_doc, state, message)
@@ -201,7 +207,10 @@ class ChatService:
                              tokens_total=base["router_tokens"], naive_tokens=naive)
             return
 
-        hits = await compress_hits(res.hits, [res.vec, *(v for _, v in (also or []))], self.s) if self.s.enable_compression else res.hits
+        # Sentence-level compression keeps only the best sentences, which truncates a LIST the user asked for in full ("in what
+        # order..."): order questions get whole chunks. The token budget in build_context still applies.
+        hits = (await compress_hits(res.hits, [res.vec, *(v for _, v in (also or []))], self.s)
+                if self.s.enable_compression and not asks_order else res.hits)
         mems = await self._recall(p, res.vec)
         messages, used = build_answer_messages(
             summary=state.summary, turns=state.turns, hits=hits, question=message,

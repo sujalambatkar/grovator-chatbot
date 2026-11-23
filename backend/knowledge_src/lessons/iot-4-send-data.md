@@ -30,3 +30,7 @@ No graph usually means the kit is disconnected or the data name is spelled diffe
 
 # Quiz
 Question 1: Where can you see your data? Answer: on My Dashboard. Question 2: Who else can see the graph? Answer: your teacher in the class view.
+
+# Previous and next lessons
+Previous lesson: IoT Lesson 3: LED and Buzzer.
+Next lesson: none (this is the last lesson). After it you read the graph in an activity and finish with the final project, Smart Room Alert.

@@ -20,3 +20,9 @@
 {"id": "faq-20", "role": "student", "q": "what exactly is this platform", "expect_source": ["About Govator"], "must_contain_any": ["learning", "school"]}
 {"id": "faq-21", "role": "student", "q": "who made this app?", "expect_source": ["About Govator"], "must_contain_any": ["grok"]}
 {"id": "faq-22", "role": "student", "q": "what can I do on this site?", "expect_source": ["About Govator"], "must_contain_any": ["course", "lesson"]}
+{"id": "faq-23", "role": "student", "q": "What is the next lesson after LED and Buzzer?", "expect_source": ["Learning Path: Lesson Order", "IoT Lesson 3: LED and Buzzer"], "must_contain_any": ["send data", "lesson 4", "dashboard"]}
+{"id": "faq-24", "role": "student", "q": "What comes after Move and Turn?", "expect_source": ["Learning Path: Lesson Order", "Robotics Lesson 2: Move and Turn"], "must_contain_any": ["distance"]}
+{"id": "faq-25", "role": "student", "q": "What is the first lesson in Robotics Foundation?", "expect_source": ["Learning Path: Lesson Order", "Course: Robotics Foundation", "Robotics Lesson 1: Meet Your Robot"], "must_contain_any": ["meet your robot"]}
+{"id": "faq-26", "role": "student", "q": "Which lesson comes before Line Following?", "expect_source": ["Learning Path: Lesson Order", "Robotics Lesson 4: Line Following"], "must_contain_any": ["distance"]}
+{"id": "faq-27", "role": "student", "q": "In what order should I do the IoT lessons?", "expect_source": ["Learning Path: Lesson Order", "Course: IoT Foundations"], "must_contain_any": ["temperature", "led"]}
+{"id": "faq-28", "role": "student", "q": "What is the last lesson of IoT Foundations?", "expect_source": ["Learning Path: Lesson Order", "IoT Lesson 4: Send Data to the Dashboard"], "must_contain_any": ["send data", "lesson 4", "dashboard"]}

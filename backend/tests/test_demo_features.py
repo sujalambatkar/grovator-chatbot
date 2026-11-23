@@ -223,3 +223,88 @@ def test_real_pointers_to_the_page_still_count(q):
 def test_platform_words_after_this_are_not_pointers(q):
     from app.chat.shortcut import DEICTIC
     assert not DEICTIC.search(q)
+
+
+# ------------------------------------------------------------------ the bot must know the SEQUENCE of lessons
+import re as _re
+
+
+def _lessons_by_course():
+    lessons = [d for d in CATALOG.docs if d.category == "lessons"]
+    return {"IoT": sorted((d for d in lessons if d.source.startswith("lessons/iot-")), key=lambda d: d.order),
+            "Robotics": sorted((d for d in lessons if d.source.startswith("lessons/rob-")), key=lambda d: d.order)}
+
+
+def test_every_lesson_page_states_its_previous_and_next_lesson_and_they_match_the_real_order():
+    """The page text and the catalog order are two descriptions of one sequence: they must never disagree."""
+    for course, docs in _lessons_by_course().items():
+        assert len(docs) == 4
+        for i, d in enumerate(docs):
+            prev_m = _re.search(r"Previous lesson: (.+?)\.\s*(?:\n|$)", d.body)
+            next_m = _re.search(r"Next lesson: (.+?)\.\s*(?:\n|$)", d.body)
+            assert prev_m and next_m, f"{d.source} has no 'Previous lesson / Next lesson' lines"
+            want_prev = docs[i - 1].title if i > 0 else "none"
+            want_next = docs[i + 1].title if i < len(docs) - 1 else "none"
+            assert prev_m.group(1).startswith(want_prev), (d.source, prev_m.group(1), want_prev)
+            assert next_m.group(1).startswith(want_next), (d.source, next_m.group(1), want_next)
+
+
+def test_a_learning_path_page_lists_both_courses_in_order():
+    path = next(d for d in CATALOG.docs if d.source == "courses/learning-path.md")
+    for course, docs in _lessons_by_course().items():
+        positions = [path.body.find(d.title) for d in docs]
+        assert all(p >= 0 for p in positions), (course, positions)
+        assert positions == sorted(positions), f"{course} lessons are not listed in order"
+
+
+@pytest.mark.parametrize("q,page,must_have", [
+    ("what is the next lesson after led and buzzer", TEMP_PAGE, ["Send Data to the Dashboard"]),
+    ("what is the next lesson after led and buzzer", None, ["Send Data to the Dashboard"]),
+    ("what is the next lesson after led and buzzer", "lessons/iot-3-led-and-buzzer.md", ["Send Data to the Dashboard"]),
+    ("what comes next?", "lessons/iot-3-led-and-buzzer.md", ["Send Data to the Dashboard"]),
+    ("what should I do next", "lessons/rob-2-move-and-turn.md", ["Distance Sensor"]),
+    ("which lesson comes before line following", None, ["Distance Sensor"]),
+    ("what is the first lesson in robotics foundation", None, ["Meet Your Robot"]),
+    ("what is the last lesson in IoT foundations", None, ["Send Data to the Dashboard"]),
+    ("what comes after move and turn", None, ["Distance Sensor"]),
+    ("in what order should I do the iot lessons", None, ["What is IoT", "Temperature Sensor", "LED and Buzzer"]),
+])
+async def test_sequence_questions_reach_the_model_with_the_answer_in_context(retriever, q, page, must_have):
+    llm = FakeLLM("The next lesson is IoT Lesson 4: Send Data to the Dashboard.")
+    svc = build(retriever, llm, enable_semantic_cache=False)
+    await turn(svc, STU, q, "sess-seq-0001", page)
+    prompt = llm.calls[-1][-1]["content"]
+    assert all(m in prompt for m in must_have), (q, page, [m for m in must_have if m not in prompt], prompt[:900])
+
+
+@pytest.mark.parametrize("q", ["what is the first step to connect the IoT kit?", "how do I stop the robot before it hits a wall?",
+                               "what is the last block in the temperature program?"])
+async def test_ordinary_questions_do_not_pull_in_the_learning_path(retriever, q):
+    llm = FakeLLM(TEMP_REPLY)
+    svc = build(retriever, llm, enable_semantic_cache=False)
+    await turn(svc, STU, q, "sess-noseq-0001")
+    assert "Learning Path" not in llm.calls[-1][-1]["content"], q
+
+
+def test_sequence_question_detector():
+    from app.chat.shortcut import SEQUENCE_Q
+    for q in ["what is the next lesson after led and buzzer", "what comes after move and turn", "which lesson comes before line following",
+              "what is the first lesson in robotics foundation", "in what order should I do the iot lessons", "what is the last lesson in IoT"]:
+        assert SEQUENCE_Q.search(q), q
+    for q in ["what is the first step to connect the IoT kit?", "how do I stop the robot", "what is the last block in the program",
+              "what is a loop", "which block turns the LED on"]:
+        assert not SEQUENCE_Q.search(q), q
+
+
+@pytest.mark.parametrize("q,needs", [
+    ("in what order should I do the robotics lessons", ["Meet Your Robot", "Move and Turn", "Distance Sensor", "Line Following", "Obstacle Course", "Maze Runner"]),
+    ("in what order should I do the IoT lessons", ["What is IoT", "Temperature Sensor", "LED and Buzzer", "Send Data to the Dashboard", "Smart Room Alert"]),
+])
+async def test_order_questions_get_the_whole_list_not_a_compressed_excerpt(retriever, q, needs):
+    """Regression (live): 'in what order...' was answered with three lessons and '(and so on...)' because sentence-level
+    compression kept only the best sentences of the list. A list the user asked for in full must not be compressed."""
+    llm = FakeLLM("Do the lessons in the order listed in the learning path.")
+    svc = build(retriever, llm, enable_semantic_cache=False)
+    await turn(svc, STU, q, "sess-list-0001")
+    prompt = llm.calls[-1][-1]["content"]
+    assert all(n in prompt for n in needs), (q, [n for n in needs if n not in prompt])
