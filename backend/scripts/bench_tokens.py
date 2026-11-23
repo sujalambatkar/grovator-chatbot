@@ -20,7 +20,7 @@ from app.config import get_settings
 from app.core.abuse import TokenBudget
 from app.core.usage import UsageTracker
 from app.llm import prompts as P
-from app.llm.llm_client import GroqLLMClient
+from app.llm.llm_client import make_llm
 from app.memory.long_term import MemoryManager, MemoryStore
 from app.memory.session import SessionStore
 from app.rag.ingest import ingest
@@ -119,7 +119,7 @@ async def main(label: str) -> None:
     s = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
     await ingest(SYNTH_KNOWLEDGE, r)
-    llm = Metered(GroqLLMClient(s))
+    llm = Metered(make_llm(s))
     svc, mm, redis = build_service(llm, r, s)
     await mm.store.ensure()
     out, lat = [], []

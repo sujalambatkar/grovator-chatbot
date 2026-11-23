@@ -36,7 +36,7 @@ from app.core.abuse import TokenBudget  # noqa: E402
 from app.core.auth import Principal, Role  # noqa: E402
 from app.core.usage import UsageTracker  # noqa: E402
 from app.llm import prompts as P  # noqa: E402
-from app.llm.llm_client import GroqLLMClient, LLMError, LLMResult  # noqa: E402
+from app.llm.llm_client import LLMError, LLMResult, make_llm  # noqa: E402
 from app.memory.long_term import MemoryManager, MemoryStore  # noqa: E402
 from app.memory.session import SessionStore  # noqa: E402
 from app.rag.embeddings import embed_query  # noqa: E402
@@ -345,7 +345,7 @@ async def live_turn(ctx: Ctx, svc, llm: Metered, who, msg: str, sid: str):
 
 
 async def s_chat_quality(ctx: Ctx) -> None:
-    llm = Metered(GroqLLMClient(ctx.settings))
+    llm = Metered(make_llm(ctx.settings))
     svc, _ = await build_service(ctx, llm)
     for it in load("faq.jsonl"):
         done, seen, ms, tokens = await live_turn(ctx, svc, llm, principal(it["role"]), it["q"], f"eval-{it['id']}-sess")
@@ -356,7 +356,7 @@ async def s_chat_quality(ctx: Ctx) -> None:
 
 
 async def s_conversations(ctx: Ctx) -> None:
-    llm = Metered(GroqLLMClient(ctx.settings))
+    llm = Metered(make_llm(ctx.settings))
     svc, _ = await build_service(ctx, llm)
     for it in load("conversations.jsonl"):
         for i, t in enumerate(it["turns"]):
@@ -372,14 +372,14 @@ async def s_conversations(ctx: Ctx) -> None:
 
 
 async def s_redteam_semantic(ctx: Ctx) -> None:
-    llm = Metered(GroqLLMClient(ctx.settings))
+    llm = Metered(make_llm(ctx.settings))
     svc, _ = await build_service(ctx, llm)
     for it in [r for r in load("redteam.jsonl") if r["layer"] == "semantic"]:
         sid = f"eval-{it['id']}-sess"
         for q in it.get("prior", []):  # multi-turn attack: a benign question first, so the attack is a FOLLOW-UP
             await live_turn(ctx, svc, llm, principal(it["role"]), q, sid)
         done, seen, ms, tokens = await live_turn(ctx, svc, llm, principal(it["role"]), it["msg"], sid)
-        bad = leaked(seen, it["canaries"] + [ctx.settings.groq_api_key[:10], ctx.settings.jwt_secret])
+        bad = leaked(seen, it["canaries"] + [ctx.settings.llm_api_key[:10], ctx.settings.jwt_secret])
         # an off-topic request must be REFUSED: either the pipeline blocked it, or the model itself declined ("I don't have...")
         refused = (not done.get("grounded")) or bool(REFUSAL.search(done["answer"]))
         complied = bool(it.get("must_refuse")) and not refused
@@ -388,7 +388,7 @@ async def s_redteam_semantic(ctx: Ctx) -> None:
 
 
 async def s_controls(ctx: Ctx) -> None:
-    llm = Metered(GroqLLMClient(ctx.settings))
+    llm = Metered(make_llm(ctx.settings))
     svc, _ = await build_service(ctx, llm)
     for it in load("controls.jsonl"):
         done, seen, ms, tokens = await live_turn(ctx, svc, llm, principal(it["role"]), it["msg"], f"eval-{it['id']}-sess")
@@ -439,7 +439,7 @@ async def main() -> int:
         chosen = [s for s in chosen if not SUITES[s][2]]
 
     settings = Settings(knowledge_dir=kdir, usage_log_dir="")  # production defaults: all optimisations ON
-    if a.mode == "live" and not settings.groq_api_key:
+    if a.mode == "live" and not settings.llm_api_key:
         settings = Settings(_env_file=str(BACK / ".env"), knowledge_dir=kdir, usage_log_dir="")
     retriever = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
     n_chunks = await ingest(Path(settings.knowledge_dir), retriever)

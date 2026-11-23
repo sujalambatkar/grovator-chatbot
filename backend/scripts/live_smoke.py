@@ -3,7 +3,7 @@ import asyncio
 from pathlib import Path
 
 from app.config import get_settings
-from app.llm.llm_client import GroqLLMClient
+from app.llm.llm_client import make_llm
 from app.llm.prompts import ANSWER_SYSTEM
 from app.rag.compress import build_context
 from app.rag.ingest import ingest
@@ -23,7 +23,7 @@ async def main() -> None:
     s = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
     await ingest(SYNTH_KNOWLEDGE, r)
-    llm = GroqLLMClient(s)
+    llm = make_llm(s)
     for role, q in QUESTIONS:
         res = await r.retrieve(q, make_principal(role), k=s.knowledge_top_k)
         ctx, used = build_context(res.hits, s.context_token_budget)

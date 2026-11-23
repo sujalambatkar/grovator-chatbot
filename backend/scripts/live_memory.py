@@ -7,7 +7,7 @@ from qdrant_client import AsyncQdrantClient
 
 from app.chat.service import ChatService
 from app.config import get_settings
-from app.llm.llm_client import GroqLLMClient
+from app.llm.llm_client import make_llm
 from app.memory.long_term import MemoryManager, MemoryStore
 from app.memory.session import SessionStore
 from app.rag.ingest import ingest
@@ -28,7 +28,7 @@ async def main() -> None:
     s = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
     await ingest(SYNTH_KNOWLEDGE, r)
-    llm = GroqLLMClient(s)
+    llm = make_llm(s)
     store = MemoryStore(AsyncQdrantClient(location=":memory:"), "user_memory")
     await store.ensure()
     svc = ChatService(llm, r, SessionStore(fakeredis.aioredis.FakeRedis(decode_responses=True), 600), s, MemoryManager(store, llm, s))

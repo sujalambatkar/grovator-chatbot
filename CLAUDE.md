@@ -15,7 +15,7 @@ A guardrailed, token-efficient chatbot for **Grovator** (Grok Learning's ed-tech
 ```bash
 cd backend
 uv venv --python 3.11 .venv && uv pip install --python .venv/bin/python -r requirements.txt
-cp .env.example .env     # user must add GROQ_API_KEY themselves; set DEMO_MODE=true, QDRANT_URL=memory, REDIS_URL=memory
+cp .env.example .env     # user must add GROQ_API_KEY (or GEMINI_API_KEY with LLM_PROVIDER=gemini) themselves; set DEMO_MODE=true, QDRANT_URL=memory, REDIS_URL=memory
 cd ../frontend && cp .env.example .env.local && npm install   # set NEXT_PUBLIC_CHATBOT_API_URL to the backend URL
 ```
 Windows: use `.venv\Scripts\python` instead of `.venv/bin/python`.
@@ -63,5 +63,6 @@ cd backend  && .venv/bin/python -m scripts.demo_compare           # measured tok
 - Local Qdrant/Redis default to in-memory (`memory`): sessions, memories and cache reset on restart.
 - `NEXT_PUBLIC_*` is baked in at build time; rebuild the frontend after changing the API URL.
 - Node's `fetch("localhost")` can prefer IPv6 while uvicorn binds IPv4; use `127.0.0.1` in Node-side scripts.
+- `LLM_PROVIDER` picks the client (`llm/llm_client.py: make_llm`): Groq SDK or Gemini REST. Use `make_llm(settings)`, never `GroqLLMClient` directly. Gemini models come from `GEMINI_*_MODEL` (the validator copies them into `answer_model`/`router_model`). The Gemini key goes in a header only.
 - `gpt-oss` models spend hidden reasoning tokens inside `max_tokens`; `reasoning_effort` is kept at `low`.
 - Production mode (`ENVIRONMENT=production`) refuses to start with the default JWT secret, mock adapter, in-memory stores, `DEMO_MODE`, or localhost CORS. That is intentional.

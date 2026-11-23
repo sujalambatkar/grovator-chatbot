@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,7 +11,15 @@ class Settings(BaseSettings):
     # "production" turns on startup safety checks (see production_problems)
     environment: str = "development"
 
-    # LLM (Groq). Model names are env-driven because Groq deprecates models.
+    # LLM provider: "groq" (default) or "gemini". With "gemini" the answer/router models below are used instead of
+    # ANSWER_MODEL/ROUTER_MODEL. Model names are env-driven because providers deprecate models.
+    llm_provider: str = "groq"
+    gemini_api_key: str = ""
+    gemini_answer_model: str = "gemini-2.5-flash-lite"
+    gemini_router_model: str = "gemini-2.5-flash-lite"
+    gemini_thinking_budget: int = -1   # -1 = leave the model default; 0 = no hidden thinking tokens (flash-lite models accept 0)
+
+    # LLM (Groq).
     groq_api_key: str = ""
     router_model: str = "openai/gpt-oss-20b"
     answer_model: str = "openai/gpt-oss-120b"
@@ -78,6 +87,18 @@ class Settings(BaseSettings):
     answer_max_tokens: int = 350
     max_message_chars: int = 1000
 
+    @model_validator(mode="after")
+    def _provider_models(self):
+        if self.llm_provider not in ("groq", "gemini"):
+            raise ValueError("LLM_PROVIDER must be 'groq' or 'gemini'")
+        if self.llm_provider == "gemini":  # every call site reads answer_model / router_model: point them at the Gemini names
+            self.answer_model, self.router_model = self.gemini_answer_model, self.gemini_router_model
+        return self
+
+    @property
+    def llm_api_key(self) -> str:
+        return self.gemini_api_key if self.llm_provider == "gemini" else self.groq_api_key
+
     knowledge_dir: str = str(Path(__file__).resolve().parent.parent / "knowledge_src")
     demo_mode: bool = False            # POST /demo/session auto-login for the demo page. Never in production.
 
@@ -92,8 +113,8 @@ def production_problems(s: Settings) -> list[str]:
     problems = []
     if s.jwt_secret == DEFAULT_JWT_SECRET or len(s.jwt_secret) < 32:
         problems.append("JWT_SECRET must be a unique secret of at least 32 characters (it is the default or too short)")
-    if not s.groq_api_key:
-        problems.append("GROQ_API_KEY is not set")
+    if not s.llm_api_key:
+        problems.append("GEMINI_API_KEY is not set" if s.llm_provider == "gemini" else "GROQ_API_KEY is not set")
     if s.platform_adapter == "mock":
         problems.append("PLATFORM_ADAPTER=mock serves FAKE student data; use a real adapter or PLATFORM_ADAPTER=none")
     if s.redis_url == "memory":

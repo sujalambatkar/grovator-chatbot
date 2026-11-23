@@ -8,7 +8,7 @@ import fakeredis.aioredis
 
 from app.chat.service import ChatService
 from app.config import get_settings
-from app.llm.llm_client import GroqLLMClient
+from app.llm.llm_client import make_llm
 from app.memory.session import SessionStore
 from app.rag.ingest import ingest
 from app.rag.retriever import HybridRetriever
@@ -50,7 +50,7 @@ async def main() -> None:
     s = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
     await ingest(SYNTH_KNOWLEDGE, r)
-    svc = ChatService(GroqLLMClient(s), r, SessionStore(fakeredis.aioredis.FakeRedis(decode_responses=True), 600), s)
+    svc = ChatService(make_llm(s), r, SessionStore(fakeredis.aioredis.FakeRedis(decode_responses=True), 600), s)
     p, ok, total, ins, lat = make_principal("student"), 0, 0, [], []
     for name, turns in CONVS.items():
         print(f"\n== {name}")

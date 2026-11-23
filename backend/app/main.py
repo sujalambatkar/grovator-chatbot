@@ -15,7 +15,7 @@ from app.chat.service import ChatService
 from app.core.abuse import RateLimiter, TokenBudget
 from app.core.usage import UsageTracker
 from app.config import get_settings, production_problems
-from app.llm.llm_client import GroqLLMClient
+from app.llm.llm_client import make_llm
 from app.memory.long_term import MemoryManager, MemoryStore
 from app.memory.session import SessionStore, make_redis
 from app.rag.ingest import ingest
@@ -46,7 +46,7 @@ def create_app(llm=None, retriever: HybridRetriever | None = None, redis=None, a
         app.state.limiter = RateLimiter(rds)
         budget = TokenBudget(rds, settings.daily_token_budget_user, settings.daily_token_budget_org)
         data = adapter if adapter is not None else (MockAdapter() if settings.platform_adapter == "mock" else None)
-        llm_client = llm or GroqLLMClient(settings)
+        llm_client = llm or make_llm(settings)
         mem_store = MemoryStore(r.store.client, settings.memory_collection)
         await mem_store.ensure()
         app.state.service = ChatService(llm_client, r, sessions, settings, MemoryManager(mem_store, llm_client, settings),

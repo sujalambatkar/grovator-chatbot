@@ -11,7 +11,6 @@ import re
 from pathlib import Path
 
 import fakeredis.aioredis
-from groq import AsyncGroq
 from qdrant_client import AsyncQdrantClient
 
 from app.chat.cache import SemanticCache
@@ -21,7 +20,7 @@ from app.content.catalog import ContentCatalog
 from app.core.abuse import TokenBudget
 from app.core.usage import UsageTracker
 from app.llm import prompts as P
-from app.llm.llm_client import GroqLLMClient
+from app.llm.llm_client import make_llm
 from app.memory.long_term import MemoryManager, MemoryStore
 from app.memory.session import SessionStore
 from app.rag.ingest import ingest
@@ -76,13 +75,13 @@ async def main() -> None:
     page = catalog.get(me, PAGE)
     retriever = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
     await ingest(Path(s.knowledge_dir), retriever)
-    llm = Meter(GroqLLMClient(s))
+    llm = Meter(make_llm(s))
     redis = fakeredis.aioredis.FakeRedis(decode_responses=True)
     mm = MemoryManager(MemoryStore(AsyncQdrantClient(location=":memory:"), "m"), llm, s)
     await mm.store.ensure()
     svc = ChatService(llm, retriever, SessionStore(redis, 600), s, mm, TokenBudget(redis, 10**9, 10**9), MockAdapter(),
                       SemanticCache(redis, s), UsageTracker(redis, ""), catalog)
-    raw = AsyncGroq(api_key=s.groq_api_key)
+    raw = make_llm(s)   # the naive baselines use the same provider and model
     site = "\n\n".join(f"## {d.title}\n{d.body}" for d in catalog.visible(me))
     print(f"Course site for this user: {len(catalog.visible(me))} pages, {count_tokens(site):,} tokens. Open page: {page.title} ({page.tokens} tokens).\n")
 
@@ -96,8 +95,8 @@ async def main() -> None:
         # ---- B: naive, open page + whole chat so far (real call)
         msgs = [{"role": "system", "content": P.ANSWER_SYSTEM},
                 {"role": "user", "content": f"PAGE:\n{page.body}\n\nCHAT SO FAR:\n{hist_b or '(none)'}\n\nQUESTION: {q}"}]
-        r = await raw.chat.completions.create(model=s.answer_model, messages=msgs, max_tokens=s.answer_max_tokens, reasoning_effort="low")
-        b_tokens, b_ans = r.usage.prompt_tokens + r.usage.completion_tokens, (r.choices[0].message.content or "").strip()
+        r = await raw.chat(model=s.answer_model, messages=msgs, max_tokens=s.answer_max_tokens)
+        b_tokens, b_ans = r.input_tokens + r.output_tokens, r.text.strip()
         hist_b += f"User: {q}\nAssistant: {b_ans}\n"
         rows.append((q, a_tokens, b_tokens, done["naive_tokens"], done["answer"], b_ans, done.get("refused_reason"), done.get("cache_hit")))
         print(f"turn {i}: ours={a_tokens:>5}  naive(page)={b_tokens:>5}  naive(site, est)={done['naive_tokens']:>6,}   {q}", flush=True)
@@ -105,12 +104,12 @@ async def main() -> None:
 
     print("\n=== ONE real attempt at the whole-site naive approach (turn 1 prompt): does it even fit the free tier? ===")
     try:
-        r = await raw.chat.completions.create(model=s.answer_model, max_tokens=200, reasoning_effort="low", messages=[
+        r = await raw.chat(model=s.answer_model, max_tokens=200, messages=[
             {"role": "system", "content": P.ANSWER_SYSTEM}, {"role": "user", "content": f"SITE:\n{site}\n\nQUESTION: {CONVO[0]}"}])
-        print(f"accepted: used {r.usage.prompt_tokens + r.usage.completion_tokens:,} tokens for ONE message")
+        print(f"accepted: used {r.input_tokens + r.output_tokens:,} tokens for ONE message")
     except Exception as e:  # noqa: BLE001
         msg = re.sub(r"\s+", " ", str(e))[:330]
-        print(f"REJECTED by Groq ({type(e).__name__}): {msg}")
+        print(f"REJECTED by the provider ({type(e).__name__}): {msg}")
 
     A, B, C = sum(r[1] for r in rows), sum(r[2] for r in rows), sum(r[3] for r in rows)
     print("\n=== TOTALS over", len(CONVO), "messages ===")

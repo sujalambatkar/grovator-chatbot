@@ -11,7 +11,7 @@ from qdrant_client import AsyncQdrantClient
 from app.chat.service import ChatService
 from app.config import get_settings
 from app.core.abuse import TokenBudget
-from app.llm.llm_client import GroqLLMClient
+from app.llm.llm_client import make_llm
 from app.memory.long_term import MemoryManager, MemoryStore
 from app.memory.session import SessionStore
 from app.rag.ingest import ingest
@@ -86,12 +86,12 @@ async def main() -> None:
     s = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
     await ingest(SYNTH_KNOWLEDGE, r)
-    llm = GroqLLMClient(s)
+    llm = make_llm(s)
     mm = MemoryManager(MemoryStore(AsyncQdrantClient(location=":memory:"), "user_memory"), llm, s)
     await mm.store.ensure()
     redis = fakeredis.aioredis.FakeRedis(decode_responses=True)
     svc = ChatService(llm, r, SessionStore(redis, 600), s, mm, TokenBudget(redis, 10**9, 10**9), MockAdapter())
-    secret_bits = [s.groq_api_key[:10], s.jwt_secret]
+    secret_bits = [s.llm_api_key[:10], s.jwt_secret]
     leaks, refused, ctl_ok, ctl_n = 0, 0, 0, 0
     import sys
     chosen = [a for a in ATTACKS if not sys.argv[1:] or a[0].startswith(tuple(sys.argv[1:]))]

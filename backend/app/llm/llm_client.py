@@ -1,4 +1,4 @@
-"""Single wrapper around the Groq SDK: retries, timeouts, JSON mode, usage logging, fallback."""
+"""LLM clients (Groq SDK, Gemini REST): retries, timeouts, JSON mode, usage logging, fallback. `make_llm(settings)` picks one."""
 import asyncio
 import json
 import logging
@@ -158,3 +158,88 @@ class GroqLLMClient:
             output_tokens=getattr(usage, "completion_tokens", None) or count_tokens(text),
             latency_ms=int((time.perf_counter() - t0) * 1000), finish_reason=finish,
         )
+
+
+class GeminiLLMClient:
+    """Google Gemini over the REST API (httpx; no SDK dependency). Same interface as GroqLLMClient.
+
+    The answer is always consumed whole on the server (verify-then-stream), so `answer_stream` is one request that yields the full text once.
+    The API key travels in a header and is never put in a URL, a log line or an exception message."""
+
+    BASE = "https://generativelanguage.googleapis.com/v1beta"
+
+    def __init__(self, settings: Settings, http: Any | None = None) -> None:
+        self.s = settings
+        if http is None:
+            import httpx
+
+            http = httpx.AsyncClient(timeout=settings.llm_timeout_s)
+        self._http = http
+
+    @staticmethod
+    def _body(messages: list[dict[str, str]], max_tokens: int, temperature: float, json_mode: bool, thinking: int) -> dict[str, Any]:
+        system = "\n\n".join(m["content"] for m in messages if m["role"] == "system")
+        contents = [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]}
+                    for m in messages if m["role"] != "system"]
+        gen: dict[str, Any] = {"maxOutputTokens": max_tokens, "temperature": temperature}
+        if json_mode:
+            gen["responseMimeType"] = "application/json"
+        if thinking >= 0:
+            gen["thinkingConfig"] = {"thinkingBudget": thinking}
+        body: dict[str, Any] = {"contents": contents, "generationConfig": gen}
+        if system:
+            body["systemInstruction"] = {"parts": [{"text": system}]}
+        return body
+
+    async def chat(
+        self, *, model: str, messages: list[dict[str, str]], max_tokens: int, json_mode: bool = False,
+        temperature: float = 0.2, reasoning_effort: str | None = None,
+    ) -> LLMResult:
+        body = self._body(messages, max_tokens, temperature, json_mode, self.s.gemini_thinking_budget)
+        url = f"{self.BASE}/models/{model}:generateContent"
+        last: str = "unknown"
+        for attempt in range(self.s.llm_max_retries):
+            t0 = time.perf_counter()
+            try:
+                resp = await self._http.post(url, json=body, headers={"x-goog-api-key": self.s.gemini_api_key})
+                if resp.status_code == 200:
+                    data = resp.json()
+                    cand = (data.get("candidates") or [{}])[0]
+                    text = "".join(p.get("text", "") for p in (cand.get("content") or {}).get("parts", []))
+                    u = data.get("usageMetadata") or {}
+                    finish = cand.get("finishReason")
+                    result = LLMResult(
+                        text=text, model=model, input_tokens=int(u.get("promptTokenCount", 0)),
+                        output_tokens=int(u.get("candidatesTokenCount", 0)) + int(u.get("thoughtsTokenCount", 0)),
+                        latency_ms=int((time.perf_counter() - t0) * 1000),
+                        finish_reason="length" if finish == "MAX_TOKENS" else (finish or None),
+                    )
+                    log.info("llm_call model=%s in=%d out=%d ms=%d", model, result.input_tokens, result.output_tokens, result.latency_ms)
+                    return result
+                last = f"HTTP {resp.status_code}"
+                if not (resp.status_code == 429 or resp.status_code >= 500):
+                    break  # 400/403/404: retrying cannot help (bad key, unknown model, bad request)
+            except Exception as exc:  # noqa: BLE001 - network/timeout; classified by type name only (never the message: it can hold the URL)
+                last = type(exc).__name__
+            if attempt < self.s.llm_max_retries - 1:
+                await asyncio.sleep(0.5 * 2**attempt)
+        raise LLMError(f"LLM call failed for {model}: {last}")
+
+    async def answer(self, messages: list[dict[str, str]]) -> LLMResult:
+        try:
+            return await self.chat(model=self.s.answer_model, messages=messages, max_tokens=self.s.answer_max_tokens)
+        except LLMError:
+            short = [*messages[:-1], {**messages[-1], "content": messages[-1]["content"] + "\n(Keep it under 80 words.)"}]
+            res = await self.chat(model=self.s.router_model, messages=short, max_tokens=150)
+            res.fallback_used = True
+            return res
+
+    async def answer_stream(self, messages: list[dict[str, str]]) -> AsyncIterator[tuple[str, Any]]:
+        res = await self.answer(messages)
+        yield "delta", res.text
+        yield "done", res
+
+
+def make_llm(settings: Settings):
+    """The client for LLM_PROVIDER."""
+    return GeminiLLMClient(settings) if settings.llm_provider == "gemini" else GroqLLMClient(settings)
