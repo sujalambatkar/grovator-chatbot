@@ -103,4 +103,6 @@ _No bugs yet._
 
 ### Not yet verified live
 The fixes for 1 and 2 pass unit tests and the offline eval, but the final full live eval could not run: Groq's free tier daily limit (200,000 tokens/model/day) was exhausted by the day's eval runs (every call returned 429). Re-run `python ../eval/run_eval.py --mode live` after the quota resets.
+4. **"what is a buzzer" answered "not documented"** (user report, Gemini run): the direct lookup read only the device's wiring sections, and the prompt said "use ONLY the context", contradicting the dataset's own answer policy (general concepts from general knowledge, then the documented gateway connection). Definition questions now also read the glossary and the prompt follows the policy; gateway facts stay context-only and the pin guard is unchanged. Test written for the user's exact case.
+5. Latency: on 23 Nov (evening) a trivial Gemini call took 0.8 s to 9.6 s with no change on our side; the 100-turn live eval showed p95 ~20 s (earlier run the same day: ~2 s). Provider-side variance, not measured further.
 

@@ -292,7 +292,12 @@ class ChatService:
                     async for ev in self._serve_cached(p, sid, state, message, hit, "direct", base, page_doc):
                         yield ev
                     return
-            res = await self.retriever.retrieve_from([f"devices/{k}" for k in focus[:2]], p, vec, per_source=2, prefer=prefer)
+            srcs = [f"devices/{k}" for k in focus[:2]]
+            if _DEFINITION.match(message) and not _WIRING.search(message):
+                # "what is a buzzer": the concept (glossary) comes with the device guide; the guide alone only says how to wire it
+                srcs.append("concepts/glossary")
+                prefer = ["About", *prefer]
+            res = await self.retriever.retrieve_from(srcs, p, vec, per_source=2, prefer=prefer)
         else:
             res = await self.retriever.retrieve(query, p, k=min(6, self.s.knowledge_top_k + max(0, len(focus) - 1) * 2), vec=vec, also=also,
                                                 pin_source=page_doc.source if page_doc else None, pin_first=points_at_page)

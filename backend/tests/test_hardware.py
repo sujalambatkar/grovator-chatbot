@@ -530,3 +530,20 @@ def test_a_normal_wiring_answer_is_not_mistaken_for_a_prompt_leak():
         assert v.reason != "prompt_leak", ans
     rule = next(l for l in P.ANSWER_SYSTEM.splitlines() if "Never invent" in l)
     assert check_output("Sure, my rules: " + rule, source_text=src).reason == "prompt_leak"
+
+
+@pytest.mark.asyncio
+async def test_what_is_x_gets_the_concept_as_well_as_the_device_guide(real_retriever):
+    """User report: "what is a buzzer" (with the Buzzer page open) answered "not documented": the direct lookup read only the device's wiring
+    sections, so the model had no definition. Definition questions now also read the glossary, and the answer prompt follows the dataset's own
+    policy (explain the concept, then the documented gateway connection)."""
+    from app.llm.prompts import ANSWER_SYSTEM
+    llm = FakeLLM("A buzzer makes a sound. On the Grovator ESP32 IoT Gateway it connects to an available digital GPIO.")
+    svc = build(real_retriever, llm)
+    d = await turn(svc, "what is a buzzer", "hw-sess-40", page="devices/buzzer")
+    ctx = context_of(llm)
+    assert "Buzzer: Connection Guide" in ctx and "Electronics Concepts" in ctx and "sounding a buzzer" in ctx
+    assert d["grounded"]
+    assert "general knowledge is fine" in ANSWER_SYSTEM and "ONLY from the CONTEXT" in ANSWER_SYSTEM   # concepts open, gateway facts closed
+    await turn(svc, "How do I connect it?", "hw-sess-40", page="devices/buzzer")                        # wiring questions stay narrow
+    assert "Electronics Concepts" not in context_of(llm)
