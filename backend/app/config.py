@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     # ANSWER_MODEL/ROUTER_MODEL. Model names are env-driven because providers deprecate models.
     llm_provider: str = "groq"
     gemini_api_key: str = ""
-    gemini_answer_model: str = "gemini-2.5-flash-lite"
-    gemini_router_model: str = "gemini-2.5-flash-lite"
+    gemini_answer_model: str = "gemini-3.5-flash-lite"
+    gemini_router_model: str = "gemini-3.5-flash-lite"
     gemini_thinking_budget: int = -1   # -1 = leave the model default; 0 = no hidden thinking tokens (flash-lite models accept 0)
 
     # LLM (Groq).

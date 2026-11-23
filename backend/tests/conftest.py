@@ -9,6 +9,7 @@ for _flag in ("ENABLE_SEMANTIC_CACHE", "ENABLE_ROUTER_SHORTCUT", "LAZY_SUMMARY",
     os.environ[_flag] = "false"
 os.environ["USAGE_LOG_DIR"] = ""
 os.environ["SUMMARY_MODE"] = "llm"          # legacy suites assert LLM summaries
+os.environ["LLM_PROVIDER"] = "groq"          # a developer's .env may select Gemini; tests pin the default
 os.environ["DEMO_MODE"] = "false"           # a developer's local .env must never change test results
 
 import jwt

@@ -105,7 +105,7 @@ all), source line, stop button, 1000-char limit, keyboard + screen-reader suppor
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `LLM_PROVIDER` | `groq` | `groq` or `gemini`. With `gemini`, `GEMINI_ANSWER_MODEL` / `GEMINI_ROUTER_MODEL` (default `gemini-2.5-flash-lite`) replace `ANSWER_MODEL` / `ROUTER_MODEL`. List usable names with `python -m scripts.list_gemini_models` |
+| `LLM_PROVIDER` | `groq` | `groq` or `gemini`. With `gemini`, `GEMINI_ANSWER_MODEL` / `GEMINI_ROUTER_MODEL` (default `gemini-3.5-flash-lite`) replace `ANSWER_MODEL` / `ROUTER_MODEL`. List usable names with `python -m scripts.list_gemini_models` |
 | `GROQ_API_KEY` / `GEMINI_API_KEY` | – | Key of the chosen provider. **Backend only.** The frontend build is checked to contain no key. |
 | `ANSWER_MODEL` / `ROUTER_MODEL` / `GUARD_MODEL` | `openai/gpt-oss-120b` / `-20b` / `-safeguard-20b` | Swap when Groq deprecates a model (`scripts.list_groq_models` checks). The brief's Llama chat models are no longer on Groq. |
 | `REASONING_EFFORT` | `low` | gpt-oss hidden reasoning counts as output tokens |
