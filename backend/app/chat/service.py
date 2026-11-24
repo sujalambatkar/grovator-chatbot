@@ -6,6 +6,7 @@ L7 output guardrails -> L8 post-processing (turn, lazy summary, memory, cache st
 """
 import asyncio
 import logging
+from pathlib import Path
 import re
 import time
 import uuid
@@ -13,6 +14,7 @@ from collections.abc import AsyncIterator
 from dataclasses import replace as dc_replace
 from typing import Any
 
+from app.chat.appkb import AppAnswer, AppKB, Entities, with_health_note
 from app.chat.canned import CannedAnswers
 from app.chat.cache import SemanticCache, cacheable
 from app.chat.prompting import build_answer_messages
@@ -27,7 +29,7 @@ from app.guardrails.input import check_input
 from app.guardrails.output import OutputVerdict, check_output, cited_sources, unsupported_pins
 from app.llm.llm_client import LLMClient, LLMError
 from app.llm.prompts import (
-    ANSWER_SYSTEM, BUDGET_REPLY, MY_DATA_REPLY, NO_INFO_REPLY, OFF_TOPIC_REPLY, REDIRECT_REPLY, SMALLTALK_FALLBACK, SUMMARY_SYSTEM, UNSAFE_REPLY,
+    ANSWER_SYSTEM, BUDGET_REPLY, GENERAL_SYSTEM, MY_DATA_REPLY, NO_INFO_REPLY, OFF_TOPIC_REPLY, REDIRECT_REPLY, SMALLTALK_FALLBACK, SUMMARY_SYSTEM, UNSAFE_REPLY,
     UNVERIFIED_PIN_REPLY,
 )
 from app.memory.long_term import MemoryManager
@@ -103,6 +105,15 @@ class ChatService:
         self.catalog = catalog
         self.hw = hardware_index(settings.knowledge_dir)  # the gateway dataset: device names -> keys (inert if none)
         self.canned = CannedAnswers(self.hw) if (self.hw.devices and settings.enable_canned) else None
+        self.appkb: AppKB | None = None
+        self.app_text = ""
+        if settings.app_knowledge_dir:  # application assistant: structured answers from backend/knowledge/ (fails loudly if invalid)
+            from knowledge.loader import validate
+            from knowledge.render import render_all
+
+            kb = validate(Path(settings.app_knowledge_dir))
+            self.appkb = AppKB(kb)
+            self.app_text = "\n".join(sec.text for sec in render_all(kb))  # what counts as "documented" for the pin guard
         if memory is not None:
             memory.on_usage = lambda p, n: self._record(p, n, "extract")
         self._pending: set[asyncio.Task] = set()
@@ -168,7 +179,20 @@ class ChatService:
         had_history = bool(state.turns or state.summary)
         page_doc = self.catalog.get(p, page) if (self.catalog and page) else None
         mentioned = self.hw.detect(message) if self.hw.devices else []
-        ask = self._clarify(message, mentioned, state.focus)
+        ents, recent, app_ctx = Entities(), Entities(), False
+        if self.appkb:
+            ents, recent = self.appkb.detect(message), self._recent_entities(state)
+            ans = self.appkb.answer(message, ents, recent, hw_named=bool(mentioned))
+            if ans:  # wiring tables, block order, code, thresholds, "not documented yet": built from the files, 0 tokens
+                async for ev in self._serve_app(p, sid, state, message, ans, base, page_doc):
+                    yield ev
+                return
+            app_ctx = (ents.strong or recent.strong or bool(ents.weak)) and not (mentioned and not ents.strong)
+            if self.appkb.is_general(message, ents, bool(mentioned)):  # "what is SpO2?": model knowledge, simple words
+                async for ev in self._general(p, sid, state, message, message, base):
+                    yield ev
+                return
+        ask = None if app_ctx else self._clarify(message, mentioned, state.focus)
         if ask:  # ambiguous "it"/"the sensor": ask instead of guessing, 0 LLM tokens; the question is kept so the answer has context
             base = {**base, "intent": Intent.platform_faq.value, "naive_tokens": self._naive(p, None, state, message)}
             yield {"type": "meta", **base}
@@ -236,6 +260,10 @@ class ChatService:
             text, reason = canned[route.intent]
             yield self._done(base, text, grounded=False, refused_reason=reason)
             return
+        if route.intent is Intent.general_tech:
+            async for ev in self._general(p, sid, state, message, route.query, base):
+                yield ev
+            return
         if route.intent is Intent.smalltalk:
             # Greetings, thanks and "how are you" are answered by free canned rules (route.shortcut). Anything else the router
             # calls smalltalk ("what do you like to eat?") gets a fixed redirect: a model must never free-write small talk,
@@ -263,6 +291,10 @@ class ChatService:
                 base_q = f"{state.turns[-1].user} {message}"
             route = dc_replace(route, query=base_q if labels.lower() in base_q.lower() else f"{base_q} ({labels})")
             glued = False
+        if app_ctx and not mentioned and self.appkb:
+            label = self.appkb.app_label(ents.merge(recent))  # "what about the LED?" -> about the pulse oximeter project
+            if label and label.lower() not in route.query.lower():
+                route = dc_replace(route, query=f"{route.query} ({label})")
         query = route.query
         points_at_page = bool(page_doc and DEICTIC.search(message))
         if points_at_page:
@@ -386,6 +418,8 @@ class ChatService:
                 pass
         if bad_pins:
             out = OutputVerdict(UNVERIFIED_PIN_REPLY, "replaced", "unsupported_pin")
+        if out.action != "replaced":
+            out = OutputVerdict(with_health_note(message, out.text), out.action, out.reason)
         for chunk in _chunks(out.text):
             yield {"type": "token", "t": chunk}
         answer = out.text
@@ -406,9 +440,72 @@ class ChatService:
             base, answer, grounded=not blocked, refused_reason=out.reason if blocked else None, sources=sources,
             input_tokens=final.input_tokens if final else 0, output_tokens=final.output_tokens if final else 0,
             model=final.model if final else None, truncated=truncated,
+            images=(self.appkb.images_for([h.source for h in used]) if (self.appkb and not blocked) else []),
             standalone_query=route.query, memories_used=len(mems), naive_tokens=naive,
             tokens_total=base["router_tokens"] + (final.input_tokens + final.output_tokens if final else 0),
         )
+
+    # ------------------------------------------------------------------ application assistant
+    def _recent_entities(self, state: SessionState) -> Entities:
+        e = Entities()
+        for t in state.turns[-2:]:
+            e = e.merge(self.appkb.detect(f"{t.user} {t.assistant}"))
+        return e
+
+    async def _serve_app(self, p: Principal, sid: str, state: SessionState, message: str, ans: AppAnswer, base: dict,
+                         page_doc: Doc | None) -> AsyncIterator[Event]:
+        base = {**base, "intent": Intent.platform_faq.value, "shortcut": True, "naive_tokens": self._naive(p, page_doc, state, message)}
+        yield {"type": "meta", **base}
+        text = with_health_note(message, ans.text)
+        out = check_output(text, source_text=text, secrets=self._secrets(p))
+        for chunk in _chunks(out.text):
+            yield {"type": "token", "t": chunk}
+        await self._persist_turn(p, sid, state, message, out.text)
+        yield self._done(base, out.text, grounded=ans.grounded and ans.kind != "not_documented", sources=ans.sources, canned=ans.kind,
+                         refused_reason="not_documented" if ans.kind == "not_documented" else None, standalone_query=message,
+                         connection_table=ans.table, block_stack=ans.blocks, code_blocks=ans.code, images=ans.images, memories_used=0,
+                         input_tokens=0, output_tokens=0, tokens_total=0, naive_tokens=base["naive_tokens"])
+
+    async def _general(self, p: Principal, sid: str, state: SessionState, message: str, query: str, base: dict) -> AsyncIterator[Event]:
+        """General technology/science question: model knowledge, no retrieval, no 'from the docs' claim."""
+        base = {**base, "intent": Intent.general_tech.value}
+        yield {"type": "meta", **base}
+        app = next(iter(self.appkb.apps.values()), None) if self.appkb else None
+        note = f"PROJECT NOTES: the student is working on '{app.title}' (a pulse oximeter, an ESP32 kit and 3 LEDs).\n\n" if app else ""
+        msgs: list[dict[str, str]] = [{"role": "system", "content": GENERAL_SYSTEM}]
+        for t in state.turns[-MAX_TURNS:]:
+            msgs += [{"role": "user", "content": truncate_tokens(t.user, 80)}, {"role": "assistant", "content": truncate_tokens(t.assistant, 80)}]
+        msgs.append({"role": "user", "content": f"{note}QUESTION: {truncate_tokens(query, 300)}"})
+        try:
+            parts, fin = [], None
+            async for kind, val in self.llm.answer_stream(msgs):
+                if kind == "delta":
+                    parts.append(val)
+                else:
+                    fin = val
+            if fin:
+                await self._record(p, fin.input_tokens, "answer_in")
+                await self._record(p, fin.output_tokens, "answer_out")
+            raw = _CITATION.sub("", (fin.text if fin else "".join(parts)).strip())
+        except LLMError as exc:
+            log.error("general_failed cause=%r", exc.__cause__)
+            yield {"type": "error", "message": "The assistant is busy right now. Please try again."}
+            return
+        # leak/vendor checks stay on; there is no grounding check (the answer is general knowledge) and no number check
+        out = check_output(raw, source_text=f"{note}{message}", secrets=self._secrets(p), min_support=0.0, numbers_source=raw)
+        if out.action != "replaced" and unsupported_pins(out.text, self.app_text, message):
+            out = OutputVerdict(UNVERIFIED_PIN_REPLY, "replaced", "unsupported_pin")  # general mode must not name kit pins
+        blocked = out.action == "replaced"
+        text = out.text if blocked else with_health_note(message, out.text)
+        for chunk in _chunks(text):
+            yield {"type": "token", "t": chunk}
+        if not blocked:
+            await self._persist_turn(p, sid, state, message, text)
+        yield self._done(base, text, grounded=False, refused_reason=out.reason if blocked else None, sources=[],
+                         input_tokens=fin.input_tokens if fin else 0, output_tokens=fin.output_tokens if fin else 0,
+                         model=fin.model if fin else None, standalone_query=query, memories_used=0,
+                         naive_tokens=self._naive(p, None, state, message),
+                         tokens_total=base["router_tokens"] + (fin.input_tokens + fin.output_tokens if fin else 0))
 
     # ------------------------------------------------------------------ helpers
     @staticmethod

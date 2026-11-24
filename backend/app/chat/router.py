@@ -15,6 +15,7 @@ log = logging.getLogger("grovator.router")
 class Intent(str, Enum):
     platform_faq = "platform_faq"
     my_data = "my_data"
+    general_tech = "general_tech"
     smalltalk = "smalltalk"
     off_topic = "off_topic"
     unsafe = "unsafe"

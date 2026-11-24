@@ -37,7 +37,7 @@ def create_app(llm=None, retriever: HybridRetriever | None = None, redis=None, a
             r = HybridRetriever(KnowledgeStore(make_client(settings.qdrant_url), settings.knowledge_collection))
             # In-memory store is empty on every boot; a persistent store is filled by scripts/ingest.py
             if auto_ingest and settings.qdrant_url == "memory":
-                await ingest(Path(settings.knowledge_dir), r)
+                await ingest(Path(settings.knowledge_dir), r, app_root=Path(settings.app_knowledge_dir) if settings.app_knowledge_dir else None)
             elif settings.qdrant_url != "memory":
                 await r.refresh_version()
         catalog = ContentCatalog(Path(settings.knowledge_dir))
@@ -63,6 +63,10 @@ def create_app(llm=None, retriever: HybridRetriever | None = None, redis=None, a
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=False,
                        allow_methods=["GET", "POST", "DELETE", "OPTIONS"], allow_headers=["Authorization", "Content-Type"],
                        expose_headers=["Retry-After"], max_age=600)
+    if settings.app_knowledge_dir and (Path(settings.app_knowledge_dir) / "media").is_dir():
+        from fastapi.staticfiles import StaticFiles  # images of the knowledge base (lesson slides, kit photos)
+
+        app.mount("/media", StaticFiles(directory=Path(settings.app_knowledge_dir) / "media"), name="media")
     app.include_router(chat_router)
     app.include_router(memories_router)
     app.include_router(admin_router)

@@ -81,7 +81,7 @@ def _shingles(text: str, n: int = 6) -> set[tuple[str, ...]]:
 def check_output(
     answer: str, *, source_text: str, secrets: list[str] | None = None, strict_numbers: bool = False,
     numbers_source: str | None = None,
-    min_support: float = 0.35, prompts: tuple[str, ...] = (P.ANSWER_SYSTEM, P.ROUTER_SYSTEM, P.SUMMARY_SYSTEM, P.EXTRACT_SYSTEM),
+    min_support: float = 0.35, prompts: tuple[str, ...] = (P.ANSWER_SYSTEM, P.GENERAL_SYSTEM, P.ROUTER_SYSTEM, P.SUMMARY_SYSTEM, P.EXTRACT_SYSTEM),
 ) -> OutputVerdict:
     text = answer.strip()
     if not text:

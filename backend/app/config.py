@@ -101,6 +101,8 @@ class Settings(BaseSettings):
         return self.gemini_api_key if self.llm_provider == "gemini" else self.groq_api_key
 
     knowledge_dir: str = str(Path(__file__).resolve().parent.parent / "knowledge_src")
+    # File-based application knowledge (applications/sensors/blocks/kits/media YAML). "" switches the application assistant off.
+    app_knowledge_dir: str = str(Path(__file__).resolve().parent.parent / "knowledge")
     demo_mode: bool = False            # POST /demo/session auto-login for the demo page. Never in production.
 
 

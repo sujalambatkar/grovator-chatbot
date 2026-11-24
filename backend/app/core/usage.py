@@ -14,7 +14,7 @@ from pathlib import Path
 from app.core.auth import Principal
 
 ALLOWED = ("request_id", "intent", "cache_hit", "shortcut", "input_tokens", "output_tokens", "router_tokens", "model",
-           "latency_ms", "refused_reason", "memories_used", "truncated", "tool", "fallback")
+           "latency_ms", "refused_reason", "memories_used", "truncated", "tool", "fallback", "canned")
 COMPONENTS = ("router", "planner", "answer_in", "answer_out", "summary", "extract")
 
 
@@ -81,6 +81,10 @@ class UsageTracker:
             pipe.set(why_key, new_reason, ex=86400 * 40)
         pipe.expire(key, 40 * 86400)
         await pipe.execute()
+        if self.log_dir:  # feedback JSONL: random request id, intent, rating, fixed reason. No user, org or text.
+            line = json.dumps({"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), "request_id": rid,
+                               "intent": meta.get("intent", "unknown"), "rating": rating, "reason": new_reason})
+            await asyncio.to_thread(self._append, line, "feedback")
         return True
 
     async def request(self, p: Principal, rec: dict) -> dict:
@@ -109,10 +113,10 @@ class UsageTracker:
             await asyncio.to_thread(self._append, line)
         return rec
 
-    def _append(self, line: str) -> None:
+    def _append(self, line: str, kind: str = "usage") -> None:
         d = Path(self.log_dir)
         d.mkdir(parents=True, exist_ok=True)
-        with self._lock, open(d / f"usage-{_day()}.jsonl", "a", encoding="utf-8") as f:
+        with self._lock, open(d / f"{kind}-{_day()}.jsonl", "a", encoding="utf-8") as f:
             f.write(line + "\n")
 
     async def summary(self, org_id: str, school_id: str | None, days: int) -> dict:

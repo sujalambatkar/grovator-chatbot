@@ -60,6 +60,11 @@ class ChatResponse(BaseModel):
     cache_hit: str | None = None
     tokens_total: int | None = None   # tokens this answer cost us (router + answer in + out)
     naive_tokens: int | None = None   # estimate: what a send-the-whole-page-and-chat bot would have sent
+    # structured parts of an application answer, rendered by the widget (built from the knowledge files, never by the model)
+    connection_table: dict | None = None
+    block_stack: list[dict] = []
+    code_blocks: list[dict] = []
+    images: list[dict] = []
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -70,7 +75,7 @@ async def chat(body: ChatRequest, request: Request, p: Principal = Depends(limit
             raise HTTPException(status_code=503, detail=ev["message"])
         if ev["type"] == "done":
             done = ev
-    return ChatResponse(**{k: v for k, v in done.items() if k in ChatResponse.model_fields})
+    return ChatResponse(**{k: v for k, v in done.items() if k in ChatResponse.model_fields and v is not None})
 
 
 def _sse(event: str, data: dict) -> str:
