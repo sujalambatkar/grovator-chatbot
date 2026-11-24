@@ -16,6 +16,6 @@ async def content(request: Request, p: Principal = Depends(limited_principal)) -
         "categories": CATEGORY_LABEL,
         "docs": [{"source": d.source, "title": d.title, "category": d.category, "order": d.order, "body": d.body,
                   # suggested questions that are answered by pre-written answers (0 tokens); empty = the page uses its defaults
-                  "suggestions": canned.suggestions(d.source) if canned else []}
+                  "suggestions": cat.app_starters.get(d.source) or (canned.suggestions(d.source) if canned else [])}
                  for d in cat.visible(p)],
     }

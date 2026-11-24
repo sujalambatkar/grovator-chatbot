@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import type { ChatMessage, FeedbackReason, Rating } from "@/lib/types";
+import { BlockStack, CodeCard, ConnectionTable, Images, Sources } from "./Rich";
 import { SafeText } from "./SafeText";
 import s from "./widget.module.css";
 
@@ -13,11 +14,13 @@ const REASONS: { id: FeedbackReason; label: string }[] = [
 
 interface Props {
   showTokens?: boolean;
+  /** API base URL, for the images of an answer */
+  baseUrl?: string;
   msg: ChatMessage;
   onRate: (id: string, rating: Rating, reason?: FeedbackReason) => void;
 }
 
-export function MessageBubble({ msg, onRate, showTokens = false }: Props) {
+export function MessageBubble({ msg, onRate, showTokens = false, baseUrl = "" }: Props) {
   const [reason, setReason] = useState<FeedbackReason | null>(null);
 
   if (msg.role === "user") {
@@ -38,10 +41,14 @@ export function MessageBubble({ msg, onRate, showTokens = false }: Props) {
         ) : (
           <SafeText text={msg.text} />
         )}
+        {msg.status === "done" && msg.table && <ConnectionTable table={msg.table} />}
+        {msg.status === "done" && !!msg.blocks?.length && <BlockStack blocks={msg.blocks} />}
+        {msg.status === "done" && msg.code?.map((c, i) => <CodeCard key={i} block={c} />)}
+        {msg.status === "done" && !!msg.images?.length && <Images images={msg.images} baseUrl={baseUrl} />}
       </div>
       {msg.status === "done" && (
         <div className={s.meta}>
-          {msg.sources && msg.sources.length > 0 && <span data-testid="sources">Source: {msg.sources.join(", ")}</span>}
+          {msg.sources && msg.sources.length > 0 && <Sources sources={msg.sources} />}
           {showTokens && msg.tokens !== undefined && (
             <span data-testid="msg-tokens" className={s.tokenChip}>
               {msg.tokens === 0

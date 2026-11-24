@@ -28,7 +28,8 @@ export interface ChatWidgetProps {
   showTokenMeter?: boolean;
 }
 
-const SUGGESTIONS = ["Which sensors can I connect?", "How do I connect the ultrasonic sensor?", "Which pins support analog input?", "What are the wiring rules?"];
+// starter chips: each is answered by the application knowledge (most cost 0 tokens)
+const SUGGESTIONS = ["What does a pulse oximeter do?", "How do I connect the sensor?", "Which blocks do I need?", "Why does it show 0?", "What does SpO2 mean?"];
 
 export function ChatWidget({
   apiUrl, getToken, title = "Grovator Assistant", storageKey, defaultOpen = false, onAuthError, pageId,
@@ -71,7 +72,7 @@ export function ChatWidget({
               <MemoryPanel cfg={cfg} />
             ) : messages.length === 0 ? (
               <div className={s.welcome} data-testid="welcome">
-                Hi! I can help you connect sensors and modules to the Grovator ESP32 IoT Gateway.
+                Hi! I'm the Grovator Assistant. Ask me about the pulse oximeter project, your kit, sensors, wiring and blocks.
                 <div className={s.suggestions}>
                   {suggestions.map((q) => (
                     <button key={q} type="button" className={s.chip} onClick={() => void send(q)}>{q}</button>
@@ -79,7 +80,7 @@ export function ChatWidget({
                 </div>
               </div>
             ) : (
-              messages.map((m) => <MessageBubble key={m.id} msg={m} onRate={rate} showTokens={showTokenMeter} />)
+              messages.map((m) => <MessageBubble key={m.id} msg={m} onRate={rate} showTokens={showTokenMeter} baseUrl={cfg.baseUrl} />)
             )}
             <div ref={endRef} />
           </div>

@@ -60,6 +60,7 @@ class Settings(BaseSettings):
     cache_max_per_scope: int = 300
     cache_followups: bool = False      # off: a cached answer to a REWRITTEN query ignores what the user actually said
     enable_router_shortcut: bool = True
+    enable_long_term_memory: bool = False  # remembers facts about the user across chats (one extra model call). Off: students are anonymous
     enable_canned: bool = True         # pre-written answers (0 tokens) for plain what-is / how-to-connect / which-pins questions
     lazy_summary: bool = True          # fold a turn into the summary only when it leaves the 2-turn window
     enable_compression: bool = True

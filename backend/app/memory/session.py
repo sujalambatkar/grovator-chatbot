@@ -1,11 +1,12 @@
-"""Short-term memory: rolling summary + last 2 raw turns, in Redis, keyed by (user_id, session_id).
+"""Short-term memory: rolling summary + the last HISTORY_TURNS raw turns (default 4), in Redis, keyed by (user_id, session_id).
 Including user_id in the key means a guessed session_id can never expose another user's context."""
 import json
+import os
 import re
 from dataclasses import asdict, dataclass, field
 
 SESSION_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
-MAX_TURNS = 2
+MAX_TURNS = max(1, int(os.environ.get("HISTORY_TURNS", "4")))  # older turns are folded into the rolling summary
 
 
 @dataclass

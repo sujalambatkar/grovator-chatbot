@@ -13,8 +13,8 @@ from app.core.auth import Principal
 from app.rag.hardware import load_hw_docs
 from app.rag.tokens import count_tokens
 
-CATEGORY_ORDER = ["gateway", "interfaces", "devices", "concepts", "courses", "lessons", "blocks", "tools", "help"]
-CATEGORY_LABEL = {"gateway": "Gateway", "interfaces": "Gateway interfaces", "devices": "Sensors and modules", "concepts": "Concepts",
+CATEGORY_ORDER = ["applications", "gateway", "interfaces", "devices", "concepts", "courses", "lessons", "blocks", "tools", "help"]
+CATEGORY_LABEL = {"applications": "Applications", "gateway": "Gateway", "interfaces": "Gateway interfaces", "devices": "Sensors and modules", "concepts": "Concepts",
                   "courses": "Courses", "lessons": "Lessons", "blocks": "Block reference", "tools": "Platform tools", "help": "Help"}
 ALL_ROLES = ["student", "teacher", "admin", "superadmin"]
 
@@ -37,8 +37,9 @@ def _title(path: Path) -> str:
 
 
 class ContentCatalog:
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, app_root: Path | None = None) -> None:
         self.docs: list[Doc] = []
+        self.app_starters: dict[str, list[str]] = {}
         for path in sorted(root.rglob("*.md")):
             if path.name.lower() == "readme.md":
                 continue
@@ -53,6 +54,15 @@ class ContentCatalog:
         for h in load_hw_docs(root):
             self.docs.append(Doc(source=h.source, title=h.title, category=h.category, order=h.order, body=h.body,
                                  role_visibility=h.role_visibility, tokens=count_tokens(h.body)))
+        if app_root is not None:  # applications of backend/knowledge/: one page each (a readable summary of the application file)
+            from knowledge.loader import validate
+
+            kb = validate(app_root)
+            for i, a in enumerate(kb.applications.values()):
+                body = _application_page(kb, a)
+                self.docs.append(Doc(source=f"applications/{a.id}", title=a.title, category="applications", order=i, body=body,
+                                     role_visibility=list(ALL_ROLES), tokens=count_tokens(body)))
+                self.app_starters[f"applications/{a.id}"] = list(a.starter_questions)
         self._by_source = {d.source: d for d in self.docs}
         self._total_cache: dict[tuple, int] = {}
 
@@ -78,3 +88,11 @@ class ContentCatalog:
         if k not in self._total_cache:
             self._total_cache[k] = sum(d.tokens for d in self.visible(p))
         return self._total_cache[k]
+
+
+def _application_page(kb, a) -> str:
+    """A short, readable page for the demo: what the application is, its steps, wiring and limits (all taken from the files)."""
+    rows = "\n".join(f"- {c.sensor_pin} to {c.kit_pin}" for c in a.circuit.connections)
+    return (f"{a.summary}\n\n## The 5 step process\n" + "\n".join(f"{s.n}. **{s.title}**: {s.text}" for s in a.steps)
+            + f"\n\n## Wiring ({kb.kits[a.circuit.kit].name})\n{rows}\n\n## Limits used in the program\n"
+            + "\n".join(f"- {t.name}: {t.rule}" for t in a.thresholds) + f"\n\n{a.safety_note}")

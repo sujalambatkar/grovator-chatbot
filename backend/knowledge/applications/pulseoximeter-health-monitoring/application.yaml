@@ -2,6 +2,7 @@ id: pulseoximeter-health-monitoring
 title: Health Monitoring using Pulse Oximeter
 aliases: [health monitoring, pulse oximeter project, pulseoximeter project, oximeter project, pulse oximeter application, pulseoximeter application, health monitoring project, oximeter lesson, this project, this lesson, the lesson, the project]
 weak_aliases: [led, leds, led board, ledboardsensor, spo2, bpm, heart rate, heartrate, oxygen, oxygen level, finger, serial monitor]
+starter_questions: ["What does a pulse oximeter do?", "How do I connect the sensor?", "Which blocks do I need?", "Why does it show 0?", "What does SpO2 mean?"]
 summary: >-
   Measure the oxygen level (SpO2) and heart rate (BPM) of a person with a pulse oximeter, and show the heart rate with
   three LEDs, using the ESP32 kit and block programming.
@@ -191,6 +192,13 @@ faq:
     a: >-
       In the block code, SpO2 is limited to between 85 and 100 and then 4 is added, so it can show up to 104. That is a
       quirk of the classroom code, and a real oxygen level cannot be above 100. Tell your teacher.
+  - q: What will I see in the serial monitor (expected output)?
+    triggers: [expected output, serial output, serial monitor, what will i see, what does it print, output of the program, what does the program print, what should it show]
+    a: >-
+      Every loop the lesson program prints "Heartrate : <BPM>" and "SpO2 : <value>". If SpO2 is not 0 it then prints "Normal oxygen level" (95 or more)
+      or "Low oxygen level". If the heart rate is not 0 it prints "Heart rate: High - LED 1 ON", "Heart rate: Medium - LED 2 ON" or "Heart rate: Low - LED 3 OFF"
+      (the LED really turns on) and then a line of dashes. With no valid reading it prints "Place Your Finger on Sensor". The lesson gives no sample
+      numbers, so I don't have typical values.
 extension_questions:
   - "Reflection: What have you learnt? What surprised you? What inspired you? What interested you?"
   - "Application: Can you relate the concepts and principles you learnt in science and in the course to a similar application in a real-life scenario?"

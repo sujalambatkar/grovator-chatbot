@@ -64,20 +64,23 @@ class AppAnswer:
 
 
 # ------------------------------------------------------------------ question shapes (strict; a wrong template is worse than a model call)
-_WIRING = re.compile(r"\b(?:connect\w*|wir(?:e|es|ed|ing)|plug\w*|attach\w*|hook\w*|pins?|pinout|ports?|terminals?|circuit)\b", re.I)
+_WIRING = re.compile(r"\b(?:connect\w*|wir(?:e|es|ed|ing)|plug\w*|attach\w*|hook\w*|pins?|pinout|ports?|terminals?|circuit)\b|\bwhere\b[^?.!]{0,40}\bgo(?:es)?\b", re.I)
 _LINE_BY_LINE = re.compile(r"\bline[ -]?by[ -]?line\b|\b(?:explain|walk me through|go through|describe)\b[^?.!]*\b(?:the )?(?:whole |full |entire )?(?:code|program|script)\b"
                            r"|\bwhat does (?:the|this|my) (?:code|program|script) do\b", re.I)
 _BLOCKS = re.compile(r"\bwhich blocks?\b|\bwhat blocks?\b|\bblocks? (?:do i|will i|should i|to|are) (?:need|use|needed|required)\b|\bblocks? (?:order|stack|sequence|needed|required)\b"
-                     r"|\border of (?:the )?blocks\b|\bwhich (?:block|blocks) (?:to|do)\b|\bblock programming steps\b", re.I)
+                     r"|\border of (?:the )?blocks\b|\b(?:order|stack|stacking|arrange|sequence)\b[^?.!]{0,30}\bblocks\b|\bwhich (?:block|blocks) (?:to|do)\b|\bblock programming steps\b", re.I)
 _CODE = re.compile(r"\b(?:show|give|display|see|print|share|need|want|send|get)\b[^?.!]{0,40}\b(?:code|program|script)\b|^\W*(?:the )?(?:full |complete |micropython )?(?:code|program)\W*$", re.I)
 _STEPS = re.compile(r"\b(?:5|five)[ -]?step|\bsteps? (?:to|of|in|for) (?:build|make|do|complete|solve|the (?:project|lesson|application|challenge))|\bhow (?:do|can|should) i (?:build|make|do|start|begin|complete) (?:this|the|a|my)?\s*(?:project|lesson|application|challenge|pulse|oximeter|health)|\bwhere (?:do|should) i start\b|\bstep[- ]by[- ]step\b|\bwhat are the steps\b", re.I)
 _THRESH = re.compile(r"\bthreshold|\bnormal oxygen|\blow oxygen|\b(?:which|what) leds?\b|\bleds? (?:mean|means|show|shows|indicate|indicates|light|lights|glow)\b"
                      r"|\b(?:bpm|heart ?rate|spo2)[^?.!]{0,25}\b(?:range|band|limit|level|cut ?off|boundary|high|medium|low|normal)\b|\b(?:high|medium|low) (?:heart ?rate|bpm)\b|\b(?:95|90|80)\b", re.I)
 _EXTRA = re.compile(r"\bvideo\b|\bresources?\b|\bhome ?assignment\b|\breflection\b|\bextension question|\bfood for thought\b|\bwhat should i think about\b", re.I)
-_WHAT_DOES = re.compile(r"^\W*(?:what(?:'s| is| does| do)?|how does|how do|explain|tell me about|describe)\b[^?]*\b(?:pulse ?oximeter|oximeter|pulse sensor|max30102|heart rate sensor|spo2 sensor)\b", re.I)
+_SENSOR_NAME = r"(?:pulse ?oximeter|oximeter|pulse sensor|max30102|heart rate sensor|spo2 sensor)"
+_WHAT_DOES = re.compile(rf"^\W*(?:what(?:'s| is| does| do)?|how does|how do|explain|tell me about|describe)\s+(?:a |an |the |this |my )?{_SENSOR_NAME}s?(?:\s+\w+){{0,4}}\W*$", re.I)
+_LED_Q = re.compile(r"\bled[ _]?([123])\b", re.I)
 _DEF_CUE = re.compile(r"\b(?:do|does|work|works|working|is|are|mean|means|for|use|used|measure|measures)\b", re.I)
 _BLOCK_Q = re.compile(r"\b(?:what|how|explain|does|do|tell|describe|purpose|used for|for)\b", re.I)
 
+_LESSON_WORDS = re.compile(r"\bled[ _]?[123]\b|\bheart ?rate\b|\bbpm\b|\bspo2\b|\boxygen\b|\bfinger\b|\boximeter\b|\blesson\b|\bprogram\b|\bthis project\b|\bour project\b", re.I)
 GENERAL_CUE = re.compile(r"^\W*(?:what is|what are|what's|whats|what does [^?]{1,40} mean|define|explain|how does [^?]{1,50} work|how do [^?]{1,50} work|why (?:do|does|is|are)|"
                          r"difference between|meaning of|tell me about|what do you mean by|can you explain)\b", re.I)
 GENERAL_TOPIC = re.compile(r"\b(?:spo2|sp02|oxygen saturation|blood oxygen|oxygen|bpm|heart ?rate|heartbeat|pulse|i2c|i²c|uart|serial|gpio|led|leds|relay|micropython|python|iot|aiot|iiot|"
@@ -147,6 +150,11 @@ class AppKB:
         return self.apps[a].title if a else ""
 
     # ------------------------------------------------------------------ routing helpers
+    def claims(self, message: str, e: Entities, recent: Entities | None = None) -> bool:
+        """A message that names a generic gateway device ("LED") but is clearly about the lesson ("LED 2", "heart rate", "the program"),
+        or follows a conversation about the lesson ("what about the LED?")."""
+        return bool(e.weak and (_LESSON_WORDS.search(message) or (recent is not None and recent.strong)))
+
     def is_general(self, message: str, e: Entities, hw_named: bool) -> bool:
         """A "what is X / how does X work" question about a technology: answered from model knowledge in student language."""
         return bool(not hw_named and not e.strong and GENERAL_CUE.search(message) and GENERAL_TOPIC.search(message))
@@ -180,9 +188,12 @@ class AppKB:
         if block and _BLOCK_Q.search(msg) and not _CODE.search(msg):
             return self._block_detail(block)
         if _CODE.search(msg) and not _BLOCKS.search(msg):
-            return self._code(a, e, msg)
+            return self._code(a, e, msg, recent)
         if _BLOCKS.search(msg):
             return self._block_stack(a)
+        led = _LED_Q.search(msg)
+        if led and (_WIRING.search(msg) or re.search(r"\b(?:gpio|pin|port)\b", msg, re.I)):
+            return self._led_pin(a, int(led.group(1)))
         if _WIRING.search(msg) and not _STEPS.search(msg):
             return self._wiring(a, e)
         if _STEPS.search(msg):
@@ -225,6 +236,14 @@ class AppKB:
         return AppAnswer("wiring", text, [f"{base}/circuit"], {"title": "Pulse oximeter to ESP32 kit", "columns": ["Sensor pin", "Kit pin", "Note"],
                          "rows": rows, "note": "From the lesson's circuit diagram"}, images=self._img(a.circuit.image))
 
+    def _led_pin(self, a, n: int) -> AppAnswer | None:
+        led = next((l for l in a.circuit.leds if l.name == f"led_{n}"), None)
+        if led is None:
+            return None
+        text = (f"In the lesson program LED {n} ({led.name}) is set up as an output on GPIO{led.gpio}. It means: {led.meaning}. Which terminal of the LED board "
+                f"its wire uses is not readable in the lesson's diagram, so I don't have that detail yet: ask your teacher.")
+        return AppAnswer("led_pin", text, [f"applications/{a.id}/circuit"], images=self._img(a.circuit.image))
+
     def _controller_gap(self, a) -> AppAnswer:
         text = ("I don't have that detail yet. The documents I have don't say how the pulse oximeter connects to the Grovator controller. "
                 "Its GPIO numbers are different from the ESP32 kit in the lesson (for example GPIO22 is Relay 2 on the controller, but it is the I2C clock, SCL, on the ESP32 kit), "
@@ -247,8 +266,9 @@ class AppKB:
         text = f"{b.title}: {b.description}"
         return AppAnswer("block", text, [f"blocks/{b.id}"], blocks=[{"order": 1, "title": b.title, "description": b.description}])
 
-    def _code(self, a, e: Entities, msg: str) -> AppAnswer:
-        wants_block = bool(e.blocks) or re.search(r"\bblocks?\b", msg, re.I)
+    def _code(self, a, e: Entities, msg: str, recent: Entities | None = None) -> AppAnswer:
+        asks_program = re.search(r"\b(?:lesson|program|full|whole|complete|micropython)\b", msg, re.I)
+        wants_block = bool(e.blocks) or re.search(r"\bblocks?\b", msg, re.I) or bool(recent and recent.blocks and not asks_program)
         if wants_block:
             bl = [self.k.blocks[i] for i in (e.blocks or a.block_stack)]
             code = [{"title": b.title, "language": b.language, "code": b.code.rstrip(), "note": " ".join(b.code_notes)} for b in bl]

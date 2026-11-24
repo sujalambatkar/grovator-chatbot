@@ -7,10 +7,10 @@ import type { ContentDoc, ContentResponse } from "@/lib/types";
 
 const API_URL = (process.env.NEXT_PUBLIC_CHATBOT_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 const ROLE = "student" as const; // the demo always runs as a student; access control is enforced by the server
-const DEFAULT_PAGE = "devices/ultrasonic_sensor";
+const DEFAULT_PAGE = ""; // the first application page, else the first device page
 
 // Suggestions come from the server per page (doc.suggestions): only questions answered by pre-written answers, so clicking one costs 0 tokens.
-const GENERIC = ["Which sensors can I connect?", "What are the wiring rules?", "Which pins support analog input?", "What is the gateway?"];
+const GENERIC = ["What does a pulse oximeter do?", "How do I connect the sensor?", "Which blocks do I need?", "Why does it show 0?", "What does SpO2 mean?"];
 
 export function DemoHost() {
   const [content, setContent] = useState<ContentResponse | null>(null);
@@ -30,7 +30,7 @@ export function DemoHost() {
         const c = await fetchContent({ baseUrl: API_URL, getToken });
         if (cancelled) return;
         setContent(c);
-        setSelected((prev) => (c.docs.some((d) => d.source === prev) ? prev : c.docs.find((d) => d.category === "devices")?.source ?? c.docs[0]?.source ?? ""));
+        setSelected((prev) => (c.docs.some((d) => d.source === prev) ? prev : c.docs.find((d) => d.category === "applications")?.source ?? c.docs.find((d) => d.category === "devices")?.source ?? c.docs[0]?.source ?? ""));
       } catch (e) {
         if (!cancelled) setError(e instanceof ApiError ? e.message : "Something went wrong loading the page.");
       }

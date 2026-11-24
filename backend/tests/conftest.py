@@ -8,6 +8,8 @@ from pathlib import Path
 for _flag in ("ENABLE_SEMANTIC_CACHE", "ENABLE_ROUTER_SHORTCUT", "LAZY_SUMMARY", "ENABLE_COMPRESSION", "ENABLE_CANNED"):
     os.environ[_flag] = "false"
 os.environ["USAGE_LOG_DIR"] = ""
+os.environ["HISTORY_TURNS"] = "2"           # the legacy suites assert a 2-turn window; production default is 4
+os.environ["ENABLE_LONG_TERM_MEMORY"] = "true"   # off by default in production; the memory suites test it
 os.environ["APP_KNOWLEDGE_DIR"] = ""        # the application assistant has its own tests (test_appkb.py); mechanics suites run without it
 os.environ["SUMMARY_MODE"] = "llm"          # legacy suites assert LLM summaries
 os.environ["LLM_PROVIDER"] = "groq"          # a developer's .env may select Gemini; tests pin the default

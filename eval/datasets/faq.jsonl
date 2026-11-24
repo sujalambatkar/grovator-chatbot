@@ -4,7 +4,7 @@
 {"id": "hw-04", "role": "student", "q": "Which pins do the TRIG and ECHO wires of the ultrasonic sensor go to?", "expect_source": "Ultrasonic Sensor: Connection Guide", "must_contain_any": ["digital", "signal"]}
 {"id": "hw-05", "role": "student", "q": "Is there any warning when connecting the ultrasonic sensor?", "expect_source": "Ultrasonic Sensor: Connection Guide", "must_contain_any": ["echo", "voltage"]}
 {"id": "hw-06", "role": "student", "q": "How do I wire the I2C LCD step by step?", "expect_source": "I2C LCD: Connection Guide", "must_contain_any": ["gpio21", "sda"]}
-{"id": "hw-07", "role": "student", "q": "Which GPIO pins does the pulse oximeter use?", "expect_source": "Pulse Oximeter: Connection Guide", "must_contain_any": ["gpio21", "gpio22"]}
+{"id": "hw-07", "role": "student", "q": "Which GPIO pins does the I2C LCD use?", "expect_source": "I2C LCD: Connection Guide", "must_contain_any": ["gpio21", "gpio22"]}
 {"id": "hw-08", "role": "student", "q": "How do I connect the DHT11?", "expect_source": "DHT11: Connection Guide", "must_contain_any": ["data", "digital"]}
 {"id": "hw-09", "role": "student", "q": "How do I connect the servo motor and what supply does it need?", "expect_source": "Servo: Connection Guide", "must_contain_any": ["5v", "supply"]}
 {"id": "hw-10", "role": "student", "q": "Where do I plug in the keypad?", "expect_source": "Keypad: Connection Guide", "must_contain_any": ["keypad connector"]}

@@ -117,3 +117,40 @@ async def test_followup_keeps_the_application_in_the_query(retriever):
     await turn(svc, "How do I connect the pulse oximeter?", "app-f")
     d = await turn(svc, "why would the program pause for half a second?", "app-f")
     assert "Pulse Oximeter" in d["standalone_query"]
+
+
+
+@pytest.mark.asyncio
+async def test_grounded_question_after_router_keeps_working(retriever):
+    """Regression: a variable named `recent` was shadowed by the router's list, so any non-deterministic question crashed."""
+    d, llm = await ask(retriever, "What is the challenge in this lesson?")
+    assert d["answer"].startswith("Fake model answer") and llm.calls
+
+
+@pytest.mark.asyncio
+async def test_i2c_address_is_not_a_personal_address(retriever):
+    d, llm = await ask(retriever, "What is the I2C address of the MAX30102?")
+    assert d.get("refused_reason") is None and "personal details" not in d["answer"] and llm.calls
+
+
+@pytest.mark.asyncio
+async def test_lesson_leds_win_over_the_generic_gateway_led(retriever):
+    d, llm = await ask(retriever, "Which GPIO is LED 2 connected to?")
+    assert "GPIO23" in d["answer"] and "medium heart rate" in d["answer"].lower() and not llm.calls
+    d2, llm2 = await ask(retriever, "How do I connect an LED to the gateway?", FakeLLM("Use a digital GPIO."))
+    assert "oximeter" not in d2["answer"].lower() and "GPIO23" not in d2["answer"]
+
+
+@pytest.mark.asyncio
+async def test_expected_output_comes_from_the_program(retriever):
+    d, llm = await ask(retriever, "What is the expected serial output when I place my finger?")
+    assert "Heartrate :" in d["answer"] and "Normal oxygen level" in d["answer"] and not llm.calls
+
+
+@pytest.mark.asyncio
+async def test_led_followup_stays_on_the_lesson_not_the_gateway_led(retriever):
+    llm = FakeLLM("The LEDs show the heart rate band.")
+    svc = build(retriever, llm, **OVER)
+    await turn(svc, "How do I connect the pulse oximeter?", "app-led")
+    d = await turn(svc, "what about the LED?", "app-led")
+    assert "Pulse Oximeter" in d["standalone_query"]

@@ -179,15 +179,18 @@ class ChatService:
         had_history = bool(state.turns or state.summary)
         page_doc = self.catalog.get(p, page) if (self.catalog and page) else None
         mentioned = self.hw.detect(message) if self.hw.devices else []
-        ents, recent, app_ctx = Entities(), Entities(), False
+        ents, app_recent, app_ctx = Entities(), Entities(), False
         if self.appkb:
-            ents, recent = self.appkb.detect(message), self._recent_entities(state)
-            ans = self.appkb.answer(message, ents, recent, hw_named=bool(mentioned))
+            ents, app_recent = self.appkb.detect(message), self._recent_entities(state)
+            if mentioned and not ents.strong and self.appkb.claims(message, ents, app_recent):
+                mentioned = []  # "LED 2", "LED 3 OFF": the lesson's LEDs, not the gateway's generic LED module
+            on_gateway_page = page_doc is not None and page_doc.source.startswith("devices/") and bool(DEICTIC.search(message) or _SINGULAR_REF.search(message))
+            ans = self.appkb.answer(message, ents, app_recent, hw_named=bool(mentioned) or (on_gateway_page and not ents.strong))  # "how do I connect THIS" on a gateway device page
             if ans:  # wiring tables, block order, code, thresholds, "not documented yet": built from the files, 0 tokens
                 async for ev in self._serve_app(p, sid, state, message, ans, base, page_doc):
                     yield ev
                 return
-            app_ctx = (ents.strong or recent.strong or bool(ents.weak)) and not (mentioned and not ents.strong)
+            app_ctx = (ents.strong or app_recent.strong or bool(ents.weak)) and not (mentioned and not ents.strong)
             if self.appkb.is_general(message, ents, bool(mentioned)):  # "what is SpO2?": model knowledge, simple words
                 async for ev in self._general(p, sid, state, message, message, base):
                     yield ev
@@ -292,7 +295,7 @@ class ChatService:
             route = dc_replace(route, query=base_q if labels.lower() in base_q.lower() else f"{base_q} ({labels})")
             glued = False
         if app_ctx and not mentioned and self.appkb:
-            label = self.appkb.app_label(ents.merge(recent))  # "what about the LED?" -> about the pulse oximeter project
+            label = self.appkb.app_label(ents.merge(app_recent))  # "what about the LED?" -> about the pulse oximeter project
             if label and label.lower() not in route.query.lower():
                 route = dc_replace(route, query=f"{route.query} ({label})")
         query = route.query
@@ -561,7 +564,7 @@ class ChatService:
         else:  # legacy behaviour: summarise every turn
             await self.sessions.save(p.user_id, sid, state)
             self._spawn(self._update_summary(p, sid, message, answer))
-        if self.memory and self.memory.should_extract(message):
+        if self.memory and self.s.enable_long_term_memory and self.memory.should_extract(message):
             self._spawn(self._remember(p, sid, message))
 
     def _naive(self, p: Principal, page_doc: Doc | None, state: SessionState, message: str) -> int:
@@ -616,7 +619,7 @@ class ChatService:
 
     async def _recall(self, p: Principal, vec: list[float]):
         """Long-term memory via the same query embedding. Fail-safe: memory must never break a chat."""
-        if not self.memory:
+        if not self.memory or not self.s.enable_long_term_memory:
             return []
         try:
             return await self.memory.retrieve(vec, p)

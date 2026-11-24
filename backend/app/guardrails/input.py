@@ -65,7 +65,7 @@ PRIVILEGE = _rx(
 )
 
 PII_REQUEST = _rx(
-    r"\b(?:give|show|tell|list|share|send|find|dump|what(?:'s| is| are)|display)\b.{0,40}\b(?:phone|mobile|e-?mail|address|aadhaa?r|passwords?|otp|login details|credentials|contact (?:number|details|info)|date of birth|dob|parents?'? (?:name|number|phone))\b.{0,40}\b(?:of|for|about|belonging)\b",
+    r"\b(?:give|show|tell|list|share|send|find|dump|what(?:'s| is| are)|display)\b.{0,40}\b(?:phone|mobile|e-?mail|(?<!i2c )(?<!i²c )(?<!ip )(?<!mac )(?<!memory )(?<!slave )(?<!register )(?<!sensor )(?<!device )address(?!\s+(?:of|for)\s+(?:the\s+)?(?:\w+\s+)?(?:sensor|device|module|board|chip|oximeter|max30102|i2c|kit)\b)|aadhaa?r|passwords?|otp|login details|credentials|contact (?:number|details|info)|date of birth|dob|parents?'? (?:name|number|phone))\b.{0,40}\b(?:of|for|about|belonging)\b",
     r"\b(?:give|show|tell|list|share|send|dump|display)\b.{0,15}\b(?:me )?(?:the |all |their |his |her )?(?:phone numbers?|e-?mails?|passwords?|aadhaa?r)\b",
 )
 

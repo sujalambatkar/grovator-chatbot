@@ -55,6 +55,58 @@ flowchart TD
 Every layer is enforced **in code**, never only in a prompt. The LLM never chooses whose data to fetch: scope comes
 from the JWT and is applied by retrieval filters and by `tools/policy.py`.
 
+## Application assistant (pulse oximeter lesson and beyond)
+
+The assistant answers student questions about **applications** (lessons built with the Block Designer and Circuit Designer). The
+first one is "Health Monitoring using Pulse Oximeter". Everything it knows about an application is a plain file under
+`backend/knowledge/`, so adding content never means changing code.
+
+```
+backend/knowledge/
+  applications/<slug>/application.yaml   metadata, 5-step guide, logic, thresholds, circuit, program + line-by-line, FAQ
+  applications/<slug>/docs/*.md          cleaned text extracted from the decks / PDFs
+  sensors/<sensor_id>.yaml               interface, pins, variables, blocks used, how it measures
+  blocks/<block_id>.yaml                 title, what it does, code (verbatim), variables
+  kits/<kit_id>.yaml                     ports / pins / terminals, what is NOT documented
+  media/<id>.yaml + the image            caption, what it shows, related application/sensor/kit, verified: true/false
+  GAPS.md                                unknowns and source conflicts for a person to resolve
+```
+
+**Add content** (a new application, sensor, block or kit):
+
+```bash
+# 1. drop the new files into backend/knowledge/ (copy an existing one, the models are in knowledge/models.py)
+cd backend
+.venv/bin/python -m knowledge.validate     # checks every file and every cross-reference (a block that does not exist, code that does not parse...)
+.venv/bin/python -m ingest.run -v          # validate -> chunk -> embed -> index (QDRANT_URL=memory: dry run, the API re-indexes at start)
+# 2. restart the backend. Nothing else changes.
+```
+
+How a question is answered (see `app/chat/appkb.py` and `app/chat/service.py`):
+
+| Question | Answer | Tokens |
+|---|---|---|
+| wiring, which pins, block order, show the code, line by line, thresholds, the 5 steps, common "it shows 0" problems, anything the files do not cover (a kit that is not documented) | built **from the files in code** (wiring table, block stack, code card, "I don't have that detail yet") | 0 |
+| other questions about the application | retrieval from the files, grounded prompt, output guard (invented GPIO numbers are blocked) | ~700 |
+| general technology / science ("what does SpO2 mean", "what is I2C") | model knowledge in simple words, no sources, never kit pins | ~400 |
+| greeting, off-topic, unsafe | fixed replies | 0 |
+
+Rules that are enforced in code, not only in the prompt: pins/ports/blocks/code come from the files; unverified sources (kit photos) are
+marked; a mapping that is not documented (pulse oximeter to the Grovator controller) is never invented; whenever readings or health come
+up, a "learning project, not a medical device" note is added. The system prompts live in `backend/config/system_prompt.yaml`.
+
+**Evaluate** (`eval/questions.yaml`, 49 questions: steps, wiring, blocks, code, thresholds, general science, messy student wording, health,
+off-topic/unsafe, "I don't have that detail" traps):
+
+```bash
+# from the repository root, with the backend's Python
+backend/.venv/bin/python -m eval.run --offline   # the `det: true` questions only: no LLM, free, deterministic
+backend/.venv/bin/python -m eval.run -v          # everything, real model (uses your Groq/Gemini quota; --pace sets the delay)
+```
+
+Long-term memory of user facts is **off** by default for this assistant (`ENABLE_LONG_TERM_MEMORY=false`): students are anonymous.
+Feedback (thumbs) is also appended to `logs/feedback-<day>.jsonl` with a random request id and no user data.
+
 ## Quick start (local demo)
 
 ```bash

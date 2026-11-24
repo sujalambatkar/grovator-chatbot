@@ -69,9 +69,9 @@ try {
   await step("page loads with the course content, no token box and no role switch", async () => {
     assert.equal(await page.getByTestId("token-input").count(), 0);
     assert.equal(await page.getByTestId("role-student").count() + await page.getByTestId("role-teacher").count(), 0);
-    assert.match(await page.getByTestId("article-title").innerText(), /Ultrasonic Sensor/);
+    assert.match(await page.getByTestId("article-title").innerText(), /Pulse Oximeter/);
     const nav = await page.getByTestId("nav").innerText();
-    for (const g of ["Gateway", "Sensors and modules", "Concepts"]) assert.match(nav, new RegExp(g, "i"));
+    for (const g of ["Applications", "Gateway", "Sensors and modules", "Concepts"]) assert.match(nav, new RegExp(g, "i"));
     await page.screenshot({ path: path.join(OUT, "01-page.png") });
   }, page);
 
@@ -80,6 +80,10 @@ try {
   }, page);
 
   await step("chat is open with suggestions that match the page", async () => {
+    assert.match(await page.getByTestId("welcome").innerText(), /How do I connect the sensor\?/);
+    await page.getByTestId("nav-item").filter({ hasText: "Ultrasonic Sensor" }).click();   // the next steps are about a gateway device page
+    assert.match(await page.getByTestId("article-title").innerText(), /Ultrasonic Sensor/);
+    await page.getByTestId("new-chat").click();
     assert.match(await page.getByTestId("welcome").innerText(), /How do I connect this to the gateway\?/);
     assert.equal(await page.getByTestId("memory-toggle").count(), 0, "memory panel hidden in the demo");
   }, page);
@@ -88,7 +92,7 @@ try {
     await page.getByRole("button", { name: "How do I connect this to the gateway?" }).click();
     await until(async () => (await page.getByTestId("send").count()) === 1 && (await bot(page).count()) === 1, 20000, "answer");
     assert.match(await bot(page).last().innerText(), /ultrasonic|VCC|TRIG|connect/i);
-    assert.match(await page.getByTestId("sources").last().innerText(), /Ultrasonic Sensor/);
+    assert.match(await page.getByTestId("sources").last().textContent(), /Ultrasonic Sensor/);
     await page.screenshot({ path: path.join(OUT, "02-answer.png") });
   }, page);
 
@@ -120,7 +124,7 @@ try {
     assert.match(await page.getByTestId("article-title").innerText(), /Wiring Rules/);
     const text = await ask(page, "Explain these rules");
     assert.match(text, /label|voltage|GPIO|datasheet|wiring/i);
-    assert.match(await page.getByTestId("sources").last().innerText(), /Wiring Rules/);
+    assert.match(await page.getByTestId("sources").last().textContent(), /Wiring Rules/);
   }, page);
 
   await step("off-topic and injection attempts get fixed refusals", async () => {
@@ -144,6 +148,26 @@ try {
     await page.getByTestId("chat-panel").waitFor();
     await until(async () => (await bot(page).count()) === before, 6000, "messages restored");
   }, page);
+
+  await step("application answers: wiring table, image that enlarges, block stack, code with copy, collapsed sources", async () => {
+    const d = await open(browser);
+    await ask(d.page, "How do I connect the sensor?");
+    const panel = d.page.getByTestId("chat-panel");
+    const rows = await panel.getByTestId("connection-table").innerText();
+    assert.match(rows, /GPIO21/); assert.match(rows, /GPIO22/); assert.doesNotMatch(rows, /\bRX\b|\bTX\b/);
+    assert.equal(await panel.getByTestId("sources").first().evaluate((el) => el.open), false, "sources start collapsed");
+    await panel.getByTestId("image-thumb").first().click();
+    await d.page.getByTestId("lightbox").waitFor();
+    await d.page.keyboard.press("Escape");
+    assert.equal(await d.page.getByTestId("lightbox").count(), 0, "Escape closes the enlarged image");
+    await ask(d.page, "Which blocks do I need?");
+    assert.match(await panel.getByTestId("block-stack").last().innerText(), /Use \[Pulseoximeter\(Max30102\)\][\s\S]*Read PulseOximeter Data[\s\S]*Store Heart rate/);
+    await ask(d.page, "Show me the lesson code");
+    assert.match(await panel.getByTestId("code-card").last().innerText(), /while True:/);
+    await panel.getByTestId("copy-code").last().click();
+    await d.page.screenshot({ path: path.join(OUT, "06-application-answers.png") });
+    await d.ctx.close();
+  });
 
   await step("no console or page errors", async () => {
     assert.deepEqual(errors.filter((e) => !/favicon/i.test(e)), []);

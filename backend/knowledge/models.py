@@ -178,6 +178,7 @@ class Application(_Model):
     title: str
     aliases: list[str] = []
     weak_aliases: list[str] = []  # words that only hint at this application ("led", "spo2"); never enough on their own
+    starter_questions: list[str] = []  # chips shown in an empty chat while this application is open
     summary: str
     objectives: list[str]
     challenge: str

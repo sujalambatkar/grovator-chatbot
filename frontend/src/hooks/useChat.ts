@@ -88,6 +88,10 @@ export function useChat(cfg: ApiConfig, opts: Options = {}) {
               tokens: ev.data.tokens_total,
               naiveTokens: ev.data.naive_tokens,
               cacheHit: ev.data.cache_hit ?? null,
+              table: ev.data.connection_table ?? null,
+              blocks: ev.data.block_stack ?? [],
+              code: ev.data.code_blocks ?? [],
+              images: ev.data.images ?? [],
             });
           else if (ev.type === "error") patch(botId, { text: ev.data.message, status: "error" });
         }

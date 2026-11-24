@@ -4,6 +4,12 @@ export interface MetaEvent {
   shortcut?: boolean;
 }
 
+/** Structured parts of an application answer, built by the server from the knowledge files (never by the model). */
+export interface ConnectionTable { title: string; columns: string[]; rows: { sensor_pin: string; kit_pin: string; note: string; verified: boolean }[]; note?: string }
+export interface BlockStackItem { order: number; title: string; description: string }
+export interface CodeBlock { title: string; language: string; code: string; note?: string }
+export interface ImageRef { url: string; caption: string; verified: boolean }
+
 export interface DoneEvent {
   answer: string;
   session_id: string;
@@ -16,6 +22,10 @@ export interface DoneEvent {
   truncated?: boolean;
   tokens_total?: number;
   naive_tokens?: number;
+  connection_table?: ConnectionTable | null;
+  block_stack?: BlockStackItem[];
+  code_blocks?: CodeBlock[];
+  images?: ImageRef[];
 }
 
 export type StreamEvent =
@@ -49,6 +59,10 @@ export interface ChatMessage {
   tokens?: number;
   naiveTokens?: number;
   cacheHit?: string | null;
+  table?: ConnectionTable | null;
+  blocks?: BlockStackItem[];
+  code?: CodeBlock[];
+  images?: ImageRef[];
 }
 
 export interface ContentDoc {

@@ -94,3 +94,26 @@
 .tokenChip { color: var(--ok); font-weight: 600; }
 .bubble h3, .bubble h4, .bubble h5 { margin: 8px 0 4px; font-size: 14px; }
 .bubble pre { margin: 6px 0; padding: 8px 10px; border-radius: 8px; background: rgba(127,127,127,.18); font-size: 12.5px; overflow-x: auto; white-space: pre; }
+
+/* ---- rich parts of application answers ---- */
+.richCard { margin: 8px 0 2px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.richTitle { font-weight: 650; font-size: 12.5px; }
+.richNote { margin-top: 4px; font-size: 11.5px; color: var(--ink-soft); }
+.tableWrap { overflow-x: auto; margin-top: 4px; }
+.table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+.table th, .table td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.table th { color: var(--ink-soft); font-weight: 600; }
+.stack { list-style: none; margin: 8px 0 2px !important; padding: 0 !important; display: flex; flex-direction: column; gap: 2px; }
+.stackBlock { background: var(--bright); color: #fff; padding: 6px 10px; font-size: 13px; font-weight: 600; border-radius: 8px 8px 4px 4px; }
+.stackNo { display: inline-block; min-width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; background: rgba(255,255,255,.3); margin-right: 6px; font-size: 11px; }
+.codeHead { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.codePre { margin: 6px 0 0; padding: 8px 10px; border-radius: 8px; background: #0f1b3d; color: #e8eefc; font-size: 12px; line-height: 1.4; overflow: auto; max-height: 260px; white-space: pre; }
+.images { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.thumb { display: flex; flex-direction: column; gap: 3px; width: 150px; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink-soft); font-size: 11px; text-align: left; cursor: zoom-in; }
+.thumb img { width: 100%; height: 90px; object-fit: cover; border-radius: 5px; }
+.lightbox { position: fixed; inset: 0; z-index: 2147483600; background: rgba(8,16,40,.86); display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; padding: 20px; cursor: zoom-out; }
+.lightbox img { max-width: min(96vw, 1000px); max-height: 78vh; border-radius: 8px; background: #fff; }
+.lightboxCap { color: #fff; font-size: 13px; }
+.sources { font-size: 11.5px; color: var(--ink-soft); }
+.sources summary { cursor: pointer; }
+.sources ul { margin: 4px 0 0; padding-left: 18px; }

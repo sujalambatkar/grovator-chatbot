@@ -40,7 +40,7 @@ def create_app(llm=None, retriever: HybridRetriever | None = None, redis=None, a
                 await ingest(Path(settings.knowledge_dir), r, app_root=Path(settings.app_knowledge_dir) if settings.app_knowledge_dir else None)
             elif settings.qdrant_url != "memory":
                 await r.refresh_version()
-        catalog = ContentCatalog(Path(settings.knowledge_dir))
+        catalog = ContentCatalog(Path(settings.knowledge_dir), Path(settings.app_knowledge_dir) if settings.app_knowledge_dir else None)
         rds = redis or make_redis(settings.redis_url)
         sessions = SessionStore(rds, settings.session_ttl_s)
         app.state.limiter = RateLimiter(rds)
