@@ -184,8 +184,8 @@ class ChatService:
             ents, app_recent = self.appkb.detect(message), self._recent_entities(state)
             if mentioned and not ents.strong and self.appkb.claims(message, ents, app_recent):
                 mentioned = []  # "LED 2", "LED 3 OFF": the lesson's LEDs, not the gateway's generic LED module
-            on_gateway_page = page_doc is not None and page_doc.source.startswith("devices/") and bool(DEICTIC.search(message) or _SINGULAR_REF.search(message))
-            ans = self.appkb.answer(message, ents, app_recent, hw_named=bool(mentioned) or (on_gateway_page and not ents.strong))  # "how do I connect THIS" on a gateway device page
+            on_gateway_page = page_doc is not None and page_doc.source.startswith("devices/")
+            ans = self.appkb.answer(message, ents, app_recent, hw_named=bool(mentioned) or (on_gateway_page and not ents.strong))  # a gateway device page is open: its questions are about that device unless the application is named
             if ans:  # wiring tables, block order, code, thresholds, "not documented yet": built from the files, 0 tokens
                 async for ev in self._serve_app(p, sid, state, message, ans, base, page_doc):
                     yield ev

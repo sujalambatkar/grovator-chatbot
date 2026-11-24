@@ -42,6 +42,12 @@ cd backend  && .venv/bin/python -m scripts.demo_compare           # measured tok
 ## Where things live (backend/app)
 `chat/` pipeline (`service.py` is the entry), router shortcut, semantic cache, prompt building · `guardrails/` input rules, output guard, PII · `rag/` chunking, hybrid retriever, compression · `memory/` Redis sessions + long-term memory · `tools/` read-only scoped tools + policy · `content/` page catalog · `core/` auth, rate limits, budgets, usage · `api/` routes · `llm/` Groq client + all prompts (`prompts.py`).
 
+## Application assistant (backend/knowledge/, newest layer)
+- Files, not code: `backend/knowledge/{applications,sensors,blocks,kits,media}/*.yaml` (+ `GAPS.md`). Models in `knowledge/models.py`; `python -m knowledge.validate`, `python -m ingest.run`. Adding content = adding files. Read `knowledge/GAPS.md` before answering questions about pins/kits: it lists conflicts (I2C vs UART sensor, ESP32 kit vs Grovator controller) and what is NOT documented.
+- `chat/appkb.py` builds wiring tables, block stack, code, thresholds, FAQ, "not documented" answers in code (0 tokens); `service._general` handles general technology questions (GENERAL_SYSTEM). Prompts: `backend/config/system_prompt.yaml` (answer <= 200 tokens, asserted).
+- Never invent a mapping between the pulse oximeter and the Grovator controller; never call SpO2/BPM accurate; the health note is appended in code.
+- Eval: `backend/.venv/bin/python -m eval.run --offline` (deterministic, free) and without `--offline` (live). Tests pin `APP_KNOWLEDGE_DIR=""`, `ENABLE_LONG_TERM_MEMORY=true`, `HISTORY_TURNS=2`; `tests/test_appkb.py` turns the application assistant on.
+
 ## Hardware conversation (gateway dataset)
 - `rag/hardware.py` generates docs (device guide, interface, wiring rules, concepts) plus an alias index; `chat/service.py` keeps the sensor in focus (`SessionState.focus`) so "it / what next / where does VCC go" find the right page, asks a clarifying question when "the sensor" is ambiguous, and `guardrails/output.unsupported_pins` blocks any GPIO number not present in the retrieved records (one strict retry first).
 - Pre-written answers (D87): `chat/canned.py` renders what/connect/pins answers from the JSON for plain questions, 0 tokens. Keep the matcher STRICT (a wrong template is worse than a model call); tests pin ENABLE_CANNED off except `test_canned.py`, and the eval's output-guard suite builds its service with `canned=False`.

@@ -130,7 +130,7 @@ async def test_grounded_question_after_router_keeps_working(retriever):
 @pytest.mark.asyncio
 async def test_i2c_address_is_not_a_personal_address(retriever):
     d, llm = await ask(retriever, "What is the I2C address of the MAX30102?")
-    assert d.get("refused_reason") is None and "personal details" not in d["answer"] and llm.calls
+    assert d.get("refused_reason") is None and "personal details" not in d["answer"] and "0x57" in d["answer"]
 
 
 @pytest.mark.asyncio
@@ -154,3 +154,30 @@ async def test_led_followup_stays_on_the_lesson_not_the_gateway_led(retriever):
     await turn(svc, "How do I connect the pulse oximeter?", "app-led")
     d = await turn(svc, "what about the LED?", "app-led")
     assert "Pulse Oximeter" in d["standalone_query"]
+
+
+@pytest.mark.asyncio
+async def test_questions_on_an_open_gateway_device_page_are_not_hijacked_by_the_application(retriever):
+    svc = build(retriever, FakeLLM("VCC goes to 5V."), **OVER)
+    d = await turn(svc, "Where does the VCC wire go?", "gw-page-1", page="devices/ultrasonic_sensor")
+    assert not d.get("connection_table") and "oximeter" not in d["answer"].lower()
+    d2 = await turn(svc, "How do I connect the pulse oximeter?", "gw-page-2", page="devices/ultrasonic_sensor")   # ...but naming it still works
+    assert d2["connection_table"]
+
+
+@pytest.mark.asyncio
+async def test_sensor_facts_and_code_statements_are_looked_up_not_searched(retriever):
+    d, llm = await ask(retriever, "What is the I2C address of the MAX30102?")
+    assert "0x57" in d["answer"] and not llm.calls
+    d, llm = await ask(retriever, "What baud rate does the V2.0 sensor use?")
+    assert "9600" in d["answer"] and not llm.calls
+    d, llm = await ask(retriever, "What does led_1.on() do?")
+    assert "Turns ON LED 1" in d["answer"] and not llm.calls
+    d, llm = await ask(retriever, "what does time.sleep(0.5) mean")
+    assert "Waits" in d["answer"] and not llm.calls
+
+
+@pytest.mark.asyncio
+async def test_comparison_of_ideas_is_general_even_if_a_gateway_device_is_named(retriever):
+    d, llm = await ask(retriever, "What is the difference between a sensor and an LED?", FakeLLM("A sensor measures; an LED shows light."))
+    assert d["intent"] == "general_tech" and llm.calls[0][0]["content"] == GENERAL_SYSTEM

@@ -76,6 +76,8 @@ _THRESH = re.compile(r"\bthreshold|\bnormal oxygen|\blow oxygen|\b(?:which|what)
 _EXTRA = re.compile(r"\bvideo\b|\bresources?\b|\bhome ?assignment\b|\breflection\b|\bextension question|\bfood for thought\b|\bwhat should i think about\b", re.I)
 _SENSOR_NAME = r"(?:pulse ?oximeter|oximeter|pulse sensor|max30102|heart rate sensor|spo2 sensor)"
 _WHAT_DOES = re.compile(rf"^\W*(?:what(?:'s| is| does| do)?|how does|how do|explain|tell me about|describe)\s+(?:a |an |the |this |my )?{_SENSOR_NAME}s?(?:\s+\w+){{0,4}}\W*$", re.I)
+_FACT_Q = re.compile(r"\b(?:i2c|i²c)? ?address\b|\bfrequency\b|\bbaud(?: rate)?\b|\bwhich interface\b|\bwhat interface\b|\b(?:i2c|uart)\b[^?.!]{0,20}\b(?:or|and)\b[^?.!]{0,20}\b(?:uart|i2c)\b|\bvariable names?\b|\bdevice type\b|\bsensor type\b", re.I)
+_CODE_TOKEN = re.compile(r"[a-z_][a-z0-9_]*(?:\.[a-z0-9_]+)*\([^)]*\)|\bwhile true\b|\bi2c\([^)]*\)", re.I)
 _LED_Q = re.compile(r"\bled[ _]?([123])\b", re.I)
 _DEF_CUE = re.compile(r"\b(?:do|does|work|works|working|is|are|mean|means|for|use|used|measure|measures)\b", re.I)
 _BLOCK_Q = re.compile(r"\b(?:what|how|explain|does|do|tell|describe|purpose|used for|for)\b", re.I)
@@ -157,7 +159,10 @@ class AppKB:
 
     def is_general(self, message: str, e: Entities, hw_named: bool) -> bool:
         """A "what is X / how does X work" question about a technology: answered from model knowledge in student language."""
-        return bool(not hw_named and not e.strong and GENERAL_CUE.search(message) and GENERAL_TOPIC.search(message))
+        if e.strong or not (GENERAL_CUE.search(message) and GENERAL_TOPIC.search(message)):
+            return False
+        # a comparison of two ideas ("difference between a sensor and an LED") is general knowledge even when a gateway device is named
+        return not hw_named or bool(re.search(r"\bdifference between\b|\bversus\b|\bvs\.?\b", message, re.I))
 
     # ------------------------------------------------------------------ answers
     def answer(self, message: str, e: Entities, recent: Entities, hw_named: bool = False) -> AppAnswer | None:
@@ -184,6 +189,12 @@ class AppKB:
 
         if _LINE_BY_LINE.search(msg):
             return self._line_by_line(a)
+        stmt = self._statement(a, msg)
+        if stmt:
+            return stmt
+        fact = self._sensor_fact(a, e, msg)
+        if fact:
+            return fact
         block = self._block_named(e)
         if block and _BLOCK_Q.search(msg) and not _CODE.search(msg):
             return self._block_detail(block)
@@ -235,6 +246,40 @@ class AppKB:
                 f"This is the wiring for the ESP32 kit in the lesson. If you are using the Grovator controller instead, tell me: that connection is not documented yet.")
         return AppAnswer("wiring", text, [f"{base}/circuit"], {"title": "Pulse oximeter to ESP32 kit", "columns": ["Sensor pin", "Kit pin", "Note"],
                          "rows": rows, "note": "From the lesson's circuit diagram"}, images=self._img(a.circuit.image))
+
+    def _statement(self, a, msg: str) -> AppAnswer | None:
+        """"What does led_1.on() do?": find the line-by-line part of the lesson program that contains that statement."""
+        toks = [re.sub(r"\s+", "", t.lower()) for t in _CODE_TOKEN.findall(msg.replace("`", ""))]
+        toks = [t for t in toks if len(t) >= 6]
+        if not toks:
+            return None
+        hits = [(i, ex) for i, ex in enumerate(a.program.explanations, 1) for tok in toks
+                if any(tok in re.sub(r"\s+", "", frag.lower()) for frag in ex.code.split(" / "))]
+        if not hits:
+            return None
+        i, ex = hits[0]
+        extra = f" (This statement appears in {len(hits)} places in the program; this is the first.)" if len(hits) > 1 else ""
+        text = f"That is part of this section of the lesson program:\n{ex.code.replace(' / ', chr(10))}\n\nWhat it does: " + " ".join(ex.meaning) + extra
+        return AppAnswer("statement", text, [f"applications/{a.id}/line-by-line-{i}"])
+
+    def _sensor_fact(self, a, e: Entities, msg: str) -> AppAnswer | None:
+        """Plain facts of the sensor file (I2C address, frequency, UART baud rate, variable names): read from it, not searched for."""
+        sid = e.sensors[0] if e.sensors else (a.circuit.sensor if (e.any or not e.kits) else None)
+        s = self.k.sensors.get(sid or "")
+        if not s or not _FACT_Q.search(msg) or not (e.sensors or re.search(r"\b(?:sensor|oximeter|max30102|i2c|uart)\b", msg, re.I)):
+            return None
+        m, src = msg.lower(), [f"sensors/{s.id}"]
+        if s.i2c and re.search(r"address", m):
+            return AppAnswer("fact", f"The {s.name.split(' (')[0]} uses I2C address {s.i2c.address} (SCL {s.i2c.scl}, SDA {s.i2c.sda}).", src)
+        if s.i2c and re.search(r"frequency", m) and s.i2c.freq:
+            return AppAnswer("fact", f"The I2C frequency in the block code is {s.i2c.freq} Hz.", src)
+        if s.uart and re.search(r"baud", m):
+            return AppAnswer("fact", f"The {s.name} uses UART {s.uart.uart_id} at {s.uart.baudrate} baud (TX GPIO{s.uart.tx_gpio}, RX GPIO{s.uart.rx_gpio} in the code).", src)
+        if re.search(r"variable", m):
+            return AppAnswer("fact", f"The variable names for the {s.name.split(' (')[0]} are: " + ", ".join(s.variables) + ".", src)
+        if re.search(r"interface|i2c|uart", m):
+            return AppAnswer("fact", f"The {s.name.split(' (')[0]} uses {s.interface}." + (" Not UART/RX/TX: the lesson's circuit uses SDA and SCL." if s.interface == "I2C" else ""), src)
+        return None
 
     def _led_pin(self, a, n: int) -> AppAnswer | None:
         led = next((l for l in a.circuit.leds if l.name == f"led_{n}"), None)

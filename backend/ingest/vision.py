@@ -7,6 +7,7 @@ unverified pins for wiring answers (wiring tables are built only from applicatio
 """
 import argparse
 import base64
+import os
 import re
 import shutil
 import sys
@@ -40,7 +41,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--application", action="append", default=[])
     ap.add_argument("--sensor", action="append", default=[])
     ap.add_argument("--kit", action="append", default=[])
-    ap.add_argument("--model", default="meta-llama/llama-4-scout-17b-16e-instruct")
+    ap.add_argument("--model", default=os.environ.get("VISION_MODEL", "qwen/qwen3.8-27b"), help="a vision-capable model your key can use (the Llama 4 Scout vision model is no longer offered on this account)")
     a = ap.parse_args(argv)
     s = get_settings()
     if not s.groq_api_key:

@@ -20,7 +20,7 @@
 - {id: wire-1, tag: wiring, det: true, q: "How do I connect the pulse oximeter to the ESP32 kit?", must_all: ["GPIO21", "GPIO22", "3.3V", "GND"], must_not_re: ['\bRX\b', '\bTX\b']}
 - {id: wire-2, tag: wiring, det: true, q: "Which pins does the oximeter use?", must_all: ["SDA", "SCL", "GPIO21", "GPIO22"], must_not_re: ['\bRX\b', '\bTX\b']}
 - {id: wire-3, tag: wiring, det: true, q: "where does VIN of the sensor go", must_all: ["VIN", "3.3V"]}
-- {id: wire-4, tag: wiring, q: "What is the I2C address of the MAX30102?", must_any: ["0x57"]}
+- {id: wire-4, tag: wiring, det: true, q: "What is the I2C address of the MAX30102?", must_any: ["0x57"]}
 - {id: wire-5, tag: wiring, q: "Which GPIO is LED 2 connected to?", must_any: ["GPIO23", "GPIO 23"]}
 - {id: wire-6, tag: wiring, q: "Does the pulse oximeter use RX and TX or SDA and SCL?", must_any: ["SDA"]}
 - {id: wire-7, tag: wiring, det: true, q: "How does the V2.0 UART pulse oximeter connect?", must_any: ["RXD", "TXD"], must_all: ["UART"]}
@@ -35,8 +35,8 @@
 # ---------------------------------------------------------------- code, line by line
 - {id: code-1, tag: code, det: true, q: "Show me the lesson code", must_all: ["while True:", "led_1 = machine.Pin(27", "MAX30102(i2c)"]}
 - {id: code-2, tag: code, det: true, q: "Explain the code line by line", must_all: ["Configures LED 1 on GPIO 27", "infinite loop"]}
-- {id: code-3, tag: code, q: "What does time.sleep(0.5) do in the program?", must_any: ["wait", "pause", "delay", "half a second", "0.5"]}
-- {id: code-4, tag: code, q: "What does led_1.on() do?", must_any: ["LED 1", "led_1", "turns on", "turn on"]}
+- {id: code-3, tag: code, det: true, q: "What does time.sleep(0.5) do in the program?", must_any: ["wait", "pause", "delay", "half a second", "0.5"]}
+- {id: code-4, tag: code, det: true, q: "What does led_1.on() do?", must_any: ["LED 1", "led_1", "turns on", "turn on"]}
 - {id: code-5, tag: code, q: "Why does the program use while True?", must_any: ["forever", "infinite", "continuous", "again and again", "keeps"]}
 - {id: code-6, tag: code, q: "How does the block code find a heartbeat?", must_any: ["30000", "infrared", "IR"]}
 

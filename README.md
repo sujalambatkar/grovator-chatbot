@@ -95,7 +95,7 @@ Rules that are enforced in code, not only in the prompt: pins/ports/blocks/code 
 marked; a mapping that is not documented (pulse oximeter to the Grovator controller) is never invented; whenever readings or health come
 up, a "learning project, not a medical device" note is added. The system prompts live in `backend/config/system_prompt.yaml`.
 
-**Evaluate** (`eval/questions.yaml`, 49 questions: steps, wiring, blocks, code, thresholds, general science, messy student wording, health,
+**Evaluate** (`eval/questions.yaml`, 53 questions: steps, wiring, blocks, code, thresholds, general science, messy student wording, health,
 off-topic/unsafe, "I don't have that detail" traps):
 
 ```bash
@@ -103,6 +103,9 @@ off-topic/unsafe, "I don't have that detail" traps):
 backend/.venv/bin/python -m eval.run --offline   # the `det: true` questions only: no LLM, free, deterministic
 backend/.venv/bin/python -m eval.run -v          # everything, real model (uses your Groq/Gemini quota; --pace sets the delay)
 ```
+
+Images of the lesson and kit photos are in `knowledge/media/`. To add a diagram or photo with a draft description from a vision model (always `verified: false`, pin-like text is also queued in `GAPS.md`):
+`python -m ingest.vision path/to/image.png --application <slug> --sensor <id>` (set `VISION_MODEL` if the default is not available to your key).
 
 Long-term memory of user facts is **off** by default for this assistant (`ENABLE_LONG_TERM_MEMORY=false`): students are anonymous.
 Feedback (thumbs) is also appended to `logs/feedback-<day>.jsonl` with a random request id and no user data.
