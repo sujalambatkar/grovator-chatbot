@@ -10,6 +10,11 @@
 #   must_not              substrings that must NOT appear;  must_not_re: regexes that must not match
 # Short substrings like "TX" are matched as whole words, see must_not_re.
 
+# ---------------------------------------------------------------- MAIN GOAL: how to create the application (parts, connections, steps)
+- {id: goal-1, tag: build, det: true, q: "How do I create this application?", must_all: ["pulse oximeter", "ESP32", "LED board", "GPIO21", "GPIO22", "Circuit Designer", "Block Designer", "Read PulseOximeter Data"]}
+- {id: goal-2, tag: build, det: true, q: "What sensors are required?", must_all: ["pulse oximeter", "ESP32", "LED board"]}
+- {id: goal-3, tag: build, det: true, q: "Give me step by step instructions to build the health monitoring project", must_all: ["Step by step", "1. Get the parts", "Run the program"]}
+
 # ---------------------------------------------------------------- application steps
 - {id: steps-1, tag: steps, det: true, q: "What are the 5 steps of this project?", must_all: ["Understand the problem", "Circuit Designer", "Block Designer"]}
 - {id: steps-2, tag: steps, det: true, q: "Where do I start with the health monitoring project?", must_all: ["Understand the problem", "Find a solution"]}

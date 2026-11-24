@@ -181,3 +181,15 @@ async def test_sensor_facts_and_code_statements_are_looked_up_not_searched(retri
 async def test_comparison_of_ideas_is_general_even_if_a_gateway_device_is_named(retriever):
     d, llm = await ask(retriever, "What is the difference between a sensor and an LED?", FakeLLM("A sensor measures; an LED shows light."))
     assert d["intent"] == "general_tech" and llm.calls[0][0]["content"] == GENERAL_SYSTEM
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("q", ["How do I create this application?", "How do I build this project step by step?", "What sensors are required?", "what do i need to make it"])
+async def test_build_guide_has_parts_connections_and_numbered_steps(retriever, q):
+    d, llm = await ask(retriever, q)
+    assert not llm.calls and d["canned"] == "build_guide"
+    a = d["answer"]
+    assert "pulse oximeter" in a.lower() and "ESP32" in a and "LED board" in a                 # required parts
+    assert {r["sensor_pin"]: r["kit_pin"] for r in d["connection_table"]["rows"]}["SDA"] == "SDA (GPIO21)"   # connections
+    assert "1. Get the parts" in a and "Circuit Designer" in a and "Block Designer" in a and "7. Run" in a   # steps
+    assert [b["order"] for b in d["block_stack"]] == [1, 2, 3] and d["images"]

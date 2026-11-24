@@ -2,7 +2,7 @@ id: pulseoximeter-health-monitoring
 title: Health Monitoring using Pulse Oximeter
 aliases: [health monitoring, pulse oximeter project, pulseoximeter project, oximeter project, pulse oximeter application, pulseoximeter application, health monitoring project, oximeter lesson, this project, this lesson, the lesson, the project]
 weak_aliases: [led, leds, led board, ledboardsensor, spo2, bpm, heart rate, heartrate, oxygen, oxygen level, finger, serial monitor]
-starter_questions: ["What does a pulse oximeter do?", "How do I connect the sensor?", "Which blocks do I need?", "Why does it show 0?", "What does SpO2 mean?"]
+starter_questions: ["How do I build this project step by step?", "What does a pulse oximeter do?", "How do I connect the sensor?", "Which blocks do I need?", "Why does it show 0?", "What does SpO2 mean?"]
 summary: >-
   Measure the oxygen level (SpO2) and heart rate (BPM) of a person with a pulse oximeter, and show the heart rate with
   three LEDs, using the ESP32 kit and block programming.
@@ -20,6 +20,14 @@ iot_blocks:
   output: LEDs (they glow based on the pulse sensor reading)
   notification: The pulse readings are shown on a smartphone through the internet/cloud
 components: [pulseoximeter_max30102, esp32_kit, "other:LED board (ledboardsensor, 3 LEDs)"]
+build_steps:
+  - "Get the parts: the pulse oximeter sensor, the ESP32 kit, and the LED board (3 LEDs)."
+  - "Open the Circuit Designer and add the ESP32 kit, the pulse oximeter and the LED board."
+  - "Connect the pulse oximeter to the ESP32 kit with 4 wires (see the table): VIN to 3.3V, GND to GND, SDA to SDA (GPIO21), SCL to SCL (GPIO22)."
+  - "Connect the LED board. The program uses the LEDs on GPIO27 (LED 1), GPIO23 (LED 2) and GPIO13 (LED 3). Which LED-board terminal each wire uses is not readable in the lesson's diagram, so I don't have that detail yet: ask your teacher."
+  - "Open the Block Designer and stack the sensor blocks, top to bottom: Use [Pulseoximeter(Max30102)], Read PulseOximeter Data, Store Heart rate and Oximeter Data."
+  - "Build the logic in a forever loop: read the heart rate and SpO2 and print both. If SpO2 is 95 or more print 'Normal oxygen level', otherwise 'Low oxygen level'. Light LED 1 at 90 BPM or more, LED 2 from 80 to 89, LED 3 below 80, one at a time. If there is no valid reading (0), turn all LEDs off and print 'Place Your Finger on Sensor'. Pause 1 second at the end of each loop. (The block definitions for the LED, print and if/else blocks are not documented yet, so ask your teacher for them.)"
+  - "Run the program, place your finger on the sensor and keep it there (one measurement takes about 3 seconds). Watch the serial monitor and the LEDs. This is a learning project, not a medical device."
 steps:
   - n: 1
     title: Understand the problem

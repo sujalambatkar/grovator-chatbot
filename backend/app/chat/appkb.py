@@ -76,6 +76,9 @@ _THRESH = re.compile(r"\bthreshold|\bnormal oxygen|\blow oxygen|\b(?:which|what)
 _EXTRA = re.compile(r"\bvideo\b|\bresources?\b|\bhome ?assignment\b|\breflection\b|\bextension question|\bfood for thought\b|\bwhat should i think about\b", re.I)
 _SENSOR_NAME = r"(?:pulse ?oximeter|oximeter|pulse sensor|max30102|heart rate sensor|spo2 sensor)"
 _WHAT_DOES = re.compile(rf"^\W*(?:what(?:'s| is| does| do)?|how does|how do|explain|tell me about|describe)\s+(?:a |an |the |this |my )?{_SENSOR_NAME}s?(?:\s+\w+){{0,4}}\W*$", re.I)
+_BUILD = re.compile(r"\b(?:how (?:do|can|should|to) (?:i |we )?(?:create|build|make|do|complete|set ?up|start)|how to (?:create|build|make|set ?up))\b[^?.!]{0,40}\b(?:this|the|a|my)?\s*(?:application|app|project|lesson|pulse|oximeter|health monitor\w*)"
+                    r"|\b(?:required|needed|necessary) (?:sensors?|parts|components|hardware|materials)\b|\bwhat (?:sensors?|parts|components|hardware|materials) (?:do i|are|will i|should i)\b|\bwhat do i need\b|\b(?:parts|components|materials) (?:list|needed|required)\b"
+                    r"|\bstep[- ]by[- ]step\b|\bbuild guide\b|\bcreate this (?:application|project)\b", re.I)
 _FACT_Q = re.compile(r"\b(?:i2c|i²c)? ?address\b|\bfrequency\b|\bbaud(?: rate)?\b|\bwhich interface\b|\bwhat interface\b|\b(?:i2c|uart)\b[^?.!]{0,20}\b(?:or|and)\b[^?.!]{0,20}\b(?:uart|i2c)\b|\bvariable names?\b|\bdevice type\b|\bsensor type\b", re.I)
 _CODE_TOKEN = re.compile(r"[a-z_][a-z0-9_]*(?:\.[a-z0-9_]+)*\([^)]*\)|\bwhile true\b|\bi2c\([^)]*\)", re.I)
 _LED_Q = re.compile(r"\bled[ _]?([123])\b", re.I)
@@ -189,6 +192,8 @@ class AppKB:
 
         if _LINE_BY_LINE.search(msg):
             return self._line_by_line(a)
+        if _BUILD.search(msg) and not _CODE.search(msg):
+            return self._build_guide(a)
         stmt = self._statement(a, msg)
         if stmt:
             return stmt
@@ -246,6 +251,20 @@ class AppKB:
                 f"This is the wiring for the ESP32 kit in the lesson. If you are using the Grovator controller instead, tell me: that connection is not documented yet.")
         return AppAnswer("wiring", text, [f"{base}/circuit"], {"title": "Pulse oximeter to ESP32 kit", "columns": ["Sensor pin", "Kit pin", "Note"],
                          "rows": rows, "note": "From the lesson's circuit diagram"}, images=self._img(a.circuit.image))
+
+    def _build_guide(self, a) -> AppAnswer:
+        """Required parts + connections + numbered instructions, assembled from the application file."""
+        k = self.k
+        parts = [(k.sensors.get(c) or k.kits.get(c)).name if not c.startswith("other:") else c[6:] for c in a.components]
+        steps = a.build_steps or [f"{s.title}: {s.text}" for s in a.steps]
+        text = ("To create this application you need:\n" + "\n".join(f"- {p}" for p in parts)
+                + "\n\nConnections (ESP32 kit): see the table below.\n\nStep by step:\n" + "\n".join(f"{i}. {t}" for i, t in enumerate(steps, 1)))
+        rows = [{"sensor_pin": c.sensor_pin, "kit_pin": c.kit_pin, "note": c.note, "verified": c.verified} for c in a.circuit.connections]
+        bl = [k.blocks[b] for b in a.block_stack]
+        return AppAnswer("build_guide", text, [f"applications/{a.id}/steps", f"applications/{a.id}/circuit", *[f"blocks/{b.id}" for b in bl]],
+                         {"title": "Pulse oximeter to ESP32 kit", "columns": ["Sensor pin", "Kit pin", "Note"], "rows": rows, "note": "From the lesson's circuit diagram"},
+                         blocks=[{"order": i, "title": b.title, "description": b.description} for i, b in enumerate(bl, 1)],
+                         images=self._img(a.circuit.image))
 
     def _statement(self, a, msg: str) -> AppAnswer | None:
         """"What does led_1.on() do?": find the line-by-line part of the lesson program that contains that statement."""

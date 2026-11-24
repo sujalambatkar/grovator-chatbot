@@ -184,6 +184,7 @@ class Application(_Model):
     challenge: str
     iot_blocks: IoTBlocks
     components: list[str]
+    build_steps: list[str] = []  # concrete numbered instructions for "how do I create this application" (only what the documents support)
     steps: list[Step] = Field(min_length=1)
     logic: list[str]
     thresholds: list[Threshold]
