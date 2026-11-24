@@ -28,7 +28,7 @@ export interface ChatWidgetProps {
   showTokenMeter?: boolean;
 }
 
-const SUGGESTIONS = ["Which sensors can I connect?", "How do I connect the ultrasonic sensor?", "Which pins support analog input?"];
+const SUGGESTIONS = ["Which sensors can I connect?", "How do I connect the ultrasonic sensor?", "Which pins support analog input?", "What are the wiring rules?"];
 
 export function ChatWidget({
   apiUrl, getToken, title = "Grovator Assistant", storageKey, defaultOpen = false, onAuthError, pageId,

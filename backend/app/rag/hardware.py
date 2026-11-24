@@ -145,7 +145,12 @@ class Gateway:
         return None
 
     def _iface_lines(self, key: str) -> list[str]:
-        return [f"- {k if k.isupper() else k.replace('_', ' ').capitalize()}: {_fmt(v).rstrip('.')}." for k, v in self.interfaces[key].items()]
+        def label(k: str) -> str:
+            if k.isupper():
+                return k
+            text = " ".join(w.upper() if w in _ACRONYMS else w for w in k.split("_"))
+            return text[0].upper() + text[1:]
+        return [f"- {label(k)}: {_fmt(v).rstrip('.')}." for k, v in self.interfaces[key].items()]
 
     def render_interface(self, key: str) -> str:
         lines = [f"# {pretty(key)} on the gateway", *self._iface_lines(key)]
@@ -159,6 +164,31 @@ class Gateway:
         if not d:
             return ""
         return f" Each digital GPIO connector has {_fmt(d.get('connector', []))} pins; the digital GPIO pins are {_fmt(d.get('pins', []))}."
+
+    def device_steps(self, key: str) -> list[str]:
+        """Wiring steps generated from this device's own fields (used by the guide AND by the pre-written answers)."""
+        dev = self.devices[key]
+        ik = self.interface_key(key, dev)
+        digital = ik == "digital_gpio" or "digital" in _norm(str(dev.get("interface", "")))
+        steps: list[str] = []
+        if "pins" in dev:
+            for p, t in dev["pins"].items():
+                if t.lower().startswith("verify"):
+                    steps.append(f"{p}: check the module's voltage first (record says \"{t}\"; no value given).")
+                elif "digital gpio" in t.lower():
+                    steps.append(f"{p} to the Signal pin of a free digital GPIO connector.")
+                else:
+                    steps.append(f"{p} to {t}.")
+        elif "signal" in dev:
+            steps.append(f"{dev['signal']} to " + ("the Signal pin of a free digital GPIO connector." if digital else f"{dev.get('connect_to', 'the gateway')}."))
+            conn = _fmt(self.interfaces[ik].get("connector", [])) if ik and "connector" in self.interfaces[ik] else ""
+            steps.append((f"Power and ground: the connector provides {conn}; " if conn else "")
+                         + "the module's own power pins and voltage are not documented (check its labels and datasheet).")
+        elif "connect_to" in dev:
+            steps.append(f"Plug it into the {dev['connect_to']}.")
+        if "warning" in dev:
+            steps.append(f"Before powering: {dev['warning']}")
+        return steps
 
     def render_device(self, key: str) -> str:
         """One guide per device. Headings do not repeat the device name: every chunk is already prefixed with the title.
@@ -178,25 +208,7 @@ class Gateway:
             rec.append("pins " + ", ".join(f"{p} to {t}" for p, t in dev["pins"].items()))
         lines = ["# How to wire", "Record: " + "; ".join(rec) + "."]
 
-        # steps generated from this device's own fields
-        steps: list[str] = []
-        if "pins" in dev:
-            for p, t in dev["pins"].items():
-                if t.lower().startswith("verify"):
-                    steps.append(f"{p}: check the module's voltage first (record says \"{t}\"; no value given).")
-                elif "digital gpio" in t.lower():
-                    steps.append(f"{p} to the Signal pin of a free digital GPIO connector.")
-                else:
-                    steps.append(f"{p} to {t}.")
-        elif "signal" in dev:
-            steps.append(f"{dev['signal']} to " + ("the Signal pin of a free digital GPIO connector." if digital else f"{dev.get('connect_to', 'the gateway')}."))
-            conn = _fmt(self.interfaces[ik].get("connector", [])) if ik and "connector" in self.interfaces[ik] else ""
-            steps.append((f"Power and ground: the connector provides {conn}; " if conn else "")
-                         + "the module's own power pins and voltage are not documented (check its labels and datasheet).")
-        elif "connect_to" in dev:
-            steps.append(f"Plug it into the {dev['connect_to']}.")
-        if "warning" in dev:
-            steps.append(f"Before powering: {dev['warning']}")
+        steps = self.device_steps(key)
         lines += [f"{i}. {st}" for i, st in enumerate(steps, 1)]
         if ik:  # the gateway side of the connection (relationship to the interface record), one line
             lines.append(f"Gateway {pretty(ik)}: " + "; ".join(l[2:].rstrip(".") for l in self._iface_lines(ik)) + ".")

@@ -41,6 +41,7 @@ async function ask(page, text) {
   await page.getByTestId("composer-input").press("Enter");
   await until(async () => (await bot(page).count()) === n + 1, 5000, "bot bubble");
   await until(async () => (await page.getByTestId("send").count()) === 1, 20000, "stream finished");
+  await until(async () => (await bot(page).last().innerText()).trim().length > 0, 20000, "answer text");   // the bubble can exist before the first token
   return (await bot(page).last().innerText()).trim();
 }
 async function open(browser, opts = {}) {
@@ -109,7 +110,8 @@ try {
     const naive3 = Number((await page.getByTestId("meter-naive").innerText()).replace(/,/g, ""));
     const used3 = Number((await page.getByTestId("meter-used").innerText()).replace(/,/g, ""));
     assert.ok(naive3 > naive1 * 2.9, `naive ${naive1} -> ${naive3}`);                 // 3 turns ≈ 3x the (whole-site) cost, plus history
-    assert.ok(used3 < used1 * 4, `ours ${used1} -> ${used3}`);
+    // the first answer may be pre-written (0 tokens), so compare with the whole-site naive cost instead of with turn 1
+    assert.ok(used3 < naive3 / 10, `ours ${used1} -> ${used3} vs naive ${naive3}`);
     await page.screenshot({ path: path.join(OUT, "03-meter.png") });
   }, page);
 

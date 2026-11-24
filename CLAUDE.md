@@ -44,6 +44,7 @@ cd backend  && .venv/bin/python -m scripts.demo_compare           # measured tok
 
 ## Hardware conversation (gateway dataset)
 - `rag/hardware.py` generates docs (device guide, interface, wiring rules, concepts) plus an alias index; `chat/service.py` keeps the sensor in focus (`SessionState.focus`) so "it / what next / where does VCC go" find the right page, asks a clarifying question when "the sensor" is ambiguous, and `guardrails/output.unsupported_pins` blocks any GPIO number not present in the retrieved records (one strict retry first).
+- Pre-written answers (D87): `chat/canned.py` renders what/connect/pins answers from the JSON for plain questions, 0 tokens. Keep the matcher STRICT (a wrong template is worse than a model call); tests pin ENABLE_CANNED off except `test_canned.py`, and the eval's output-guard suite builds its service with `canned=False`.
 - Token path for a known sensor (D81-D85): direct lookup of 2 sections of that device's guide, no chat history, question rewritten with the device name, answer reusable across students. Section headings in `render_device` are matched by `_SECTION_INTENTS` in `chat/service.py`: rename both together.
 - The dataset has no software/code/expected-output/troubleshooting facts: each device guide says so explicitly, and the bot must say "not documented" rather than invent. Do not add such facts unless they come from real Grovator documentation.
 

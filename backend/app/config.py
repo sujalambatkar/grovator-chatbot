@@ -60,6 +60,7 @@ class Settings(BaseSettings):
     cache_max_per_scope: int = 300
     cache_followups: bool = False      # off: a cached answer to a REWRITTEN query ignores what the user actually said
     enable_router_shortcut: bool = True
+    enable_canned: bool = True         # pre-written answers (0 tokens) for plain what-is / how-to-connect / which-pins questions
     lazy_summary: bool = True          # fold a turn into the summary only when it leaves the 2-turn window
     enable_compression: bool = True
     compress_keep_ratio: float = 0.8   # keep sentences scoring >= ratio * best sentence in the chunk

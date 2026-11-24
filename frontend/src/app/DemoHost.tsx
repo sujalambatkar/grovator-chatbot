@@ -9,13 +9,8 @@ const API_URL = (process.env.NEXT_PUBLIC_CHATBOT_API_URL ?? "http://localhost:80
 const ROLE = "student" as const; // the demo always runs as a student; access control is enforced by the server
 const DEFAULT_PAGE = "devices/ultrasonic_sensor";
 
-const SUGGESTIONS: Record<string, string[]> = {
-  devices: ["How do I connect this to the gateway?", "Which pins does it use?", "What should I do after connecting it?", "What if it is not working?"],
-  interfaces: ["Which devices use this interface?", "Which pins does it use?"],
-  gateway: ["Which sensors can I connect?", "What are the wiring rules?"],
-  concepts: ["Explain these concepts with an example"],
-};
-const GENERIC = ["Which sensors can I connect?", "How do I connect the ultrasonic sensor?", "Which pins support analog input?"];
+// Suggestions come from the server per page (doc.suggestions): only questions answered by pre-written answers, so clicking one costs 0 tokens.
+const GENERIC = ["Which sensors can I connect?", "What are the wiring rules?", "Which pins support analog input?", "What is the gateway?"];
 
 export function DemoHost() {
   const [content, setContent] = useState<ContentResponse | null>(null);
@@ -103,7 +98,7 @@ export function DemoHost() {
 
       {content && doc && (
         <ChatWidget apiUrl={API_URL} getToken={getToken} storageKey="demo-student" pageId={doc.source}
-          suggestions={SUGGESTIONS[doc.category] ?? GENERIC} showMemory={false} showTokenMeter defaultOpen
+          suggestions={doc.suggestions?.length ? doc.suggestions : GENERIC} showMemory={false} showTokenMeter defaultOpen
           title="Grovator Assistant" />
       )}
     </div>

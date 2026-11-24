@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Phase 2-4 suites assert baseline behaviour: run them with the Phase 5 optimisations off.
 # Phase 5 tests switch them on explicitly via Settings(...).
-for _flag in ("ENABLE_SEMANTIC_CACHE", "ENABLE_ROUTER_SHORTCUT", "LAZY_SUMMARY", "ENABLE_COMPRESSION"):
+for _flag in ("ENABLE_SEMANTIC_CACHE", "ENABLE_ROUTER_SHORTCUT", "LAZY_SUMMARY", "ENABLE_COMPRESSION", "ENABLE_CANNED"):
     os.environ[_flag] = "false"
 os.environ["USAGE_LOG_DIR"] = ""
 os.environ["SUMMARY_MODE"] = "llm"          # legacy suites assert LLM summaries

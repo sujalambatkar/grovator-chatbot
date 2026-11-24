@@ -13,6 +13,7 @@ from collections.abc import AsyncIterator
 from dataclasses import replace as dc_replace
 from typing import Any
 
+from app.chat.canned import CannedAnswers
 from app.chat.cache import SemanticCache, cacheable
 from app.chat.prompting import build_answer_messages
 from app.chat.router import Intent, route_message
@@ -101,6 +102,7 @@ class ChatService:
         self.memory, self.budget, self.adapter, self.cache, self.tracker = memory, budget, adapter, cache, tracker
         self.catalog = catalog
         self.hw = hardware_index(settings.knowledge_dir)  # the gateway dataset: device names -> keys (inert if none)
+        self.canned = CannedAnswers(self.hw) if (self.hw.devices and settings.enable_canned) else None
         if memory is not None:
             memory.on_usage = lambda p, n: self._record(p, n, "extract")
         self._pending: set[asyncio.Task] = set()
@@ -176,9 +178,22 @@ class ChatService:
             return
         if mentioned:
             state.focus = mentioned[:3]  # the sensor(s) now being discussed; saved with the turn
-        if not mentioned and page_doc is not None and page_doc.source.startswith("devices/") and DEICTIC.search(message):
-            state.focus = [page_doc.source.split("/", 1)[1]]  # "how do I connect THIS" on a device page = that device
+        on_device_page = page_doc is not None and page_doc.source.startswith("devices/")
+        if not mentioned and on_device_page and (DEICTIC.search(message) or (not state.focus and _SINGULAR_REF.search(message))):
+            state.focus = [page_doc.source.split("/", 1)[1]]  # "how do I connect THIS" / (no sensor discussed yet) "which pins does IT use" = the open device
         focus = list(state.focus)
+        canned = self.canned.match(message, mentioned, focus) if self.canned else None
+        if canned:
+            # a plain question of a known shape: answered from the dataset by a template, no model, no search (0 tokens)
+            base = {**base, "intent": Intent.platform_faq.value, "shortcut": True, "naive_tokens": self._naive(p, page_doc, state, message)}
+            yield {"type": "meta", **base}
+            out = check_output(canned.text, source_text=canned.text, secrets=self._secrets(p))
+            for chunk in _chunks(out.text):
+                yield {"type": "token", "t": chunk}
+            await self._persist_turn(p, sid, state, message, out.text)
+            yield self._done(base, out.text, grounded=True, sources=canned.sources, canned=canned.kind, standalone_query=message,
+                             memories_used=0, input_tokens=0, output_tokens=0, tokens_total=0, naive_tokens=base["naive_tokens"])
+            return
         # the answer to "Which sensor do you mean?" is just a name ("for alcohol sensor"): the real question is the one before it
         answers_clarification = bool(mentioned and state.turns and state.turns[-1].assistant.startswith(_CLARIFY_STARTS)
                                      and len(message.split()) <= 5)
@@ -237,7 +252,9 @@ class ChatService:
         # platform_faq: retrieval always runs on the standalone (rewritten) query.
         # Scope comes from the JWT principal only; the LLM never chooses whose data to fetch.
         glued = route.shortcut and route.query != message
-        if self.hw.devices and focus and (mentioned or self._is_about_focus(message)):
+        # "explain THESE rules" on the open Wiring Rules page is about that page, not about the sensor discussed earlier
+        page_wins = bool(page_doc and DEICTIC.search(message) and not on_device_page and not mentioned)
+        if self.hw.devices and focus and not page_wins and (mentioned or self._is_about_focus(message)):
             # keep the sensor in every search: a follow-up that does not name it ("what should I do after connecting it?") must still
             # find ITS page, not a similar page of another sensor. (Replaces the free "previous question + message" glue.)
             labels = " and ".join(self.hw.label(k) for k in focus)
@@ -276,7 +293,7 @@ class ChatService:
             # mention the named lesson ("move and turn") crowd the answer out
             seq_text = f"Learning Path lesson order, previous lesson and next lesson: {route.query}"
             also = [*(also or []), (seq_text, await embed_query(seq_text))]
-        direct = bool(self.hw.devices and focus and not pins and not asks_order
+        direct = bool(self.hw.devices and focus and not pins and not asks_order and not page_wins
                       and (mentioned or self._is_about_focus(message)) and not _LIST_Q.search(message))
         reuse = False
         if direct:

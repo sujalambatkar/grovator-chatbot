@@ -57,6 +57,7 @@ export interface ContentDoc {
   category: string;
   order: number;
   body: string;
+  suggestions?: string[];
 }
 
 export interface ContentResponse {

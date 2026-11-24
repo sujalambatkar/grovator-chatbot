@@ -181,11 +181,12 @@ class Ctx:
 VERBOSE = False
 
 
-async def build_service(ctx: Ctx, llm):
+async def build_service(ctx: Ctx, llm, canned: bool = True):
     redis = fakeredis.aioredis.FakeRedis(decode_responses=True)
     mm = MemoryManager(MemoryStore(AsyncQdrantClient(location=":memory:"), f"m{uuid.uuid4().hex}"), llm, ctx.settings)
     await mm.store.ensure()
-    svc = ChatService(llm, ctx.retriever, SessionStore(redis, 600), ctx.settings, mm, TokenBudget(redis, 10**9, 10**9),
+    settings = ctx.settings if canned else ctx.settings.model_copy(update={"enable_canned": False})  # the output-guard suite must reach the (scripted) model
+    svc = ChatService(llm, ctx.retriever, SessionStore(redis, 600), settings, mm, TokenBudget(redis, 10**9, 10**9),
                       MockAdapter(), SemanticCache(redis, ctx.settings), UsageTracker(redis, ""))
     return svc, mm
 
@@ -295,7 +296,7 @@ async def s_access_control(ctx: Ctx) -> None:
 
 async def s_output_guard(ctx: Ctx) -> None:
     for it in load("output.jsonl"):
-        svc, _ = await build_service(ctx, ScriptedLLM(it["reply"]))
+        svc, _ = await build_service(ctx, ScriptedLLM(it["reply"]), canned=False)
         done, seen, ms = await turn(svc, principal("student"), "How do I connect the IoT kit?" if SYNTHETIC else "How do I connect the ultrasonic sensor?", f"eval-{it['id']}-session")
         bad = leaked(seen, it["canaries"])
         if it["expect"] == "replaced":

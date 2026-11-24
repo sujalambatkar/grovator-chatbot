@@ -34,7 +34,7 @@ JSON_PATH = next(REAL.rglob("*.json"))
 DATA = json.loads(JSON_PATH.read_text())
 GW = load_gateway(str(JSON_PATH))
 STU = make_principal("student", user_id="s1")
-ON = dict(enable_semantic_cache=True, enable_router_shortcut=True, lazy_summary=True, enable_compression=True,
+ON = dict(enable_semantic_cache=True, enable_router_shortcut=True, lazy_summary=True, enable_compression=True, enable_canned=False,
           usage_log_dir="", knowledge_dir=str(REAL))
 
 
@@ -547,3 +547,17 @@ async def test_what_is_x_gets_the_concept_as_well_as_the_device_guide(real_retri
     assert "general knowledge is fine" in ANSWER_SYSTEM and "ONLY from the CONTEXT" in ANSWER_SYSTEM   # concepts open, gateway facts closed
     await turn(svc, "How do I connect it?", "hw-sess-40", page="devices/buzzer")                        # wiring questions stay narrow
     assert "Electronics Concepts" not in context_of(llm)
+
+
+@pytest.mark.asyncio
+async def test_this_on_a_non_device_page_means_the_page_not_the_sensor_discussed_earlier(real_retriever):
+    """Found by the browser E2E: after an ultrasonic conversation, "Explain these rules" on the Wiring Rules page was answered from the ultrasonic guide."""
+    llm = FakeLLM("Use the labels printed on the gateway and check module voltage.")
+    svc = build(real_retriever, llm)
+    US = "devices/ultrasonic_sensor"
+    await turn(svc, "How do I connect this to the gateway?", "hw-sess-50", page=US)
+    await turn(svc, "Where does the VCC wire go?", "hw-sess-50", page=US)
+    await turn(svc, "What if it is not working?", "hw-sess-50", page=US)
+    d = await turn(svc, "Explain these rules", "hw-sess-50", page="gateway/wiring-rules")
+    assert "[1] Gateway Wiring Rules" in context_of(llm)                    # the page leads the context (other pages repeat the same rules)
+    assert "(Ultrasonic Sensor)" not in (d.get("standalone_query") or "") and d["sources"][0] == "Gateway Wiring Rules"
