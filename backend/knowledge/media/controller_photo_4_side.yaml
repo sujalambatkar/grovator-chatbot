@@ -1,0 +1,12 @@
+id: controller_photo_4_side
+file: controller_photo_4_side.jpg
+caption: 'Grovator controller: power and video side'
+shows: USB-C power 5V/3A, two micro HDMI ports and stereo audio.
+related:
+  kit:
+  - govator_controller_pi
+verified: false
+origin: photo
+sources:
+- file: kit photos 1-4
+  where: ''

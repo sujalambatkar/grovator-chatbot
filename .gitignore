@@ -29,3 +29,6 @@ frontend/e2e/out/
 .DS_Store
 .vscode/
 .idea/
+
+# ---- source documents for the knowledge base (internal PDFs/photos; keep local)
+data/raw/

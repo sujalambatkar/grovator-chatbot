@@ -1,0 +1,13 @@
+id: deck_page_6
+file: deck_page_6.png
+caption: The IoT building blocks of this project
+shows: 'Input: pulse oximeter. Processor: IoT gateway. Output: LED. The gateway also talks to the internet cloud and a smartphone
+  shows the reading.'
+related:
+  application:
+  - pulseoximeter-health-monitoring
+verified: true
+origin: document
+sources:
+- file: GE_-_Pulseoximeter_Application.pptx.pdf
+  where: ''

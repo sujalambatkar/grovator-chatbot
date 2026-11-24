@@ -1,0 +1,203 @@
+id: pulseoximeter-health-monitoring
+title: Health Monitoring using Pulse Oximeter
+aliases: [health monitoring, pulse oximeter project, pulseoximeter project, oximeter project, pulse oximeter application, pulseoximeter application, health monitoring project, oximeter lesson, this project, this lesson, the lesson, the project]
+weak_aliases: [led, leds, led board, ledboardsensor, spo2, bpm, heart rate, heartrate, oxygen, oxygen level, finger, serial monitor]
+summary: >-
+  Measure the oxygen level (SpO2) and heart rate (BPM) of a person with a pulse oximeter, and show the heart rate with
+  three LEDs, using the ESP32 kit and block programming.
+objectives:
+  - Explain the use of an oximeter.
+  - Explain the working principle of an oximeter and a pulse sensor.
+  - Demonstrate how to monitor pulse and oxygen level in human blood.
+  - Build a pulse meter and oximeter that shows readings.
+challenge: >-
+  Measure the oxygen level of people and show with LEDs whether the levels are satisfactory, good, or need attention.
+  (The lesson mentions the Covid pandemic as the reason.)
+iot_blocks:
+  input: Pulse oximeter (detects the pulse and oxygen level and sends the signal to the IoT gateway)
+  processor: ESP32 kit (IoT gateway)
+  output: LEDs (they glow based on the pulse sensor reading)
+  notification: The pulse readings are shown on a smartphone through the internet/cloud
+components: [pulseoximeter_max30102, esp32_kit, "other:LED board (ledboardsensor, 3 LEDs)"]
+steps:
+  - n: 1
+    title: Understand the problem
+    text: We want to measure the oxygen level of people and show with LEDs if the levels are OK or need attention.
+  - n: 2
+    title: Find a solution using the right technology
+    text: >-
+      Can we measure oxygen levels and show them in a simple, visual way? Yes: use a pulse oximeter as the input and LED
+      indicators as the output, lit depending on the reading.
+  - n: 3
+    title: Build the application logic
+    text: >-
+      Measure the oxygen level and heart rate. Depending on the reading, switch on one, two or three LEDs to show
+      excellent, just within limit, or needs attention. (In the lesson's program the LEDs follow the heart rate bands; see the thresholds.)
+  - n: 4
+    title: Connect the physical components in the Circuit Designer
+    text: >-
+      Connect the input and output smart devices to the processor using the Circuit Designer: the pulse oximeter and the
+      LED board go to the ESP32 kit.
+  - n: 5
+    title: Write the program with blocks in the Block Designer
+    text: >-
+      Create the program that tells the processor how the devices talk to each other, using the Block Designer. The
+      lesson's program is a forever loop that reads heart rate and SpO2, prints them, and lights the LEDs.
+logic:
+  - "Start: set up the pulse oximeter, LED board and time; set led_1, led_2, led_3 as outputs on GPIO27, GPIO23, GPIO13; turn all LEDs off."
+  - "Repeat forever: read the heart rate (BPM) and SpO2 from the sensor, then print both."
+  - "If SpO2 is not 0: print 'Normal oxygen level' when SpO2 is 95 or more, otherwise 'Low oxygen level'."
+  - "If BPM is not 0: light the LED that matches the heart rate band (one LED at a time), print a message, pause 0.5 s."
+  - "If BPM is 0 (no valid reading): turn all LEDs off, print 'Place Your Finger on Sensor' and wait."
+  - "Pause 1 second at the end of every loop."
+thresholds:
+  - {name: Normal oxygen, quantity: SpO2, rule: "SpO2 >= 95", result: "prints 'Normal oxygen level'"}
+  - {name: Low oxygen, quantity: SpO2, rule: "SpO2 != 0 and SpO2 < 95", result: "prints 'Low oxygen level'"}
+  - {name: No valid SpO2, quantity: SpO2, rule: "SpO2 == 0", result: "no oxygen message is printed"}
+  - {name: High heart rate, quantity: BPM, rule: "BPM >= 90", result: "LED 1 (GPIO27) ON, prints 'Heart rate: High - LED 1 ON'"}
+  - {name: Medium heart rate, quantity: BPM, rule: "80 <= BPM < 90", result: "LED 2 (GPIO23) ON, prints 'Heart rate: Medium - LED 2 ON'"}
+  - {name: Low heart rate, quantity: BPM, rule: "BPM != 0 and BPM < 80", result: "LED 3 (GPIO13) ON, prints 'Heart rate: Low - LED 3 OFF' (the printed text says OFF, but the code turns LED 3 ON)"}
+  - {name: No valid reading, quantity: BPM, rule: "BPM == 0", result: "all LEDs OFF, prints 'Place Your Finger on Sensor', waits 1 s"}
+circuit:
+  kit: esp32_kit
+  sensor: pulseoximeter_max30102
+  image: deck_page_8
+  connections:
+    - {sensor_pin: VIN, kit_pin: "3.3V", note: "red wire", verified: true}
+    - {sensor_pin: GND, kit_pin: "GND", note: "black wire", verified: true}
+    - {sensor_pin: SDA, kit_pin: "SDA (GPIO21)", note: "I2C data", verified: true}
+    - {sensor_pin: SCL, kit_pin: "SCL (GPIO22)", note: "I2C clock", verified: true}
+  leds:
+    - {name: led_1, gpio: 27, meaning: "High heart rate (BPM >= 90)"}
+    - {name: led_2, gpio: 23, meaning: "Medium heart rate (80 <= BPM < 90)"}
+    - {name: led_3, gpio: 13, meaning: "Low heart rate (BPM < 80)"}
+  notes:
+    - "The LED GPIO numbers come from the lesson's program. Which terminal of the LED board each wire uses is not readable in the diagram (see GAPS.md)."
+block_stack: [use_pulseoximeter_max30102, read_pulseoximeter_data, store_heartrate_oximeter_data]
+program:
+  variant: lesson program using the max30102 library (get_values() returns [bpm, spo2])
+  description: The lesson's MicroPython program (slides 12-16), generated from the block program.
+  code_notes:
+    - "The slide text lost its indentation; it was rebuilt from the block program on slide 11 (the three LED checks are separate if/else blocks inside 'if bpm != 0'). No statement was changed."
+  code: |
+    led_1 = None
+    led_2 = None
+    led_3 = None
+    pulseoximeterv3_bpm_1 = None
+    pulseoximeterv3_spo2_1 = None
+    from machine import Pin, I2C
+    from max30102 import MAX30102
+    i2c = I2C(0, scl=Pin(22), sda=Pin(21))
+    pulseoximeterv3_sensor = MAX30102(i2c)
+    import machine
+    import time
+    led_1 = machine.Pin(27, machine.Pin.OUT)
+    led_2 = machine.Pin(23, machine.Pin.OUT)
+    led_3 = machine.Pin(13, machine.Pin.OUT)
+    led_1.off()
+    led_2.off()
+    led_3.off()
+    while True:
+      pulseoximeterv3_bpm_1 = pulseoximeterv3_sensor.get_values()[0]
+      pulseoximeterv3_spo2_1 = pulseoximeterv3_sensor.get_values()[1]
+      print('Heartrate : ' + str(pulseoximeterv3_bpm_1))
+      print('SpO2 : ' + str(pulseoximeterv3_spo2_1))
+      if pulseoximeterv3_spo2_1 != 0:
+        if pulseoximeterv3_spo2_1 >= 95:
+          print('Normal oxygen level')
+          time.sleep(0.5)
+        else:
+          print('Low oxygen level')
+      if pulseoximeterv3_bpm_1 != 0:
+        if pulseoximeterv3_bpm_1 >= 90:
+          led_1.on()
+          print('Heart rate: High - LED 1 ON')
+          time.sleep(0.5)
+        else:
+          led_1.off()
+        if pulseoximeterv3_bpm_1 >= 80 and pulseoximeterv3_bpm_1 < 90:
+          led_2.on()
+          print('Heart rate: Medium - LED 2 ON')
+          time.sleep(0.5)
+        else:
+          led_2.off()
+        if pulseoximeterv3_bpm_1 < 80:
+          led_3.on()
+          print('Heart rate: Low - LED 3 OFF')
+          time.sleep(0.5)
+        else:
+          led_3.off()
+        print('--------')
+      else:
+        led_1.off()
+        led_2.off()
+        led_3.off()
+        print('Place Your Finger  on Sensor')
+      time.sleep(1)
+  explanations:
+    - code: "led_1 = None / led_2 = None / led_3 = None / pulseoximeterv3_bpm_1 = None / pulseoximeterv3_spo2_1 = None"
+      meaning: ["Declares the variables led_1, led_2, led_3, pulseoximeterv3_bpm_1 and pulseoximeterv3_spo2_1."]
+    - code: "from machine import Pin, I2C / from max30102 import MAX30102 / i2c = I2C(0, scl=Pin(22), sda=Pin(21)) / pulseoximeterv3_sensor = MAX30102(i2c) / import machine / import time"
+      meaning: ["Imports the GPIO and I2C communication modules.", "Imports the MAX30102 sensor library.", "Imports the time module, for the sleep function.", "Imports the pulse oximeter libraries."]
+    - code: "led_1 = machine.Pin(27, machine.Pin.OUT) / led_2 = machine.Pin(23, machine.Pin.OUT) / led_3 = machine.Pin(13, machine.Pin.OUT) / led_1.off() / led_2.off() / led_3.off()"
+      meaning: ["Configures LED 1 on GPIO 27 as output.", "Configures LED 2 on GPIO 23 as output.", "Configures LED 3 on GPIO 13 as output.", "Initially led_1, led_2, led_3 are off."]
+    - code: "while True: / bpm = sensor.get_values()[0] / spo2 = sensor.get_values()[1] / print heart rate / print SpO2 / if spo2 != 0: / if spo2 >= 95: print('Normal oxygen level') / time.sleep(0.5)"
+      meaning: ["Creates an infinite loop that continuously reads data.", "Reads the heart rate (BPM) from the sensor.", "Reads the SpO2 value from the sensor.", "Displays the heart rate on the serial monitor.", "Displays the oxygen level value.", "Checks if the SpO2 reading is valid.", "Checks if the oxygen level is normal.", "Displays the normal oxygen message.", "Waits before the next reading."]
+    - code: "else: print('Low oxygen level') / if bpm != 0: / if bpm >= 90: led_1.on() / print('Heart rate: High - LED 1 ON') / time.sleep(0.5)"
+      meaning: ["Runs when the oxygen level is below 95.", "Displays the low oxygen warning.", "Checks if the heart rate is valid (not 0).", "Checks if the heart rate is high (90 or more).", "Turns ON LED 1.", "Displays the high heart rate message.", "Delay before the next cycle."]
+    - code: "else: led_1.off() / if bpm >= 80 and bpm < 90: led_2.on() / print('Heart rate: Medium - LED 2 ON') / time.sleep(0.5)"
+      meaning: ["Runs if the heart rate is NOT high.", "Turns OFF LED 1.", "Checks if the heart rate is between 80 and 89 BPM.", "Turns ON LED 2.", "Displays the medium heart rate message.", "Delay."]
+    - code: "else: led_2.off() / if bpm < 80: led_3.on() / print('Heart rate: Low - LED 3 OFF') / time.sleep(0.5)"
+      meaning: ["Runs when the heart rate is not in the medium range.", "Turns OFF LED 2.", "Checks if the heart rate is low (below 80).", "Turns ON LED 3.", "Displays the low heart rate message.", "Delay before the next cycle."]
+    - code: "else: led_3.off() / print('--------') / else: led_1.off() / led_2.off() / led_3.off() / print('Place Your Finger on Sensor') / time.sleep(1)"
+      meaning: ["Runs when the heart rate is NOT low.", "Turns OFF LED 3.", "Prints a separator line for a clean serial monitor.", "The outer else runs when no valid heart rate is detected.", "Turns OFF LED 1, LED 2 and LED 3.", "Tells the user to place the finger properly on the sensor.", "Waits 1 second before the next sensor reading cycle."]
+science:
+  - "Concept: reflection and refraction of light."
+  - "The sensor has a super bright red LED and a light detector. The LED must be bright so enough light spreads through the finger and reaches the detector."
+  - "When the heart pumps a pulse of blood through the blood vessels, the finger becomes slightly more opaque, so less light reaches the detector. With each heart pulse the detector signal changes."
+  - "This change is converted into an electrical pulse, which is amplified. A LED on the sensor blinks with each heartbeat."
+faq:
+  - q: Why does my sensor show 0?
+    triggers: [it shows 0, shows 0, show 0, showing 0, displays 0, gives 0, shows zero, reading is 0, reads 0, heart rate 0, bpm 0, spo2 0, bpm is 0, spo2 is 0, 0 bpm, 0 spo2, no reading, nothing shows, shows nothing, not working]
+    a: >-
+      0 means "no valid reading". In the lesson program, when the heart rate is 0 all LEDs go off and it prints "Place Your
+      Finger on Sensor". The block code returns 0 and 0 when it sees no finger (the infrared value stays low) or finds no heartbeats.
+      Place your finger on the sensor and keep it there: one measurement takes about 3 seconds. Also check the four wires
+      against the connection table (3.3V, GND, SDA to GPIO21, SCL to GPIO22).
+  - q: Why is my LED not on?
+    triggers: [led not on, led not glowing, led not working, led does not light, leds off, led is off, no led]
+    a: >-
+      In the lesson program an LED only turns on when the heart rate is not 0, and only one LED is on at a time: LED 1
+      (GPIO27) at 90 BPM or more, LED 2 (GPIO23) from 80 to 89, LED 3 (GPIO13) below 80. If the heart rate shows 0, all
+      LEDs stay off, so first get a valid reading (finger on the sensor). Which LED-board terminals the wires use is not
+      documented yet, so check with your teacher.
+  - q: Why does the Low message say "LED 3 OFF" when LED 3 is on?
+    triggers: [led 3 off, low led 3 off, led3 off message, typo led 3]
+    a: >-
+      It is a typing mistake in the lesson's message. The code turns LED 3 ON when the heart rate is below 80, even though
+      the printed text says "Low - LED 3 OFF".
+  - q: Do the LEDs show the oxygen level?
+    triggers: [led show oxygen, led oxygen level, which led means, led meaning]
+    a: >-
+      In the lesson's program the three LEDs show the heart rate band (High, Medium, Low), not the oxygen level. The oxygen
+      level (SpO2) is printed as "Normal oxygen level" (95 or more) or "Low oxygen level".
+  - q: Is the reading accurate? Can I use it for my health?
+    triggers: [accurate, accuracy, medical, diagnose, diagnosis, doctor, reliable, trust the reading]
+    a: >-
+      No. This is a learning project and a rough classroom approximation, not a medical device. Do not use it to check your
+      health. If you are worried about your health, talk to a doctor or a trusted adult.
+  - q: Why can SpO2 be more than 100?
+    triggers: [spo2 above 100, spo2 more than 100, spo2 104, oxygen over 100]
+    a: >-
+      In the block code, SpO2 is limited to between 85 and 100 and then 4 is added, so it can show up to 104. That is a
+      quirk of the classroom code, and a real oxygen level cannot be above 100. Tell your teacher.
+extension_questions:
+  - "Reflection: What have you learnt? What surprised you? What inspired you? What interested you?"
+  - "Application: Can you relate the concepts and principles you learnt in science and in the course to a similar application in a real-life scenario?"
+  - "Implication: Can you think of designing a sensor or application for a real-life scenario using the principles you learnt in science and in the course?"
+resources:
+  - "Video: How the pulse sensor works - https://youtu.be/N3MCvREORVA"
+safety_note: This is a learning project, not a medical device. For real health concerns, talk to a doctor or a trusted adult.
+sources:
+  - {file: GE_-_Pulseoximeter_Application.pptx.pdf, where: "pages 1-21"}
+  - {file: Max30102_Blocks_Requirement.pdf, where: "pages 1-4"}

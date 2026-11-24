@@ -1,0 +1,13 @@
+id: controller_photo_3_relay_analog
+file: controller_photo_3_relay_analog.jpg
+caption: 'Grovator controller: relays, analog in/out'
+shows: GPIO24/25/27 and GPIO10/9/11 groups, Relay 1 (GPIO23), Relay 2 (GPIO22), analog output AO and analog inputs AI1 to
+  AI4.
+related:
+  kit:
+  - govator_controller_pi
+verified: false
+origin: photo
+sources:
+- file: kit photos 1-4
+  where: ''

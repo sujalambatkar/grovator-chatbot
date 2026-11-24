@@ -1,0 +1,12 @@
+id: controller_photo_2_gpio
+file: controller_photo_2_gpio.jpg
+caption: 'Grovator controller: GPIO terminals'
+shows: Six terminals of 5V / GPIO / GND for GPIO8, 16, 17, 18, 20 and 21.
+related:
+  kit:
+  - govator_controller_pi
+verified: false
+origin: photo
+sources:
+- file: kit photos 1-4
+  where: ''

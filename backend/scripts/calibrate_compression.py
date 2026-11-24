@@ -1,7 +1,6 @@
 """Measure context compression: tokens saved and whether the key fact each question needs is retained."""
 import asyncio
 import sys
-from pathlib import Path
 
 from app.config import Settings, get_settings
 from app.rag.compress import build_context, compress_hits

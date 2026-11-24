@@ -11,7 +11,7 @@ from app.rag.store import KnowledgeStore, make_client
 async def main() -> None:
     s = get_settings()
     r = HybridRetriever(KnowledgeStore(make_client(s.qdrant_url), s.knowledge_collection))
-    n = await ingest(Path(s.knowledge_dir), r)
+    n = await ingest(Path(s.knowledge_dir), r, app_root=Path(s.app_knowledge_dir) if s.app_knowledge_dir else None)
     print(f"Indexed {n} chunks into '{s.knowledge_collection}' at {s.qdrant_url}")
 
 

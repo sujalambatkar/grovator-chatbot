@@ -33,6 +33,7 @@ REAL = Path(__file__).resolve().parent.parent / "knowledge_src"
 JSON_PATH = next(REAL.rglob("*.json"))
 DATA = json.loads(JSON_PATH.read_text())
 GW = load_gateway(str(JSON_PATH))
+DEVICES = GW.devices  # the gateway dataset minus devices that backend/knowledge/sensors replaces (pulse oximeter)
 STU = make_principal("student", user_id="s1")
 ON = dict(enable_semantic_cache=True, enable_router_shortcut=True, lazy_summary=True, enable_compression=True, enable_canned=False,
           usage_log_dir="", knowledge_dir=str(REAL))
@@ -67,8 +68,12 @@ def context_of(llm: FakeLLM) -> str:
 # ---------------------------------------------------------------------------------------------- ingestion
 def test_every_device_record_is_fully_ingested():
     docs = {d.source: d for d in load_hw_docs(REAL)}
-    assert set(DATA["devices"]) <= {s.split("/")[-1] for s in docs if s.startswith("devices/")}
-    for key, dev in DATA["devices"].items():
+    from knowledge.loader import superseded_gateway_devices
+
+    kept = {k: v for k, v in DATA["devices"].items() if k not in superseded_gateway_devices()}  # replaced by backend/knowledge/sensors
+    assert set(kept) <= {s.split("/")[-1] for s in docs if s.startswith("devices/")}
+    assert not set(DATA["devices"]) - set(kept) & {s.split("/")[-1] for s in docs}
+    for key, dev in kept.items():
         body = docs[f"devices/{key}"].body
         for field in ("signal", "connect_to", "interface", "warning"):
             if field in dev:
@@ -95,7 +100,7 @@ def test_relationships_device_page_carries_its_interface_and_interface_lists_dev
     assert "GPIO21" in docs["devices/i2c_lcd"].body and "GPIO22" in docs["devices/i2c_lcd"].body
     assert "GPIO33" in docs["devices/keypad"].body                      # keypad: internal GPIO from the keypad interface record
     assert "Ultrasonic Sensor" in docs["interfaces/digital_gpio"].body and "Servo" in docs["interfaces/digital_gpio"].body
-    assert "I2C LCD" in docs["interfaces/i2c"].body and "Pulse Oximeter" in docs["interfaces/i2c"].body
+    assert "I2C LCD" in docs["interfaces/i2c"].body and "Pulse Oximeter" not in docs["interfaces/i2c"].body  # replaced by knowledge/sensors
 
 
 def test_device_page_only_lists_rules_that_apply_to_its_interface():
@@ -168,7 +173,7 @@ async def test_old_dummy_questions_are_not_answered_from_dummy_docs(real_retriev
 @pytest.mark.asyncio
 async def test_every_device_is_retrieved_for_its_own_connection_question(real_retriever):
     misses = []
-    for key in DATA["devices"]:
+    for key in DEVICES:
         res = await real_retriever.retrieve(f"How do I connect the {pretty(key)} to the gateway?", STU, k=4)
         if f"devices/{key}" not in [h.source for h in res.hits]:
             misses.append(key)

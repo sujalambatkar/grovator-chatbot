@@ -1,0 +1,41 @@
+id: govator_controller_pi
+name: Grovator controller (Pi-style)
+aliases: [grovator controller, govator controller, grovator pi, pi controller, raspberry pi controller, pi style controller, govator pi, controller kit, the controller]
+description: >-
+  The physical controller with USB, Ethernet, HDMI and green screw terminals (from four photos). The labels were read from
+  photos and are NOT confirmed yet. Its GPIO numbers do not match the ESP32 pins in the pulse oximeter lesson.
+verified: false
+port_groups:
+  - {name: Front - USB / network / power, pins: ["2x USB 2.0", "2x USB 3.0", "Gigabit Ethernet", "Power 12V DC"], photo: controller_photo_1_front}
+  - {name: Front - Stepper Motor, pins: [MOT, 2B, 2A, 1A, 1B, GND], photo: controller_photo_1_front}
+  - {name: Front - Motor, pins: [MO1, MO2], photo: controller_photo_1_front}
+  - {name: Front - KEYPAD, pins: [KEYPAD connector], photo: controller_photo_1_front}
+  - {name: Front - I2C group 1, pins: [GND, 3.3V, SDA, SCL], photo: controller_photo_1_front}
+  - {name: Front - I2C group 2, pins: [GND, 3.3V, SDA, SCL], photo: controller_photo_1_front}
+  - {name: Front - I2C group 3, pins: [GND, 3.3V, SDA, SCL], photo: controller_photo_1_front}
+  - {name: Front - Serial, pins: [3.3V, GND, RXD, TXD], photo: controller_photo_1_front}
+  - {name: Front - GPIO4, pins: [5V, GPIO4, GND], photo: controller_photo_1_front}
+  - {name: Front - GPIO7, pins: [5V, GPIO7, GND], photo: controller_photo_1_front}
+  - {name: Side 2 - GPIO8, pins: [5V, GPIO8, GND], photo: controller_photo_2_gpio}
+  - {name: Side 2 - GPIO16, pins: [5V, GPIO16, GND], photo: controller_photo_2_gpio}
+  - {name: Side 2 - GPIO17, pins: [5V, GPIO17, GND], photo: controller_photo_2_gpio}
+  - {name: Side 2 - GPIO18, pins: [5V, GPIO18, GND], photo: controller_photo_2_gpio}
+  - {name: Side 2 - GPIO20, pins: [5V, GPIO20, GND], photo: controller_photo_2_gpio}
+  - {name: Side 2 - GPIO21, pins: [5V, GPIO21, GND], photo: controller_photo_2_gpio}
+  - {name: Side 3 - GPIO24/25/27, pins: [5V, GPIO24, GPIO25, GPIO27, GND], photo: controller_photo_3_relay_analog}
+  - {name: Side 3 - GPIO10/9/11, pins: [5V, GPIO10, GPIO9, GPIO11, GND], photo: controller_photo_3_relay_analog}
+  - {name: Side 3 - Relay 1 (GPIO23), pins: ["+12V", GND], photo: controller_photo_3_relay_analog}
+  - {name: Side 3 - Relay 2 (GPIO22), pins: ["+12V", GND], photo: controller_photo_3_relay_analog}
+  - {name: Side 3 - Analog output AO, pins: ["+Vout", GND, "+mAout"], photo: controller_photo_3_relay_analog}
+  - {name: Side 3 - Analog input AI1, pins: ["+5VExc", "AIN-", "AIN+", DIN], photo: controller_photo_3_relay_analog}
+  - {name: Side 3 - Analog input AI2, pins: ["+5VExc", "AIN-", "AIN+", DIN], photo: controller_photo_3_relay_analog}
+  - {name: Side 3 - Analog input AI3, pins: ["+5VExc", "AIN-", "AIN+", DIN], photo: controller_photo_3_relay_analog}
+  - {name: Side 3 - Analog input AI4, pins: ["+5VExc", "AIN-", "AIN+", DIN], photo: controller_photo_3_relay_analog}
+  - {name: Side 4 - Power and video, pins: ["USB-C power 5V/3A", "HDMI (micro)", "HDMI (micro)", "Stereo Audio"], photo: controller_photo_4_side}
+documented_facts:
+  - "Terminal labels as printed on the controller (read from photos, not yet confirmed)."
+not_documented:
+  - "How the pulse oximeter connects to this controller."
+  - "Any mapping between this controller's GPIO numbers and the ESP32 pins used in the lesson (e.g. GPIO22 is Relay 2 here, but I2C SCL on the ESP32 kit)."
+sources:
+  - {file: "kit photos 1-4", where: "label transcription"}

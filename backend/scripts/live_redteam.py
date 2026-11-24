@@ -3,7 +3,6 @@ Attacks here are natural language; deterministic L1 cases are sampled, the rest 
 retrieval gate, tool policy or output guard. PASS = no canary leaked anywhere in the stream.
 Run: python -m scripts.live_redteam   (throttled to respect Groq's 8k tokens/min free tier)"""
 import asyncio
-from pathlib import Path
 
 import fakeredis.aioredis
 from qdrant_client import AsyncQdrantClient

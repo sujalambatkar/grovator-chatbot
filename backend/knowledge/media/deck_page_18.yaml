@@ -1,0 +1,15 @@
+id: deck_page_18
+file: deck_page_18.png
+caption: How the pulse sensor works
+shows: The sensor board (labelled MAX30100 in the lesson) with pins VIN SCL SDA INT IRD RD GND, and the lesson's explanation
+  of the red LED and light detector.
+related:
+  application:
+  - pulseoximeter-health-monitoring
+  sensor:
+  - pulseoximeter_max30102
+verified: true
+origin: document
+sources:
+- file: GE_-_Pulseoximeter_Application.pptx.pdf
+  where: ''

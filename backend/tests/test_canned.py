@@ -11,7 +11,7 @@ from app.rag.ingest import ingest
 from app.rag.retriever import HybridRetriever
 from app.rag.store import KnowledgeStore, make_client
 from tests.conftest import FakeLLM
-from tests.test_hardware import DATA, GW, REAL, STU, build, context_of, turn
+from tests.test_hardware import DATA, DEVICES, GW, REAL, STU, build, context_of, turn
 
 C = CannedAnswers(GW)
 ONN = dict(enable_canned=True)
@@ -30,7 +30,7 @@ def m(msg, focus=()):
 
 # ---------------------------------------------------------------------------------------------- built from the data
 def test_every_device_has_a_connect_and_a_pins_answer_made_of_its_own_records():
-    for key, dev in DATA["devices"].items():
+    for key, dev in DEVICES.items():
         a = C.connect(key)
         assert a.kind == "connect" and pretty(key) in a.text and a.sources == [f"{pretty(key)}: Connection Guide"]
         for step in GW.device_steps(key):
@@ -46,8 +46,8 @@ def test_every_device_has_a_connect_and_a_pins_answer_made_of_its_own_records():
 
 def test_canned_answers_never_contain_a_gpio_the_dataset_does_not_have():
     known = set(re.findall(r"GPIO\d+", str(DATA)))
-    answers = [C.connect(k) for k in DATA["devices"]] + [C.pins(k) for k in DATA["devices"]] + [C.list_devices(), C.gateway(), C.rules()]
-    answers += [C.interface(i) for i in DATA["interfaces"]] + [a for k in DATA["devices"] if (a := C.what(k))]
+    answers = [C.connect(k) for k in DEVICES] + [C.pins(k) for k in DEVICES] + [C.list_devices(), C.gateway(), C.rules()]
+    answers += [C.interface(i) for i in DATA["interfaces"]] + [a for k in DEVICES if (a := C.what(k))]
     for a in answers:
         assert set(re.findall(r"GPIO\d+", a.text)) <= known, a.text
 
@@ -170,7 +170,7 @@ def test_suggestions_follow_the_data_not_a_fixed_list():
     assert "What is it?" not in C.suggestions("devices/buzzer")                # no definition: asking would cost tokens
     assert "Which pins are I2C?" in C.suggestions("interfaces/i2c")
     assert all(len(C.suggestions(s_)) >= 2 for s_ in ("devices/servo", "gateway/overview", "interfaces/keypad", "concepts/glossary", "nonsense/x"))
-    for q in sum((C.suggestions(f"devices/{k}") for k in DATA["devices"]), []):
+    for q in sum((C.suggestions(f"devices/{k}") for k in DEVICES), []):
         assert not re.search(r"after|not working|next|code", q, re.I), q
 
 

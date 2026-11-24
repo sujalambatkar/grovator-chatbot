@@ -2,7 +2,6 @@
 Run: python -m scripts.live_conversations"""
 import asyncio
 import statistics
-from pathlib import Path
 
 import fakeredis.aioredis
 

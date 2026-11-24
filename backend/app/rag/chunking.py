@@ -33,6 +33,7 @@ class Chunk:
             "org_id": self.org_id,
             "school_id": self.school_id,
             "updated_at": self.updated_at,
+            **self.extra,  # index metadata: type, application, sensor, topic
         }
 
 

@@ -159,12 +159,6 @@ class Gateway:
             lines += ["", f"# Devices that connect through {pretty(key)}", ", ".join(pretty(u) for u in users) + "."]
         return "\n".join(lines)
 
-    def _digital_hint(self) -> str:
-        d = self.interfaces.get("digital_gpio")
-        if not d:
-            return ""
-        return f" Each digital GPIO connector has {_fmt(d.get('connector', []))} pins; the digital GPIO pins are {_fmt(d.get('pins', []))}."
-
     def device_steps(self, key: str) -> list[str]:
         """Wiring steps generated from this device's own fields (used by the guide AND by the pre-written answers)."""
         dev = self.devices[key]
@@ -278,7 +272,12 @@ class Gateway:
 
 @lru_cache(maxsize=4)
 def load_gateway(path: str) -> Gateway:
-    return Gateway(json.loads(Path(path).read_text(encoding="utf-8")))
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    from knowledge.loader import superseded_gateway_devices  # sensors with their own, better records replace the generic entry
+
+    gone = superseded_gateway_devices()
+    data["devices"] = {k: v for k, v in data.get("devices", {}).items() if k not in gone}
+    return Gateway(data)
 
 
 def gateway_files(root: Path) -> list[Path]:

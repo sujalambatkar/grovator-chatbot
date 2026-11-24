@@ -1,0 +1,24 @@
+id: pulseoximeter_v2_uart
+name: Pulseoximeter Sensor V2.0 (UART version)
+aliases: [pulseoximeter v2, pulseoximeter v2.0, oximeter v2, uart oximeter, uart pulse oximeter, v2.0 sensor]
+description: >-
+  The V2.0 version of the pulse oximeter in Pulseoximeter_V2.0.pdf. It talks over UART (RX/TX), not I2C. It is a different
+  set of blocks from the I2C MAX30102 lesson sensor.
+sensor_type: INPUT
+modules: [Internet of Things, IIoT, AIoT]
+device_type: pulseoximeter_v2.0
+interface: UART
+uart: {uart_id: 1, baudrate: 9600, tx_gpio: 17, rx_gpio: 16}
+pins:
+  - {pin: 3V3, connects_to: "3.3V"}
+  - {pin: GND, connects_to: "GND"}
+  - {pin: RX, connects_to: "TXD"}
+  - {pin: TX, connects_to: "RXD"}
+pins_verified: false
+variables: [pulseoximeterV2_n, pulseoximeterV2_heartrate_n, pulseoximeterV2_oximeter_n]
+blocks: [use_pulseoximeter_v2_uart, read_pulseoximeter_data_v2_uart, get_heartrate_v2_uart, get_spo2_v2_uart]
+notes:
+  - "This is NOT the sensor used in the lesson's circuit diagram (that one is I2C)."
+  - "Which kit terminal carries TXD/RXD for this version is not documented (see GAPS.md)."
+sources:
+  - {file: Pulseoximeter_V2.0.pdf, where: "pages 1-2"}

@@ -1,0 +1,80 @@
+id: read_pulseoximeter_data
+title: Read PulseOximeter Data
+category: Sensor (IoT / IIoT / AIoT)
+aliases: [read pulseoximeter, read oximeter data, read pulse data]
+sensor: pulseoximeter_max30102
+connection: Top - bottom
+description: >-
+  Defines the functions that talk to the sensor (max30102_init, read_ir_red, get_heart_rate_spo2) and then runs
+  max30102_init() to set the sensor up. It does not read a value by itself: the next block, Store Heart rate and
+  Oximeter Data, calls get_heart_rate_spo2() to get the numbers.
+variant: raw-register block code (Max30102_Blocks_Requirement.pdf)
+code_notes:
+  - "The PDF's indentation inside the `while` loop changes at the page break. Indentation was normalised to 4 spaces so the code is valid Python; no statement was changed."
+code: |
+  def max30102_init():
+      i2c.writeto_mem(ADDR, 0x09, b'\x40')
+      time.sleep_ms(100)
+      i2c.writeto_mem(ADDR, 0x02, b'\xC0')
+      i2c.writeto_mem(ADDR, 0x03, b'\x00')
+      i2c.writeto_mem(ADDR, 0x08, b'\x0F')
+      i2c.writeto_mem(ADDR, 0x09, b'\x03')
+      i2c.writeto_mem(ADDR, 0x0A, b'\x27')
+      i2c.writeto_mem(ADDR, 0x0C, b'\x24')
+      i2c.writeto_mem(ADDR, 0x0D, b'\x24')
+      i2c.writeto_mem(ADDR, 0x04, b'\x00')
+      i2c.writeto_mem(ADDR, 0x05, b'\x00')
+      i2c.writeto_mem(ADDR, 0x06, b'\x00')
+  def read_ir_red():
+      data = i2c.readfrom_mem(ADDR, 0x07, 6)
+      ir = ((data[0] << 16) | (data[1] << 8) | data[2]) & 0x3FFFF
+      red = ((data[3] << 16) | (data[4] << 8) | data[5]) & 0x3FFFF
+      return ir, red
+  def get_heart_rate_spo2():
+      ir_vals = []
+      red_vals = []
+      beat_times = []
+      last_ir = 0
+      last_beat_time = 0
+      beat_detected = False
+      start_time = time.ticks_ms()
+
+      while time.ticks_diff(time.ticks_ms(), start_time) < 3000:
+          ir, red = read_ir_red()
+          ir_vals.append(ir)
+          red_vals.append(red)
+
+          t = time.ticks_ms()
+          if ir > 30000 and ir > last_ir and not beat_detected:
+              if time.ticks_diff(t, last_beat_time) > 300:
+                  beat_times.append(t)
+                  last_beat_time = t
+                  beat_detected = True
+          elif ir < last_ir:
+              beat_detected = False
+
+          last_ir = ir
+          time.sleep_ms(20)
+
+      avg_ir = sum(ir_vals) / len(ir_vals)
+
+      if avg_ir < 10000:
+          return 0, 0 # No finger
+
+      bpm = 0
+      if len(beat_times) > 1:
+          intervals = [time.ticks_diff(beat_times[i], beat_times[i-1]) for i in range(1, len(beat_times))]
+          avg_interval = sum(intervals) / len(intervals)
+          bpm = 30000 / avg_interval
+          bpm = int(max(40, min(180, bpm)))
+      if bpm == 0:
+          return 0, 0
+      avg_red = sum(red_vals) / len(red_vals)
+      ratio = avg_red / avg_ir if avg_ir != 0 else 1
+      spo2 = 100 - (ratio * 5)
+      spo2 = round(min(100, max(85, spo2)), 0)+4
+      return bpm, spo2
+
+  max30102_init()
+sources:
+  - {file: Max30102_Blocks_Requirement.pdf, where: "pages 1-2, code 2"}

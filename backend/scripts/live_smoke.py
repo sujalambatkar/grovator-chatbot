@@ -1,6 +1,5 @@
 """Live end-to-end check: real Groq + embedded Qdrant. Run: python -m scripts.live_smoke"""
 import asyncio
-from pathlib import Path
 
 from app.config import get_settings
 from app.llm.llm_client import make_llm

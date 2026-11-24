@@ -1,0 +1,20 @@
+id: use_pulseoximeter_v2_uart
+title: "Use [Pulseoximeter(Max30102)] (V2.0, UART)"
+category: Sensor (IoT / IIoT / AIoT)
+aliases: [use pulseoximeter v2, pulseoximeter v2.0 use block]
+sensor: pulseoximeter_v2_uart
+connection: Top - bottom
+description: >-
+  Set-up block for the V2.0 (UART) version of the sensor. It opens UART 1 at 9600 baud with TX=GPIO17 and RX=GPIO16.
+  The PDF gives it the same title as the I2C block.
+variant: UART version (Pulseoximeter_V2.0.pdf)
+verified: false
+code_notes:
+  - "Same block title as the I2C version in the source PDF: see GAPS.md."
+code: |
+  from machine import UART
+  import time
+  import struct
+  uart = UART(1, baudrate=9600, tx=17, rx=16, timeout=100)
+sources:
+  - {file: Pulseoximeter_V2.0.pdf, where: "page 1, code 1"}

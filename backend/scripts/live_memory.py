@@ -1,6 +1,5 @@
 """Live long-term memory check against real Groq. Run: python -m scripts.live_memory"""
 import asyncio
-from pathlib import Path
 
 import fakeredis.aioredis
 from qdrant_client import AsyncQdrantClient

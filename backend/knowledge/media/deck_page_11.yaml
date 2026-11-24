@@ -1,0 +1,15 @@
+id: deck_page_11
+file: deck_page_11.png
+caption: The lesson's block program
+shows: 'The block program: Use Pulseoximeter V3 (Max30102), Use Led Board, Use Time, set the LED pins (27, 23, 13), then a
+  forever loop that reads heart rate and SpO2 and lights LEDs.'
+related:
+  application:
+  - pulseoximeter-health-monitoring
+  sensor:
+  - pulseoximeter_max30102
+verified: true
+origin: document
+sources:
+- file: GE_-_Pulseoximeter_Application.pptx.pdf
+  where: ''

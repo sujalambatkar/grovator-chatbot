@@ -1,0 +1,17 @@
+id: deck_page_8
+file: deck_page_8.png
+caption: 'Circuit diagram: pulse oximeter and LED board connected to the ESP32 kit'
+shows: The lesson's circuit diagram. Pulse oximeter (HW-058) pins VIN, SCL, SDA, GND wired to the ESP32 kit terminal GND,
+  3.3V, SDA 21, SCL 22. An LED board (ledboardsensor) is wired to the kit's lower terminal; its pin labels are hard to read.
+related:
+  application:
+  - pulseoximeter-health-monitoring
+  sensor:
+  - pulseoximeter_max30102
+  kit:
+  - esp32_kit
+verified: true
+origin: document
+sources:
+- file: GE_-_Pulseoximeter_Application.pptx.pdf
+  where: ''

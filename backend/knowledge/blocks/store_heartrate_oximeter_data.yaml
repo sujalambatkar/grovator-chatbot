@@ -1,0 +1,20 @@
+id: store_heartrate_oximeter_data
+title: Store Heart rate and Oximeter Data
+category: Sensor (IoT / IIoT / AIoT)
+aliases: [store heart rate, store oximeter data, store heartrate and oximeter data]
+sensor: pulseoximeter_max30102
+connection: Top - bottom
+description: >-
+  Runs one measurement (about 3 seconds) and stores the heart rate (BPM) and the oxygen level (SpO2) in two variables.
+  The block has two variable slots: "Heartrate: [ ]" and "SpO2: [ ]". If no finger is on the sensor, or no heartbeat is
+  found, both values are 0.
+variant: raw-register block code (Max30102_Blocks_Requirement.pdf)
+verified: false
+variables: [bpm_data_1, spo2_data_1]
+code_notes:
+  - "The title comes from a handwritten sketch in the PDF and is not confirmed (see GAPS.md)."
+  - "The PDF says bpm_data_1 and spo2_data_1 are 'underdefined' variables."
+code: |
+  bpm_data_1, spo2_data_1 = get_heart_rate_spo2()
+sources:
+  - {file: Max30102_Blocks_Requirement.pdf, where: "page 3, code 3 and handwritten sketch"}
