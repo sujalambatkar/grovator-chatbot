@@ -1,0 +1,27 @@
+id: rtc
+name: RTC
+aliases:
+- rtc
+- real time clock
+- real-time clock
+category: '-'
+working: A real-time clock module that keeps the date and time (seconds to year) with a backup battery, even when the Raspberry Pi is
+  off.
+example_code: RTC.py.py
+gateway_key: ''
+description: A real-time clock module that keeps the date and time (seconds to year) with a backup battery, even when the Raspberry
+  Pi is off.
+sensor_type: INPUT
+interface: none
+kit_connections:
+- kit: govator_controller_pi
+  pins: []
+  note: No connection is given in the sensor list
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for RTC
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for RTC

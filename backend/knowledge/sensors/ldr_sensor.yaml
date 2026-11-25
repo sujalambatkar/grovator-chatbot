@@ -1,0 +1,43 @@
+id: ldr_sensor
+name: LDR Sensor
+aliases:
+- ldr sensor
+- ldr
+- light sensor
+- light dependent resistor
+- ldr module
+category: Input
+working: 'Detects light intensity: the LDR''s resistance falls in bright light and rises in the dark. A comparator (adjustable) gives
+  a digital HIGH when the light is above the threshold and LOW when it is dark.'
+example_code: LDR_sensor.py.py
+gateway_key: ldr_module
+description: 'Detects light intensity: the LDR''s resistance falls in bright light and rises in the dark.'
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for LDR Sensor
+- kit: esp32_kit
+  pins:
+  - pin: D0
+    connects_to: Available digital GPIO
+  warning: ''
+  note: 'interface: digital'
+  source:
+    file: grovator-esp32-gateway.json
+    where: devices.ldr_module
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for LDR Sensor

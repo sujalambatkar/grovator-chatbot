@@ -1,0 +1,42 @@
+id: metal_detection_sensor
+name: Metal Detection Sensor
+aliases:
+- metal detection sensor
+- metal detection
+- metal detector
+- metal sensor
+category: Input
+working: Detects nearby metal. It makes an electromagnetic field that a metal object disturbs; a comparator (adjustable) gives a digital
+  HIGH when metal is detected and LOW when not.
+example_code: Metal_detector.py.py
+gateway_key: metal_detection_sensor
+description: Detects nearby metal.
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Metal Detection Sensor
+- kit: esp32_kit
+  pins:
+  - pin: D0
+    connects_to: Available digital GPIO
+  warning: ''
+  note: 'interface: digital'
+  source:
+    file: grovator-esp32-gateway.json
+    where: devices.metal_detection_sensor
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Metal Detection Sensor

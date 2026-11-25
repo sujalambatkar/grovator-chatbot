@@ -1,0 +1,30 @@
+id: ph_sensor_v2
+name: PH Sensor V2
+aliases:
+- ph sensor v2
+- ph v2
+category: Input
+working: 'The second version of the pH sensor: measures acidity or alkalinity of a liquid as an analog voltage.'
+example_code: PH_sensor_v2.py.py
+gateway_key: ''
+description: 'The second version of the pH sensor: measures acidity or alkalinity of a liquid as an analog voltage.'
+sensor_type: INPUT
+interface: analog
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3-5V
+  - pin: GND
+    connects_to: GND
+  - pin: Signal
+    connects_to: Analog input (AI1, AI2, AI3, AI4)
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for PH Sensor V2
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for PH Sensor V2

@@ -73,11 +73,28 @@ def render_all(k: Knowledge) -> list[Section]:
             iface += f": address {s.i2c.address}, SCL {s.i2c.scl}, SDA {s.i2c.sda}" + (f", {s.i2c.freq} Hz" if s.i2c.freq else "")
         if s.uart:
             iface += f": UART{s.uart.uart_id}, {s.uart.baudrate} baud, TX GPIO{s.uart.tx_gpio}, RX GPIO{s.uart.rx_gpio} (in the code)"
-        body = (f"{s.description}\nAlso called: {', '.join(s.aliases)}.\nType: {s.sensor_type}. Device type: {s.device_type}. Modules: {', '.join(s.modules)}.\n"
-                f"Interface: {iface}\nPins (sensor pin -> kit):\n{pins}\nVariables: {', '.join(s.variables)}\n"
-                f"Blocks, in order: {', '.join(k.blocks[b].title for b in s.blocks)}\n" + _bullets(s.notes))
-        out.append(Section(f"sensors/{s.id}", f"{s.name} > Sensor details", body,
-                           {"type": "sensor", "sensor": s.id, "topic": "sensor", "verified": s.pins_verified}))
+        body = f"{s.description}\n"
+        if s.working and s.working.strip() not in s.description:
+            body += f"How it works: {s.working.strip()}\n"
+        body += f"Also called: {', '.join(s.aliases)}.\nType: {s.sensor_type}" + (f" ({s.category})" if s.category else "") + f". Interface: {iface}."
+        if s.device_type:
+            body += f" Device type: {s.device_type}. Modules: {', '.join(s.modules)}."
+        body += "\n"
+        for kc in s.kit_connections:
+            kit = k.kits[kc.kit]
+            rows = "; ".join(f"{p.pin} -> {p.connects_to}" for p in kc.pins) or "no pins listed"
+            body += f"Connection to the {kit.name}: {rows}." + (f" {kc.note}." if kc.note else "") + (f" Warning: {kc.warning}" if kc.warning else "") + "\n"
+        if s.pins:
+            body += f"Pins (sensor pin -> kit):\n{pins}\n"
+        if s.variables:
+            body += f"Variables: {', '.join(s.variables)}\n"
+        if s.blocks:
+            body += f"Blocks, in order: {', '.join(k.blocks[b].title for b in s.blocks)}\n"
+        if s.example_code:
+            body += f"Example program named in the sensor list: {s.example_code} (its code is not in the documents).\n"
+        body += _bullets([n for n in s.notes if not n.startswith("generated: true")])
+        out.append(Section(f"sensors/{s.id}", f"{s.name} > Sensor details", body.strip(),
+                           {"type": "sensor", "sensor": s.id, "topic": "sensor", "verified": s.pins_verified or bool(s.kit_connections)}))
         if s.how_it_measures:
             out.append(Section(f"sensors/{s.id}/measure", f"{s.name} > How the block code measures",
                                _bullets(s.how_it_measures), {"type": "sensor", "sensor": s.id, "topic": "measure"}))
@@ -88,7 +105,9 @@ def render_all(k: Knowledge) -> list[Section]:
                            {"type": "block", "sensor": b.sensor or "", "topic": "block", "verified": b.verified}))
     for kit in k.kits.values():
         groups = "\n".join(f"{g.name}: {', '.join(g.pins)}" for g in kit.port_groups)
-        body = (f"{kit.description}\n" + (f"Port labels:\n{groups}\n" if groups else "") + "Documented: " + "; ".join(kit.documented_facts)
+        rules = "\n".join(f"{r.name}: {', '.join(r.pins)}" + (f" ({r.note})" if r.note else "") for r in kit.pin_rules)
+        body = (f"{kit.description}\n" + (f"Pin rules:\n{rules}\n" if rules else "") + ("Wiring rules:\n" + _bullets(kit.wiring_rules) + "\n" if kit.wiring_rules else "")
+                + (f"Port labels:\n{groups}\n" if groups else "") + "Documented: " + "; ".join(kit.documented_facts)
                 + "\nNot documented yet: " + "; ".join(kit.not_documented) + (
                     "\n(Labels from photos, not confirmed.)" if not kit.verified else ""))
         out.append(Section(f"kits/{kit.id}", f"Kit: {kit.name}", body, {"type": "kit", "topic": "kit", "verified": kit.verified}))

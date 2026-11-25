@@ -2,6 +2,28 @@ id: pulseoximeter_max30102
 name: Pulseoximeter Sensor 2.0 (MAX30102)
 aliases: [pulse oximeter, pulseoximeter, oximeter, spo2 sensor, heart rate sensor, heart rate and oximeter sensor, pulse sensor, max30102, max 30102, hw-058, hw058, max30100]
 supersedes: [pulse_oximeter]
+gateway_key: pulse_oximeter
+category: Input
+example_code: Pulseoximeter.py.py
+working: >-
+  Measures heart rate (BPM) and blood oxygen level (SpO2) from a fingertip. Red and infrared LEDs shine light through the finger, and the sensor measures how the light absorption changes with blood flow to work out pulse rate and oxygen saturation. (The sensor list names the chip MAX30100; the lesson and block specification say MAX30102: see GAPS.md.)
+kit_connections:
+  - kit: esp32_kit
+    note: the lesson's circuit diagram (ESP32 kit); the generic gateway dataset only says VCC 'verify module voltage'
+    pins:
+      - {pin: VIN, connects_to: '3.3V'}
+      - {pin: GND, connects_to: GND}
+      - {pin: SDA, connects_to: 'SDA (GPIO21)'}
+      - {pin: SCL, connects_to: 'SCL (GPIO22)'}
+    source: {file: GE_-_Pulseoximeter_Application.pptx.pdf, where: page 8}
+  - kit: govator_controller_pi
+    note: I2C. The ESP32 GPIO numbers (21, 22) do not apply to the controller
+    pins:
+      - {pin: VCC, connects_to: '3.3 or 5V'}
+      - {pin: GND, connects_to: Ground}
+      - {pin: SDA, connects_to: 'any SDA pin of the controller'}
+      - {pin: SCL, connects_to: 'any SCL pin of the controller'}
+    source: {file: Sensor Details and Pin Configurations - Sensor List.pdf, where: row 9 (Pulseoximeter)}
 description: >-
   A small board that measures heart rate (BPM) and blood oxygen level (SpO2) from your finger. It uses a red light and an
   infrared light with a light detector, and talks to the ESP32 kit over I2C.

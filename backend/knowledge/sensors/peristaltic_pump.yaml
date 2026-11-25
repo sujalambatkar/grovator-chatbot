@@ -1,0 +1,28 @@
+id: peristaltic_pump
+name: Peristaltic pump
+aliases:
+- peristaltic pump
+category: Output
+working: Moves or doses liquids in a controlled way. A relay switches the pump ON and OFF so the Raspberry Pi does not drive the motor
+  directly.
+example_code: Relaywaterpump.py.py
+gateway_key: ''
+description: Moves or doses liquids in a controlled way.
+sensor_type: OUTPUT
+interface: relay
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 12V (GPIO22 and GPIO23) only, and also to any relay port
+  - pin: GND
+    connects_to: GND
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Peristaltic pump
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Peristaltic pump

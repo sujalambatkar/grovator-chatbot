@@ -1,0 +1,41 @@
+id: ir_sensor
+name: IR Sensor
+aliases:
+- ir sensor
+- infrared sensor
+- obstacle sensor
+category: Input
+working: Detects objects or obstacles. An IR LED sends light and a photodiode receives the reflection; a comparator (adjustable) gives
+  a digital HIGH when an object is detected and LOW when not.
+example_code: IR_sensor.py.py
+gateway_key: ir_sensor
+description: Detects objects or obstacles.
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for IR Sensor
+- kit: esp32_kit
+  pins:
+  - pin: D0
+    connects_to: Available digital GPIO
+  warning: ''
+  note: 'interface: digital'
+  source:
+    file: grovator-esp32-gateway.json
+    where: devices.ir_sensor
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for IR Sensor

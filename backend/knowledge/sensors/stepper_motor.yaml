@@ -1,0 +1,42 @@
+id: stepper_motor
+name: Stepper Motor
+aliases:
+- stepper motor
+- stepper
+category: Output
+working: Turns in fixed steps for precise position, speed and direction. Control pulses go through a motor driver. It plugs into the
+  stepper motor slot.
+example_code: ''
+gateway_key: stepper_motor
+description: Turns in fixed steps for precise position, speed and direction.
+sensor_type: OUTPUT
+interface: dedicated
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: C1
+    connects_to: 1B
+  - pin: C2
+    connects_to: 2A
+  - pin: C3
+    connects_to: 1A
+  - pin: C4
+    connects_to: 2B
+  note: Stepper motor slot
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Stepper Motor
+- kit: esp32_kit
+  pins:
+  - pin: connection
+    connects_to: Dedicated stepper connector
+  warning: ''
+  note: 'interface: stepper'
+  source:
+    file: grovator-esp32-gateway.json
+    where: devices.stepper_motor
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Stepper Motor

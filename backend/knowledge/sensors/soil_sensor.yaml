@@ -1,0 +1,32 @@
+id: soil_sensor
+name: Soil Sensor
+aliases:
+- soil sensor
+- soil
+category: Input
+working: Measures the moisture in soil and sends the readings over UART, e.g. for irrigation.
+example_code: ''
+gateway_key: ''
+description: Measures the moisture in soil and sends the readings over UART, e.g.
+sensor_type: INPUT
+interface: UART
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3-5V
+  - pin: GND
+    connects_to: Ground
+  - pin: RX
+    connects_to: RX
+  - pin: TX
+    connects_to: TX
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Soil Sensor
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Soil Sensor

@@ -1,0 +1,50 @@
+id: lcd_display
+name: LCD Display
+aliases:
+- lcd display
+- lcd
+- i2c lcd
+- display
+category: Output
+working: Shows text, numbers and simple characters. The microcontroller sends commands and data over I2C to put characters at given
+  positions.
+example_code: LCD.py
+gateway_key: i2c_lcd
+description: Shows text, numbers and simple characters.
+sensor_type: OUTPUT
+interface: I2C
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for LCD Display
+- kit: esp32_kit
+  pins:
+  - pin: VCC
+    connects_to: Verify module voltage
+  - pin: GND
+    connects_to: GND
+  - pin: SDA
+    connects_to: Gateway SDA (GPIO21)
+  - pin: SCL
+    connects_to: Gateway SCL (GPIO22)
+  warning: ''
+  note: 'interface: i2c'
+  source:
+    file: grovator-esp32-gateway.json
+    where: devices.i2c_lcd
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for LCD Display

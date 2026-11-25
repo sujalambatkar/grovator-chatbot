@@ -1,0 +1,34 @@
+id: rainfall_sensor
+name: Rain Fall Sensor
+aliases:
+- rain fall sensor
+- rainfall sensor
+- rain fall
+- rain gauge
+category: Input
+working: Detects and measures the presence and intensity of rainfall and sends the data over UART.
+example_code: ''
+gateway_key: ''
+description: Detects and measures the presence and intensity of rainfall and sends the data over UART.
+sensor_type: INPUT
+interface: UART
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3-5V
+  - pin: GND
+    connects_to: Ground
+  - pin: RX
+    connects_to: RX
+  - pin: TX
+    connects_to: TX
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Rain Fall Sensor
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Rain Fall Sensor

@@ -93,9 +93,12 @@ def _cross_check(k: Knowledge) -> None:
         for b in s.blocks:
             if b not in k.blocks:
                 k.problems.append(f"sensor {s.id}: block '{b}' not found in blocks/")
-        if s.interface == "I2C" and not s.i2c:
+        for kc in s.kit_connections:
+            if kc.kit not in k.kits:
+                k.problems.append(f"sensor {s.id}: kit_connections kit '{kc.kit}' not found in kits/")
+        if s.interface == "I2C" and not s.i2c and not s.kit_connections:
             k.problems.append(f"sensor {s.id}: interface is I2C but there is no i2c: section")
-        if s.interface == "UART" and not s.uart:
+        if s.interface == "UART" and not s.uart and not s.kit_connections:
             k.problems.append(f"sensor {s.id}: interface is UART but there is no uart: section")
     for b in k.blocks.values():
         if b.sensor and b.sensor not in k.sensors:

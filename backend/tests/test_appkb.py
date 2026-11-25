@@ -38,7 +38,8 @@ def test_entity_detection_handles_aliases_and_typos():
     assert "pulseoximeter_max30102" in kb.detect("my MAX30102 shows 0").sensors
     assert "pulseoximeter_max30102" in kb.detect("pulse oxymeter wiring").sensors      # typo
     assert "govator_controller_pi" in kb.detect("on the pi controller").kits
-    assert not kb.detect("how do I connect an ultrasonic sensor").strong
+    assert kb.detect("how do I connect an ultrasonic sensor").sensors == ["ultrasonic_sensor"]     # the sensor list covers it
+    assert not kb.detect("how do I connect a banana to the gateway").strong
 
 
 @pytest.mark.asyncio
@@ -52,10 +53,14 @@ async def test_wiring_is_a_table_built_from_files_with_i2c_pins_and_no_llm(retri
 
 
 @pytest.mark.asyncio
-async def test_controller_connection_is_not_documented_and_never_mapped(retriever):
+async def test_controller_connection_comes_from_the_sensor_list_and_is_never_mapped_to_esp32_gpios(retriever):
     d, llm = await ask(retriever, "How does the pulse oximeter connect to the Grovator controller?")
-    assert all_llm_calls(llm) == 0 and d["refused_reason"] == "not_documented"
-    assert "don't have that detail yet" in d["answer"] and not d.get("connection_table")
+    assert all_llm_calls(llm) == 0 and d["canned"] == "sensor_connect"
+    rows = {r["sensor_pin"]: r["kit_pin"] for r in d["connection_table"]["rows"]}
+    assert rows["SDA"] == "any SDA pin of the controller" and rows["SCL"] == "any SCL pin of the controller"
+    assert "GPIO21" not in d["answer"].replace("(21, 22)", "") and "do not apply" in d["answer"]
+    d2, _ = await ask(retriever, "How does the LED board connect to the Grovator controller?")      # the LED module row of the sensor list
+    assert d2["canned"] == "sensor_connect" and any(r["sensor_pin"] == "D0" for r in d2["connection_table"]["rows"])
 
 
 @pytest.mark.asyncio
@@ -99,15 +104,15 @@ async def test_general_question_uses_model_knowledge_without_retrieval(retriever
 
 @pytest.mark.asyncio
 async def test_general_answer_naming_a_pin_is_blocked(retriever):
-    d, _ = await ask(retriever, "What is I2C?", FakeLLM("I2C uses two wires. On your kit use GPIO15 for the clock."))
+    d, _ = await ask(retriever, "What is I2C?", FakeLLM("I2C uses two wires. On your kit use GPIO3 for the clock."))
     assert d["refused_reason"] == "unsupported_pin"
 
 
 @pytest.mark.asyncio
-async def test_other_gateway_sensors_are_not_hijacked(retriever):
-    llm = FakeLLM("Connect it to a digital GPIO.")
-    d, llm = await ask(retriever, "How do I connect an ultrasonic sensor?", llm)
-    assert not d.get("connection_table") and "oximeter" not in d["answer"].lower()
+async def test_other_sensors_get_their_own_wiring_for_both_kits_not_the_lessons(retriever):
+    d, llm = await ask(retriever, "How do I connect the ultrasonic sensor?")
+    pins = {(r["sensor_pin"], r["note"]) for r in d["connection_table"]["rows"]}
+    assert ("TRIG", "Grovator controller") in pins and ("TRIG", "ESP32 kit") in pins and "oximeter" not in d["answer"].lower() and not llm.calls
 
 
 @pytest.mark.asyncio
@@ -157,12 +162,14 @@ async def test_led_followup_stays_on_the_lesson_not_the_gateway_led(retriever):
 
 
 @pytest.mark.asyncio
-async def test_questions_on_an_open_gateway_device_page_are_not_hijacked_by_the_application(retriever):
+async def test_questions_on_an_open_gateway_device_page_are_about_that_sensor_not_the_application(retriever):
     svc = build(retriever, FakeLLM("VCC goes to 5V."), **OVER)
     d = await turn(svc, "Where does the VCC wire go?", "gw-page-1", page="devices/ultrasonic_sensor")
-    assert not d.get("connection_table") and "oximeter" not in d["answer"].lower()
-    d2 = await turn(svc, "How do I connect the pulse oximeter?", "gw-page-2", page="devices/ultrasonic_sensor")   # ...but naming it still works
-    assert d2["connection_table"]
+    assert {r["sensor_pin"] for r in d["connection_table"]["rows"]} >= {"VCC", "TRIG", "ECHO"} and "oximeter" not in d["answer"].lower()
+    d2 = await turn(svc, "How do I connect the pulse oximeter?", "gw-page-2", page="devices/ultrasonic_sensor")   # naming the application still works
+    assert any(r["kit_pin"] == "SDA (GPIO21)" for r in d2["connection_table"]["rows"])
+    d3 = await turn(svc, "What are the wiring rules?", "gw-page-3", page="devices/ultrasonic_sensor")
+    assert d3.get("canned") == "pin_rules"
 
 
 @pytest.mark.asyncio
@@ -193,3 +200,23 @@ async def test_build_guide_has_parts_connections_and_numbered_steps(retriever, q
     assert {r["sensor_pin"]: r["kit_pin"] for r in d["connection_table"]["rows"]}["SDA"] == "SDA (GPIO21)"   # connections
     assert "1. Get the parts" in a and "Circuit Designer" in a and "Block Designer" in a and "7. Run" in a   # steps
     assert [b["order"] for b in d["block_stack"]] == [1, 2, 3] and d["images"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("q,must", [
+    ("How do I connect the alcohol sensor?", ["DO to any digital GPIO pin", "ESP32 kit"]),
+    ("what is a flame sensor?", ["infrared"]),
+    ("How do I connect the DHT11?", ["D0", "DATA"]),
+    ("how do i connect the gps sensor", ["Rx", "Tx", "UART"]),
+    ("Which pins support analog input?", ["GPIO32", "AI1"]),
+    ("which sensors use I2C", ["Accelerometer", "LCD Display", "Pulseoximeter"]),
+    ("List all sensors", ["Servo Motor", "Water Pump", "Weight Sensor"]),
+    ("How do I connect the stepper motor on the Grovator controller?", ["C1", "1B"]),
+    ("how do i connect the rtc", ["no pins are given"]),
+])
+async def test_catalog_questions_are_answered_from_the_files(retriever, q, must):
+    d, llm = await ask(retriever, q)
+    text = d["answer"] + str(d.get("connection_table"))
+    assert not llm.calls, d["answer"]
+    for m in must:
+        assert m in text, (q, m, d["answer"])

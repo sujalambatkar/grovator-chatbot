@@ -86,6 +86,7 @@ _WIRING = re.compile(r"\b(?:connect\w*|wir\w+|pins?|vcc|gnd|ground|signal|trig|e
 _LIST_Q = re.compile(r"\b(?:sensors|modules|devices|components|everything|all|list|available|supported)\b", re.I)
 _DEFINITION = re.compile(r"^\W*(?:what(?:'s| is| are)|define|explain|tell me about)\b", re.I)
 _PIN_IN_TEXT = re.compile(r"\bGPIO\s?-?\d{1,2}\b", re.I)
+_PAGE_SENSOR_Q = re.compile(r"\b(?:this|these|it|its|vcc|gnd|trig|echo|signal|d0|sda|scl|pins?|wires?|wiring|connect\w*|work|works|working)\b", re.I)
 _SINGULAR_REF = re.compile(r"\b(?:it|its|this (?:sensor|module|one|device)|that (?:sensor|module|one|device)|the (?:sensor|module|device))\b", re.I)
 
 
@@ -185,7 +186,11 @@ class ChatService:
             if mentioned and not ents.strong and self.appkb.claims(message, ents, app_recent):
                 mentioned = []  # "LED 2", "LED 3 OFF": the lesson's LEDs, not the gateway's generic LED module
             on_gateway_page = page_doc is not None and page_doc.source.startswith("devices/")
-            ans = self.appkb.answer(message, ents, app_recent, hw_named=bool(mentioned) or (on_gateway_page and not ents.strong))  # a gateway device page is open: its questions are about that device unless the application is named
+            if on_gateway_page and not mentioned and not ents.strong and _PAGE_SENSOR_Q.search(message) and not re.search(r"\brules?\b|\bwhich sensors\b", message, re.I):
+                sid = self.appkb.sensor_for_gateway_key(page_doc.source.split("/", 1)[1])  # "how do I connect this?" on the Servo page: that sensor, both kits
+                if sid:
+                    ents = Entities(sensors=[sid])
+            ans = self.appkb.answer(message, ents, app_recent, hw_named=bool(mentioned) or (on_gateway_page and not ents.strong), page_only=not mentioned)  # a gateway device page is open: its questions are about that device unless the application is named
             if ans:  # wiring tables, block order, code, thresholds, "not documented yet": built from the files, 0 tokens
                 async for ev in self._serve_app(p, sid, state, message, ans, base, page_doc):
                     yield ev

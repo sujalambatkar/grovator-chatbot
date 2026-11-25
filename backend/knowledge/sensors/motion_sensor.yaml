@@ -1,0 +1,33 @@
+id: motion_sensor
+name: Motion Sensor
+aliases:
+- motion sensor
+- motion
+- pir sensor
+- pir
+- motion detector
+category: Input
+working: Detects the presence and movement of objects or people in range (usually from infrared radiation) and sets a digital output.
+example_code: motion_sensor.py.py
+gateway_key: ''
+description: Detects the presence and movement of objects or people in range (usually from infrared radiation) and sets a digital output.
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Motion Sensor
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Motion Sensor

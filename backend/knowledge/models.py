@@ -46,16 +46,30 @@ class SensorPin(_Model):
     note: str = ""
 
 
+class KitConnection(_Model):
+    """How a sensor connects to ONE kit, as a document states it."""
+    kit: str
+    pins: list[SensorPin] = []
+    note: str = ""
+    warning: str = ""
+    source: Source | None = None
+
+
 class Sensor(_Model):
     id: str
     name: str
     aliases: list[str] = []
+    category: str = ""             # "Input" / "Output" (sensor list)
+    working: str = ""              # how it works (sensor list), shown for "what is X / how does X work"
+    example_code: str = ""         # name of the example program in the sensor list (the code itself is not in the documents)
+    gateway_key: str = ""          # key of the same device in the generic gateway dataset (knowledge_src), if any
+    kit_connections: list[KitConnection] = []
     supersedes: list[str] = []  # keys of older entries in the generic gateway dataset that this record replaces
     description: str
     sensor_type: Literal["INPUT", "OUTPUT"]
     modules: list[str] = []
     device_type: str = ""
-    interface: Literal["I2C", "UART", "digital", "analog"]
+    interface: Literal["I2C", "UART", "digital", "analog", "USB", "relay", "dedicated", "none"]
     i2c: I2C | None = None
     uart: UART | None = None
     pins: list[SensorPin] = []
@@ -93,6 +107,13 @@ class PortGroup(_Model):
     note: str = ""
 
 
+class PinRule(_Model):
+    """Which pins of a kit serve one purpose (digital GPIO, analog input, I2C, UART, relay...)."""
+    name: str
+    pins: list[str]
+    note: str = ""
+
+
 class Kit(_Model):
     id: str
     name: str
@@ -100,6 +121,8 @@ class Kit(_Model):
     description: str
     verified: bool = False
     port_groups: list[PortGroup] = []
+    pin_rules: list[PinRule] = []
+    wiring_rules: list[str] = []
     documented_facts: list[str] = []   # only what the documents say
     not_documented: list[str] = []
     sources: list[Source] = []

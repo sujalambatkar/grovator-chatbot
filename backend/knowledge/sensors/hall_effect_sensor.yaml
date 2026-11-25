@@ -1,0 +1,41 @@
+id: hall_effect_sensor
+name: Hall Effect Sensor
+aliases:
+- hall effect sensor
+- hall effect
+- hall sensor
+category: Input
+working: 'Detects a magnetic field: when a magnet comes near, it produces a signal, and a comparator gives a digital output. The sensor
+  list''s text contradicts itself about whether the output is HIGH or LOW when a magnet is detected (see GAPS.md).'
+example_code: Hall_effect_sensor.py.py
+gateway_key: hall_effect_sensor
+description: 'Detects a magnetic field: when a magnet comes near, it produces a signal, and a comparator gives a digital output.'
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Hall Effect Sensor
+- kit: esp32_kit
+  pins:
+  - pin: D0
+    connects_to: Available digital GPIO
+  warning: ''
+  note: 'interface: digital'
+  source:
+    file: grovator-esp32-gateway.json
+    where: devices.hall_effect_sensor
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Hall Effect Sensor

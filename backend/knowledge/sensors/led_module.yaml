@@ -1,0 +1,41 @@
+id: led_module
+name: LED Module
+aliases:
+- led module
+- led board
+- three led module
+category: Output
+working: A module with three LEDs (red, green, yellow) for visual indication. Setting the control pin (D0) HIGH turns the matching LED
+  ON, LOW turns it OFF.
+example_code: LED.py
+gateway_key: led_module
+description: A module with three LEDs (red, green, yellow) for visual indication.
+sensor_type: OUTPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for LED Module
+- kit: esp32_kit
+  pins:
+  - pin: DO
+    connects_to: Available digital GPIO
+  warning: ''
+  note: 'interface: digital'
+  source:
+    file: grovator-esp32-gateway.json
+    where: devices.led_module
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for LED Module

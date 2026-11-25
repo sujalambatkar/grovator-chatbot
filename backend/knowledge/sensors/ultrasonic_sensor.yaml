@@ -1,0 +1,49 @@
+id: ultrasonic_sensor
+name: Ultrasonic Sensor
+aliases:
+- ultrasonic sensor
+- ultrasonic
+- distance sensor
+category: Input
+working: Measures distance with sound. It sends high-frequency pulses from TRIG and listens for the echo on ECHO; the program times
+  the echo and works out the distance in centimetres.
+example_code: Ultrasonicsensor.py.py
+gateway_key: ultrasonic_sensor
+description: Measures distance with sound.
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: TRIG
+    connects_to: any digital pin
+  - pin: ECHO
+    connects_to: any digital pin
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Ultrasonic Sensor
+- kit: esp32_kit
+  pins:
+  - pin: VCC
+    connects_to: 5V
+  - pin: GND
+    connects_to: GND
+  - pin: TRIG
+    connects_to: Digital GPIO
+  - pin: ECHO
+    connects_to: Digital GPIO
+  warning: Verify ECHO signal voltage compatibility before connecting to an ESP32 GPIO.
+  note: 'interface: digital'
+  source:
+    file: grovator-esp32-gateway.json
+    where: devices.ultrasonic_sensor
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Ultrasonic Sensor

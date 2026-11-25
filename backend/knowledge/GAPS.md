@@ -34,14 +34,23 @@ files named in the item and re-run `python -m knowledge.validate && python -m in
 7. **LED GPIOs vs the circuit diagram.** The program uses GPIO27, GPIO23, GPIO13 for the LEDs. In the circuit diagram the LED
    board's wires go to the kit's lower terminal, whose labels read like GPIO32 / GPIO23 / GPIO2 (hard to read). Confirm.
 
+8. **Lesson LED GPIOs vs the gateway dataset.** The lesson drives its LEDs on GPIO27, GPIO23, GPIO13, but the gateway dataset's digital connector pins are GPIO5, 4, 19, 25, 26, 18, 32 (GPIO23, 27 and 13 are not in that list). Which is right for the ESP32 kit?
+9. **Pulse oximeter chip.** The sensor list says MAX30100; the lesson and the block spec say MAX30102 (the lesson slide image is also labelled MAX30100). The sensor list gives VCC "3.3 or 5V"; the lesson wires VIN to 3.3V.
+10. **Vibration sensor.** The sensor list says analog (AI1 to AI4); the ESP32 gateway dataset says digital D0. The bot shows both, per kit.
+11. **Hall effect sensor.** The sensor list's text says the output is HIGH when a magnet is detected in one sentence and LOW in the printed table: not stated reliably.
+12. **Same kit?** The bot treats the lesson's "ESP32 kit" and the dataset's "Grovator ESP32 IoT Gateway" as one product (same I2C pins: SDA GPIO21, SCL GPIO22). Please confirm.
+13. **UART crossing.** The sensor list writes "Rx Tx / Tx Rx" for most UART sensors (read as crossed: sensor Rx to controller Tx) but "RX to RX, TX to TX" for the NPK, rainfall and soil sensors (stated as is; the NPK row says this is intentional only for NPK). Please confirm the other two.
+14. **Relay module.** The "Right Side" / "Left Side" connection text is only partly clear (a second VCC 12V / GND pair appears); the bot repeats it as written.
+15. **Relay pin names.** The sensor list says relay = GPIO22 and GPIO23; the controller photo labels Relay 1 = GPIO23 and Relay 2 = GPIO22.
+
 ## B. Not documented (the bot says "I don't have that detail yet")
 
-1. **How does the pulse oximeter connect to the Grovator controller?** (`kits/govator_controller_pi.yaml`) Its GPIO
-   numbers do NOT match the lesson's ESP32 pins (GPIO22 is Relay 2 there, but I2C SCL in the lesson; GPIO21, GPIO23, GPIO27
-   are plain GPIO terminals). No mapping was created. It does have three I2C groups [GND, 3.3V, SDA, SCL], but whether the
-   sensor uses them is not stated in any document.
-2. **LED board wiring.** Pin labels (VCC, DO, DO, DO, GND) and the kit terminals are not legible in the diagram.
-3. **Full ESP32 kit pin map**, other than I2C and the three lesson LED GPIOs.
+1. **Pulse oximeter on the Grovator controller: partly resolved.** The sensor list ("RPI" controller) says: VCC to 3.3 or 5V, GND to Ground, SDA to any SDA pin, SCL to any SCL pin. The bot gives exactly that. Still not documented: a GPIO number for them (the ESP32's 21/22 do NOT apply: the controller's GPIO numbers are Raspberry Pi numbers, e.g. GPIO22 is a relay), and which of the three photographed [GND, 3.3V, SDA, SCL] terminal groups to use ("any").
+2. **LED board wiring in the lesson.** Pin labels (VCC, DO, DO, DO, GND) and the kit terminals are not legible in the diagram. (The sensor list gives the generic LED Module wiring: VCC, GND, one D0 to any digital GPIO; the bot uses that for "how do I connect the LED module".)
+3. **Full ESP32 kit pin map**, other than the interfaces in the gateway dataset (digital, analog, I2C, UART, keypad, motors).
+3b. **Example programs.** The sensor list names an example file per sensor (e.g. Alcohol_sensor.py.py) but the code is not in the documents; SVG links are not included either.
+3c. **No ESP32 entry** in the gateway dataset for 28 sensors of the sensor list (e.g. GPS, pH, ECG): the bot says the ESP32 connection is not documented.
+3d. **RTC and Camera** have no pin list in the sensor list (RTC: none; Camera: USB port).
 4. **Which kit terminal carries TXD/RXD** for the UART V2.0 sensor, and whether GPIO16/GPIO17 are those terminals.
 5. **Block definitions for the lesson's other blocks** (Use Led Board, Use Time, Set LED at Pin, Turn On/Off LED, print,
    Pause, if/else, repeat while true, Get Heartrate / Get spO2 of the V3 library). Only the three sensor blocks and the four

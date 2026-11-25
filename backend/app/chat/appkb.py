@@ -64,7 +64,7 @@ class AppAnswer:
 
 
 # ------------------------------------------------------------------ question shapes (strict; a wrong template is worse than a model call)
-_WIRING = re.compile(r"\b(?:connect\w*|wir(?:e|es|ed|ing)|plug\w*|attach\w*|hook\w*|pins?|pinout|ports?|terminals?|circuit)\b|\bwhere\b[^?.!]{0,40}\bgo(?:es)?\b", re.I)
+_WIRING = re.compile(r"\b(?:connect\w*|wir(?:e|es|ed|ing)|plug\w*|attach\w*|hook\w*|pins?|gpio|pinout|ports?|terminals?|circuit)\b|\bwhere\b[^?.!]{0,40}\bgo(?:es)?\b", re.I)
 _LINE_BY_LINE = re.compile(r"\bline[ -]?by[ -]?line\b|\b(?:explain|walk me through|go through|describe)\b[^?.!]*\b(?:the )?(?:whole |full |entire )?(?:code|program|script)\b"
                            r"|\bwhat does (?:the|this|my) (?:code|program|script) do\b", re.I)
 _BLOCKS = re.compile(r"\bwhich blocks?\b|\bwhat blocks?\b|\bblocks? (?:do i|will i|should i|to|are) (?:need|use|needed|required)\b|\bblocks? (?:order|stack|sequence|needed|required)\b"
@@ -81,6 +81,11 @@ _BUILD = re.compile(r"\b(?:how (?:do|can|should|to) (?:i |we )?(?:create|build|m
                     r"|\bstep[- ]by[- ]step\b|\bbuild guide\b|\bcreate this (?:application|project)\b", re.I)
 _FACT_Q = re.compile(r"\b(?:i2c|i²c)? ?address\b|\bfrequency\b|\bbaud(?: rate)?\b|\bwhich interface\b|\bwhat interface\b|\b(?:i2c|uart)\b[^?.!]{0,20}\b(?:or|and)\b[^?.!]{0,20}\b(?:uart|i2c)\b|\bvariable names?\b|\bdevice type\b|\bsensor type\b", re.I)
 _CODE_TOKEN = re.compile(r"[a-z_][a-z0-9_]*(?:\.[a-z0-9_]+)*\([^)]*\)|\bwhile true\b|\bi2c\([^)]*\)", re.I)
+_ABOUT = re.compile(r"^\W*(?:what(?:'s| is| are| does| do)?|how does|how do|explain|tell me about|describe|about|info(?:rmation)? (?:on|about)|details? (?:of|about|on))\b", re.I)
+_EXAMPLE = re.compile(r"\bexample (?:code|program)|\bsample (?:code|program)|\bpython file\b", re.I)
+_LIST_Q = re.compile(r"\b(?:which|what|list|show|give me|all|how many|name)\b[^?.!]{0,30}\b(?:sensors|modules|devices|actuators|components|peripherals)\b|\bsensors? list\b", re.I)
+_PINRULE_Q = re.compile(r"\b(?:which|what|list|show|tell me)\b[^?.!]{0,30}\b(?:pins?|gpio|ports?|connectors?|terminals?)\b[^?.!]{0,40}\b(?:digital|analog|i2c|uart|relay|rx|tx|sda|scl|motor|keypad)\b"
+                        r"|\b(?:digital|analog|i2c|uart|relay)\b[^?.!]{0,15}\b(?:pins?|gpio)\b|\bwiring rules\b|\bpin (?:rules|connection rules)\b", re.I)
 _LED_Q = re.compile(r"\bled[ _]?([123])\b", re.I)
 _DEF_CUE = re.compile(r"\b(?:do|does|work|works|working|is|are|mean|means|for|use|used|measure|measures)\b", re.I)
 _BLOCK_Q = re.compile(r"\b(?:what|how|explain|does|do|tell|describe|purpose|used for|for)\b", re.I)
@@ -147,6 +152,10 @@ class AppKB:
                 e.weak.append(app_id)
         return e
 
+    def sensor_for_gateway_key(self, key: str) -> str | None:
+        """The catalog sensor that replaces a device of the generic gateway dataset ("servo" -> servo_motor)."""
+        return next((s.id for s in self.k.sensors.values() if s.gateway_key == key and s.kit_connections), None)
+
     def default_app(self) -> str | None:
         return next(iter(self.apps)) if len(self.apps) == 1 else None
 
@@ -168,8 +177,12 @@ class AppKB:
         return not hw_named or bool(re.search(r"\bdifference between\b|\bversus\b|\bvs\.?\b", message, re.I))
 
     # ------------------------------------------------------------------ answers
-    def answer(self, message: str, e: Entities, recent: Entities, hw_named: bool = False) -> AppAnswer | None:
+    def answer(self, message: str, e: Entities, recent: Entities, hw_named: bool = False, page_only: bool = False) -> AppAnswer | None:
         """A deterministic answer, or None to fall through to retrieval / the model."""
+        if not (hw_named and not page_only and not e.strong):  # a gateway device NAMED in the message (not just an open page) keeps the old flow
+            cat = self._catalog_answer(message, e)
+            if cat:
+                return cat
         ctx = e.merge(recent) if (e.strong or recent.strong) else e
         app_id = (ctx.applications or ctx.weak or [None])[0]
         if app_id is None and ctx.sensors:
@@ -180,15 +193,12 @@ class AppKB:
             return None
         a = self.apps[app_id]
         msg = message
-        if hw_named and not e.strong:
+        if hw_named and not (e.applications or e.sensors or e.blocks):
             # a generic gateway word ("led") plus an application hint ("spo2", "LED 3 OFF"): only the exact FAQ / limits are safe to answer
             return (self._faq(a, msg) if e.weak else None) or (self._thresholds(a) if (e.weak and _THRESH.search(msg)) else None)
 
-        if "govator_controller_pi" in e.kits or ("govator_controller_pi" in ctx.kits and _WIRING.search(msg) and not e.kits):
-            if _WIRING.search(msg) or re.search(r"\b(?:use|work|used|support|compatible)\b", msg, re.I):
-                if e.sensors or e.applications or recent.strong or re.search(r"\b(?:oximeter|sensor)\b", msg, re.I):
-                    return self._controller_gap(a)
-            return None
+        if "govator_controller_pi" in e.kits and re.search(r"\bled\b|led board", msg, re.I) and _WIRING.search(msg):
+            return self._controller_gap(a)  # the lesson's LED board on the controller is not documented
 
         if _LINE_BY_LINE.search(msg):
             return self._line_by_line(a)
@@ -265,6 +275,113 @@ class AppKB:
                          {"title": "Pulse oximeter to ESP32 kit", "columns": ["Sensor pin", "Kit pin", "Note"], "rows": rows, "note": "From the lesson's circuit diagram"},
                          blocks=[{"order": i, "title": b.title, "description": b.description} for i, b in enumerate(bl, 1)],
                          images=self._img(a.circuit.image))
+
+    # ---- sensor catalog (sensor list + gateway dataset) -------------------------------------------------
+    def _kit_short(self, kit_id: str) -> str:
+        return self.k.kits[kit_id].name.split(" (")[0]
+
+    @staticmethod
+    def _cat(s) -> str:
+        return s.category.lower() if s.category not in ("", "-") else "sensor"
+
+    def _lesson_sensors(self) -> set[str]:
+        return {a.circuit.sensor for a in self.apps.values()}
+
+    def _catalog_answer(self, message: str, e: Entities) -> AppAnswer | None:
+        msg = message
+        sensors = [x for x in e.sensors if self.k.sensors[x].kit_connections]
+        if sensors == ["relay_module"] and _PINRULE_Q.search(msg):
+            return self._pin_rules(msg, e.kits)  # "which pins are the relay pins" is about the kit, not the relay module
+        if sensors:
+            sid = sensors[0]
+            s = self.k.sensors[sid]
+            esp_only = e.kits == ["esp32_kit"]
+            if sid in self._lesson_sensors() and (not e.kits or esp_only):
+                return None  # the lesson's own wiring (verified diagram) is answered by the application
+            wiring = _WIRING.search(msg)
+            if wiring and not _STEPS.search(msg) and not _CODE.search(msg):
+                return self._sensor_connect(s, e.kits)
+            if _EXAMPLE.search(msg) or (_CODE.search(msg) and s.example_code and sid not in self._lesson_sensors()):
+                return self._sensor_example(s)
+            if _ABOUT.search(msg):
+                return self._sensor_about(s, e.kits)
+            return None
+        if _PINRULE_Q.search(msg):
+            return self._pin_rules(msg, e.kits)
+        if _LIST_Q.search(msg) and not e.strong and not _BUILD.search(msg):
+            return self._sensor_list(msg)
+        return None
+
+    def _digital_hint(self, s, kit_id: str) -> str:
+        rule = next((r for r in self.k.kits[kit_id].pin_rules if r.name == {"digital": "digital", "analog": "analog"}.get(s.interface, "")), None)
+        return f" ({rule.name} pins: {', '.join(rule.pins)})" if rule and rule.name in ("digital", "analog") else ""
+
+    def _sensor_connect(self, s, kit_ids: list[str]) -> AppAnswer:
+        shown = [kc for kc in s.kit_connections if not kit_ids or kc.kit in kit_ids]
+        src = [f"{s.name} > Sensor details"]
+        if not shown:
+            return AppAnswer("not_documented", f"I don't have that detail yet: the {s.name} has no documented connection for "
+                             + " or ".join(self._kit_short(x) for x in kit_ids) + ". Please check your kit documentation or ask your teacher.", src, grounded=True)
+        lines, rows = [], []
+        for kc in shown:
+            kit = self._kit_short(kc.kit)
+            pins = "; ".join(f"{p.pin} to {p.connects_to}" for p in kc.pins) or "no pins are given"
+            lines.append(f"{kit}: {pins}." + self._digital_hint(s, kc.kit) + (f" {kc.note}." if kc.note else "") + (f" Warning: {kc.warning}" if kc.warning else ""))
+            rows += [{"sensor_pin": p.pin, "kit_pin": p.connects_to, "note": kit, "verified": True} for p in kc.pins]
+        tail = ""
+        if not kit_ids:
+            missing = [x for x in ("govator_controller_pi", "esp32_kit") if x not in {kc.kit for kc in shown}]
+            tail = (" I showed every kit that documents it; tell me which kit you use." if len(shown) > 1 else
+                    f" For the {' and '.join(self._kit_short(x) for x in missing)} this sensor's connection is not documented in my files.")
+        text = f"{s.name} ({self._cat(s)}, {s.interface}) wiring:\n" + "\n".join(lines) + tail
+        return AppAnswer("sensor_connect", text, src, {"title": f"{s.name}: connections", "columns": ["Sensor pin", "Connects to", "Kit"], "rows": rows,
+                                                       "note": "From the sensor list and the gateway dataset"})
+
+    def _sensor_about(self, s, kit_ids: list[str]) -> AppAnswer:
+        text = f"{s.name} ({self._cat(s)}, {s.interface}): {s.working or s.description}"
+        if s.kit_connections:
+            text += "\n\nHow it connects: " + " ".join(
+                f"{self._kit_short(kc.kit)}: " + "; ".join(f"{p.pin} to {p.connects_to}" for p in kc.pins) + "." for kc in s.kit_connections if not kit_ids or kc.kit in kit_ids)
+        return AppAnswer("sensor_about", text, [f"{s.name} > Sensor details"])
+
+    def _sensor_example(self, s) -> AppAnswer:
+        text = (f"The sensor list names the example program {s.example_code} for the {s.name}, but I don't have its code, so I can't show it." if s.example_code
+                else f"The sensor list gives no example program for the {s.name}. I don't have that detail yet.")
+        return AppAnswer("sensor_example", text, [f"{s.name} > Sensor details"])
+
+    def _pin_rules(self, msg: str, kit_ids: list[str]) -> AppAnswer:
+        wanted = [w for w in ("digital", "analog", "i2c", "uart", "relay", "keypad", "motor", "stepper") if re.search(rf"\b{w}\b", msg, re.I)]
+        if re.search(r"\b(?:sda|scl)\b", msg, re.I) and "i2c" not in wanted:
+            wanted.append("i2c")
+        if re.search(r"\b(?:rx|tx)\b", msg, re.I) and "uart" not in wanted:
+            wanted.append("uart")
+        kits = [self.k.kits[x] for x in (kit_ids or list(self.k.kits)) if x in self.k.kits and self.k.kits[x].pin_rules]
+        lines, src = [], []
+        for kit in kits:
+            rules = [r for r in kit.pin_rules if not wanted or any(w in r.name for w in wanted)]
+            if re.search(r"\bwiring rules\b", msg, re.I) and kit.wiring_rules:
+                lines.append(f"{self._kit_short(kit.id)} wiring rules:\n" + "\n".join(f"- {r}" for r in kit.wiring_rules))
+            for r in rules:
+                lines.append(f"{self._kit_short(kit.id)} {r.name}: {', '.join(r.pins)}" + (f" ({r.note})" if r.note else ""))
+            src.append(f"Kit: {kit.name}")
+        if not lines:
+            return AppAnswer("not_documented", NOT_DOCUMENTED, src or ["kits"])
+        return AppAnswer("pin_rules", "\n".join(lines) + ("\n\nTell me which kit you use if you want only one." if len(kits) > 1 and not kit_ids else ""), src)
+
+    def _sensor_list(self, msg: str) -> AppAnswer:
+        iface_words = {"i2c": "I2C", "uart": "UART", "analog": "analog", "digital": "digital", "usb": "USB", "relay": "relay"}
+        want_if = [v for w, v in iface_words.items() if re.search(rf"\b{w}\b", msg, re.I)]
+        want_cat = "Output" if re.search(r"\bactuators?|\boutputs?\b", msg, re.I) else ("Input" if re.search(r"\binput (?:sensors|devices)\b|\binputs\b", msg, re.I) else "")
+        items = [s for s in self.k.sensors.values() if s.kit_connections or s.working]
+        if want_if:
+            items = [s for s in items if s.interface in want_if]
+        if want_cat:
+            items = [s for s in items if s.category == want_cat or not s.category]
+        groups: dict[str, list[str]] = {}
+        for s in items:
+            groups.setdefault(f"{s.category or 'Other'} - {s.interface}", []).append(s.name)
+        text = f"{len(items)} documented:\n" + "\n".join(f"{g}: {', '.join(sorted(n))}" for g, n in sorted(groups.items()))
+        return AppAnswer("sensor_list", text + "\n\nAsk me how any of them works or connects.", ["Sensor list"])
 
     def _statement(self, a, msg: str) -> AppAnswer | None:
         """"What does led_1.on() do?": find the line-by-line part of the lesson program that contains that statement."""

@@ -1,0 +1,33 @@
+id: thermal_sensor
+name: Thermal Sensor
+aliases:
+- thermal sensor
+- thermal
+- contactless temperature sensor
+category: Input
+working: Measures the temperature of objects or surroundings without touching them and sends it over I2C.
+example_code: Thermal_sensor.py.py
+gateway_key: ''
+description: Measures the temperature of objects or surroundings without touching them and sends it over I2C.
+sensor_type: INPUT
+interface: I2C
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Thermal Sensor
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Thermal Sensor

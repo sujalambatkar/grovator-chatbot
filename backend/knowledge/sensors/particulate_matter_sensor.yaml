@@ -1,0 +1,31 @@
+id: particulate_matter_sensor
+name: Particulate Matter Sensor
+aliases:
+- particulate matter sensor
+- particulate matter
+- pm sensor
+- dust sensor
+- pm2.5 sensor
+category: Input
+working: Measures fine dust (PM1.0, PM2.5, PM10) with a laser that counts airborne particles, and sends the readings to the Raspberry
+  Pi over USB.
+example_code: Particulate_matter_sensor.py.py
+gateway_key: ''
+description: Measures fine dust (PM1.0, PM2.5, PM10) with a laser that counts airborne particles, and sends the readings to the Raspberry
+  Pi over USB.
+sensor_type: INPUT
+interface: USB
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: USB
+    connects_to: USB port
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Particulate Matter Sensor
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Particulate Matter Sensor

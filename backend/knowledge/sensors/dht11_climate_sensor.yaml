@@ -1,0 +1,45 @@
+id: dht11_climate_sensor
+name: DHT11 Climate Sensor
+aliases:
+- dht11 climate sensor
+- dht11 climate
+- dht11
+- dht 11
+- temperature and humidity sensor
+- temperature sensor
+- humidity sensor
+category: Input
+working: Measures temperature and relative humidity. It processes the readings itself and gives a calibrated digital output on one data
+  pin, so no ADC is needed.
+example_code: DHT11 Climate Sensor.py.py
+gateway_key: dht11
+description: Measures temperature and relative humidity.
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for DHT11 Climate Sensor
+- kit: esp32_kit
+  pins:
+  - pin: DATA
+    connects_to: Available digital GPIO
+  warning: ''
+  note: 'interface: digital'
+  source:
+    file: grovator-esp32-gateway.json
+    where: devices.dht11
+notes:
+- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for DHT11 Climate Sensor
