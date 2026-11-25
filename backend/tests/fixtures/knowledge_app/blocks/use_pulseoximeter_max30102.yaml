@@ -1,0 +1,17 @@
+id: use_pulseoximeter_max30102
+title: "Use [Pulseoximeter(Max30102)]"
+category: Sensor (IoT / IIoT / AIoT)
+aliases: [use pulseoximeter, use oximeter, use max30102]
+sensor: pulseoximeter_max30102
+connection: Top - bottom
+description: >-
+  Set-up block. It imports the I2C and time modules, creates the I2C bus on SCL=GPIO22 and SDA=GPIO21 at 400000 Hz,
+  and stores the sensor's I2C address (0x57). It goes at the top of the program.
+variant: raw-register block code (Max30102_Blocks_Requirement.pdf)
+code: |
+  from machine import Pin, I2C
+  import time
+  i2c = I2C(0, scl=Pin(22), sda=Pin(21), freq=400000)
+  ADDR = 0x57
+sources:
+  - {file: Max30102_Blocks_Requirement.pdf, where: "page 1, code 1"}

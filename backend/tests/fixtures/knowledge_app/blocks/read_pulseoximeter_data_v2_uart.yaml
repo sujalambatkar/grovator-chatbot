@@ -1,0 +1,42 @@
+id: read_pulseoximeter_data_v2_uart
+title: Read PulseOximeter Data (V2.0, UART)
+category: Sensor (IoT / IIoT / AIoT)
+aliases: [read pulseoximeter v2]
+sensor: pulseoximeter_v2_uart
+connection: Top - bottom
+description: >-
+  Defines get_crc() and read_spo2_hr() for the UART version, and sends the start command to the sensor. After it, the
+  blocks "Get Heartrate" and "Get SpO2" read the values.
+variant: UART version (Pulseoximeter_V2.0.pdf)
+verified: false
+code: |
+  def get_crc(data):
+    crc = 0xFFFF
+    for b in data:
+       crc ^= b
+       for _ in range(8):
+          if crc & 1:
+              crc = (crc >> 1) ^ 0xA001
+          else:
+              crc >>= 1
+    return crc.to_bytes(2, 'little')
+  def read_spo2_hr():
+    cmd = bytearray([0x20, 0x03, 0x00, 0x06, 0x00, 0x04])
+    uart.read()
+    uart.write(cmd + get_crc(cmd))
+    time.sleep(0.3)
+    resp = uart.read(13)
+
+    if resp and len(resp) >= 9:
+        spo2 = resp[3]
+        heart_rate = int.from_bytes(resp[5:9], 'big')
+        return spo2, heart_rate
+    else:
+        return 0, 0
+
+
+  start_cmd = bytearray([0x20, 0x06, 0x00, 0x10, 0x00, 0x01])
+  uart.write(start_cmd + get_crc(start_cmd))
+  time.sleep(1)
+sources:
+  - {file: Pulseoximeter_V2.0.pdf, where: "page 1, code 2"}

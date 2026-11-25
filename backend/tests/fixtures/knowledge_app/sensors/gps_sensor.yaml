@@ -1,0 +1,35 @@
+id: gps_sensor
+name: GPS Sensor
+aliases:
+- gps sensor
+- gps
+- gps module
+category: Input
+working: Finds position (latitude, longitude), speed, altitude and time from GPS satellites and sends them over UART.
+example_code: GPS_sensor.py.py
+gateway_key: ''
+description: Finds position (latitude, longitude), speed, altitude and time from GPS satellites and sends them over UART.
+sensor_type: INPUT
+interface: UART
+kit_connections:
+- kit: govator_controller_pi
+  interface: UART
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: Rx
+    connects_to: Tx of the controller
+  - pin: Tx
+    connects_to: Rx of the controller
+  note: The list writes 'Rx Tx / Tx Rx'; read here as crossed
+  example_code: GPS_sensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for GPS Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for GPS Sensor

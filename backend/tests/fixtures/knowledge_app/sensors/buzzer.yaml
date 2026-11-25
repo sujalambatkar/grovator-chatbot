@@ -1,0 +1,47 @@
+id: buzzer
+name: Buzzer
+aliases:
+- buzzer
+category: Output
+working: Makes a sound. A HIGH signal turns it ON and a LOW signal turns it OFF; it can be driven directly from a digital output pin.
+example_code: buzzer.py.py
+gateway_key: buzzer
+description: Makes a sound.
+sensor_type: OUTPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  example_code: buzzer.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Buzzer
+- kit: esp32_kit
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  example_code: Buzzer.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Buzzer
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Buzzer
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Buzzer

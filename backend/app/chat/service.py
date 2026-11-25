@@ -479,7 +479,7 @@ class ChatService:
         base = {**base, "intent": Intent.general_tech.value}
         yield {"type": "meta", **base}
         app = next(iter(self.appkb.apps.values()), None) if self.appkb else None
-        note = f"PROJECT NOTES: the student is working on '{app.title}' (a pulse oximeter, an ESP32 kit and 3 LEDs).\n\n" if app else ""
+        note = f"PROJECT NOTES: the student is working on '{app.title}': {app.summary}\n\n" if app else ""
         msgs: list[dict[str, str]] = [{"role": "system", "content": GENERAL_SYSTEM}]
         for t in state.turns[-MAX_TURNS:]:
             msgs += [{"role": "user", "content": truncate_tokens(t.user, 80)}, {"role": "assistant", "content": truncate_tokens(t.assistant, 80)}]

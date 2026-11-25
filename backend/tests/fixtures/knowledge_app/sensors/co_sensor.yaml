@@ -1,0 +1,49 @@
+id: co_sensor
+name: CO Sensor
+aliases:
+- co sensor
+- carbon monoxide sensor
+- co gas sensor
+category: Input
+working: Detects and measures carbon monoxide gas in the air; its output value changes with the CO level.
+example_code: CO_sensor.py.py
+gateway_key: ''
+description: Detects and measures carbon monoxide gas in the air; its output value changes with the CO level.
+sensor_type: INPUT
+interface: analog
+kit_connections:
+- kit: govator_controller_pi
+  interface: analog
+  pins:
+  - pin: VCC
+    connects_to: 3-5V
+  - pin: GND
+    connects_to: GND
+  - pin: Signal
+    connects_to: Analog input (AI1, AI2, AI3, AI4)
+  note: ''
+  example_code: CO_sensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for CO Sensor
+- kit: esp32_kit
+  interface: analog
+  pins:
+  - pin: VCC
+    connects_to: 3-5V
+  - pin: GND
+    connects_to: GND
+  - pin: Signal
+    connects_to: Analog GPIO32, GPIO36
+  note: ''
+  example_code: CO Sensor (Carbon Monoxide Sensor).py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for CO Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for CO Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for CO Sensor

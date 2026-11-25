@@ -10,7 +10,7 @@ const ROLE = "student" as const; // the demo always runs as a student; access co
 const DEFAULT_PAGE = ""; // the first application page, else the first device page
 
 // Suggestions come from the server per page (doc.suggestions): only questions answered by pre-written answers, so clicking one costs 0 tokens.
-const GENERIC = ["What does a pulse oximeter do?", "How do I connect the sensor?", "Which blocks do I need?", "Why does it show 0?", "What does SpO2 mean?"];
+const GENERIC = ["How do I connect the alcohol sensor?", "Which sensors use I2C?", "Which blocks do I need for the pulse oximeter?", "Which pins are digital GPIO on the controller?", "What is I2C?"];
 
 export function DemoHost() {
   const [content, setContent] = useState<ContentResponse | null>(null);

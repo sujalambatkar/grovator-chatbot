@@ -1,0 +1,34 @@
+id: current_sensor
+name: Current Sensor
+aliases:
+- current sensor
+category: Input
+working: Measures the electric current flowing through a circuit or device and gives a proportional analog signal that the ESP32 reads
+  through its ADC (power monitoring, overload detection, energy management).
+example_code: ''
+gateway_key: ''
+description: Measures the electric current flowing through a circuit or device and gives a proportional analog signal that the ESP32
+  reads through its ADC (power monitoring, overload detection, energy management).
+sensor_type: INPUT
+interface: analog
+kit_connections:
+- kit: esp32_kit
+  interface: analog
+  pins:
+  - pin: VCC
+    connects_to: 3-5V
+  - pin: GND
+    connects_to: GND
+  - pin: Signal
+    connects_to: Analog GPIO32, GPIO36
+  note: ''
+  example_code: Current Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Current Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+- Only in the ESP sensor list; the controller sensor list does not have it.
+sources:
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Current Sensor

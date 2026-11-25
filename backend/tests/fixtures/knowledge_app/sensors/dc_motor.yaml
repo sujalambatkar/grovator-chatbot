@@ -1,0 +1,43 @@
+id: dc_motor
+name: DC Motor
+aliases:
+- dc motor
+- motor
+category: Output
+working: Turns electrical energy into rotation. Applying DC voltage makes the shaft turn; reversing the polarity reverses the direction.
+example_code: DCMotor.py.py
+gateway_key: dc_motor
+description: Turns electrical energy into rotation.
+sensor_type: OUTPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  interface: digital
+  pins:
+  - pin: T1
+    connects_to: M15 / M14 / M2 / M12 pin of the controller
+  - pin: T2
+    connects_to: M15 / M14 / M2 / M12 pin of the controller
+  note: Relay GPIO22 and GPIO23
+  example_code: DCMotor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for DC Motor
+- kit: esp32_kit
+  pins:
+  - pin: connection
+    connects_to: Motor interface
+  warning: ''
+  note: 'No pins are listed in the ESP list (only a small relay diagram); gateway dataset: interface: motor'
+  source:
+    file: grovator-esp32-gateway.json
+    where: devices.dc_motor
+  interface: digital
+  example_code: DC Motor.py
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for DC Motor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for DC Motor

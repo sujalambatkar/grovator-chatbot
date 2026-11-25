@@ -1,0 +1,49 @@
+id: soil_moisture_sensor
+name: Soil Moisture Sensor
+aliases:
+- soil moisture sensor
+- soil moisture
+category: Input
+working: 'Measures soil moisture with two probes pushed into the soil: wet soil conducts better. A comparator (adjustable) gives a digital
+  HIGH when the soil is wet (above the threshold) and LOW when dry.'
+example_code: Moisture_sensor.py.py
+gateway_key: soil_moisture_sensor
+description: 'Measures soil moisture with two probes pushed into the soil: wet soil conducts better.'
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  example_code: Moisture_sensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Soil Moisture Sensor
+- kit: esp32_kit
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  example_code: Soilmoisture Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Soil Moisture Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Soil Moisture Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Soil Moisture Sensor

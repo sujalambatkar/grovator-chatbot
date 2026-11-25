@@ -10,8 +10,8 @@ aliases:
 - grovator esp32 iot gateway
 - esp32 iot gateway
 - esp32 gateway
-description: 'The ESP32 board used as the IoT gateway: in the lesson circuit diagram and in the gateway dataset (assumed to be the same
-  product, see GAPS.md).'
+description: The ESP32 board used as the IoT gateway (the "ESP32 kit" of the sensor list and the "Grovator ESP32 IoT Gateway" of the
+  gateway dataset, assumed to be the same product, see GAPS.md).
 verified: true
 port_groups:
 - name: I2C
@@ -20,13 +20,12 @@ port_groups:
   - 3.3V
   - SDA (GPIO21)
   - SCL (GPIO22)
-  note: terminal labels in the lesson's circuit diagram
+  note: terminal labels in an example circuit diagram
 documented_facts:
-- 'I2C: SDA = GPIO21, SCL = GPIO22 (the pulse oximeter uses these).'
-- Lesson LEDs are set up on GPIO27 (led_1), GPIO23 (led_2) and GPIO13 (led_3) as outputs.
+- 'I2C: SDA = GPIO21, SCL = GPIO22.'
+- Pin rules (digital, analog, I2C, UART, keypad, motors) are in pin_rules.
 not_documented:
-- The full pin map of the kit beyond the interfaces above.
-- Which terminal each LED-board wire goes to in the lesson circuit.
+- The full pin map of the kit beyond the interfaces in pin_rules.
 sources:
 - file: GE_-_Pulseoximeter_Application.pptx.pdf
   where: pages 8, 12-13

@@ -1,0 +1,57 @@
+id: gyroscope_sensor
+name: Gyroscope Sensor
+aliases:
+- gyroscope sensor
+- gyroscope
+- gyro
+- gyro sensor
+- mpu6050
+- mpu 6050
+- mpu-6050
+category: Input
+working: Measures angular velocity and rotation around one or more axes and sends the values over I2C (or SPI).
+example_code: Gyroscope.py.py
+gateway_key: ''
+description: Measures angular velocity and rotation around one or more axes and sends the values over I2C (or SPI).
+sensor_type: INPUT
+interface: I2C
+kit_connections:
+- kit: govator_controller_pi
+  interface: I2C
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  example_code: Gyroscope.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Gyroscope Sensor
+- kit: esp32_kit
+  interface: I2C
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: 'ESP list name: MPU6050'
+  example_code: MPU6050.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Gyroscope Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Gyroscope Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Gyroscope Sensor

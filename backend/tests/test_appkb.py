@@ -7,11 +7,17 @@ from app.llm.prompts import GENERAL_SYSTEM
 from app.rag.ingest import ingest
 from app.rag.retriever import HybridRetriever
 from app.rag.store import KnowledgeStore, make_client
-from knowledge.loader import KNOWLEDGE_DIR, validate
+from knowledge.loader import validate
+from tests.test_hardware import REAL as _REAL  # noqa: F401
+from pathlib import Path
+
+KNOWLEDGE_DIR = Path(__file__).resolve().parent / "fixtures" / "knowledge_app"   # the pulse oximeter lesson as an installed application
+GENERIC_DIR = Path(__file__).resolve().parents[1] / "knowledge"                   # the live knowledge base: no application
 from tests.conftest import FakeLLM, all_llm_calls
 from tests.test_hardware import ON, REAL, STU, build, turn
 
 OVER = dict(app_knowledge_dir=str(KNOWLEDGE_DIR), enable_semantic_cache=False)
+GENERIC = dict(app_knowledge_dir=str(GENERIC_DIR), enable_semantic_cache=False)
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -28,12 +34,12 @@ async def ask(retriever, msg, llm=None, sid="app-1", **over):
 
 
 def test_knowledge_files_validate():
-    k = validate()
+    k = validate(KNOWLEDGE_DIR)
     assert "pulseoximeter-health-monitoring" in k.applications and len(k.blocks) >= 7
 
 
 def test_entity_detection_handles_aliases_and_typos():
-    kb = AppKB(validate())
+    kb = AppKB(validate(KNOWLEDGE_DIR))
     assert kb.detect("how does the oximeter work").sensors == ["pulseoximeter_max30102"]
     assert "pulseoximeter_max30102" in kb.detect("my MAX30102 shows 0").sensors
     assert "pulseoximeter_max30102" in kb.detect("pulse oxymeter wiring").sensors      # typo

@@ -1,0 +1,87 @@
+id: esp32_kit
+name: ESP32 kit (Grovator ESP32 IoT Gateway)
+aliases:
+- esp32 kit
+- esp32
+- esp 32
+- iot gateway
+- the kit
+- processor
+- grovator esp32 iot gateway
+- esp32 iot gateway
+- esp32 gateway
+description: 'The ESP32 board used as the IoT gateway: in the lesson circuit diagram and in the gateway dataset (assumed to be the same
+  product, see GAPS.md).'
+verified: true
+port_groups:
+- name: I2C
+  pins:
+  - GND
+  - 3.3V
+  - SDA (GPIO21)
+  - SCL (GPIO22)
+  note: terminal labels in the lesson's circuit diagram
+documented_facts:
+- 'I2C: SDA = GPIO21, SCL = GPIO22 (the pulse oximeter uses these).'
+- Lesson LEDs are set up on GPIO27 (led_1), GPIO23 (led_2) and GPIO13 (led_3) as outputs.
+not_documented:
+- The full pin map of the kit beyond the interfaces above.
+- Which terminal each LED-board wire goes to in the lesson circuit.
+sources:
+- file: GE_-_Pulseoximeter_Application.pptx.pdf
+  where: pages 8, 12-13
+- file: grovator-esp32-gateway.json
+  where: interfaces, wiring_rules
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: 'ESP Pin Connection Rules: digital 5,4,19,25,26,18,32; analog GPIO32, GPIO36; I2C SCL, SDA; UART RX, TX; keypad; stepper motor'
+pin_rules:
+- name: digital
+  pins:
+  - GPIO5
+  - GPIO4
+  - GPIO19
+  - GPIO25
+  - GPIO26
+  - GPIO18
+  - GPIO32
+  note: 'connector: Signal, 5V, GND. GPIO32 can be digital or analog input, not both at once.'
+- name: analog
+  pins:
+  - GPIO32
+  - GPIO36
+  note: 'connector: Signal, 5V, GND. GPIO32 cannot be digital and analog at the same time.'
+- name: i2c
+  pins:
+  - SDA = GPIO21
+  - SCL = GPIO22
+  note: 'connector: SDA, SCL, 3.3V, GND'
+- name: uart
+  pins:
+  - RX = GPIO16
+  - TX = GPIO17
+  note: 'connector: RX, TX, 3.3V, GND'
+- name: keypad
+  pins:
+  - dedicated keypad connector
+  note: internal GPIO33, GPIO35, GPIO34, GPIO39, GPIO12, GPIO14, GPIO2, GPIO15
+- name: dc motor
+  pins:
+  - 'motor 1: M14, M15'
+  - 'motor 2: M2, M12'
+  note: output 9 to 12V depending on supplied power
+- name: stepper motor
+  pins:
+  - dedicated stepper connector
+  note: internally connected to the motor interface
+wiring_rules:
+- Digital output DO/D0 connects to a compatible digital GPIO.
+- Analog input GPIO (GPIO32 or GPIO36).
+- GPIO32 can be used for digital or analog input, but not both at the same time.
+- Use the physical GPIO labels printed on the gateway when wiring.
+- I2C devices connect to SDA GPIO21 and SCL GPIO22.
+- 'UART devices connect to the UART interface: RX GPIO16, TX GPIO17.'
+- Use dedicated connectors for keypad, motor, stepper motor and USB camera.
+- Connector labels identify physical wiring points; GPIO mappings identify internal ESP32 connections.
+- Check module voltage, signal levels, current draw, pinout and gateway limits before powering.
+- Do not assume 5V signals are safe for ESP32 GPIOs. Use level shifting when required.
+- If a fact is not documented, do not guess. Ask for the module model or recommend checking its datasheet.

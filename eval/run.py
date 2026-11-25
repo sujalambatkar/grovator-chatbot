@@ -108,16 +108,18 @@ async def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--offline", action="store_true")
     ap.add_argument("--only", default="")
+    ap.add_argument("--knowledge", default="", help="knowledge directory (default: backend/knowledge, the generic one)")
+    ap.add_argument("--questions", default="", help="questions file (default: eval/questions.yaml)")
     ap.add_argument("--pace", type=float, default=5.0, help="seconds between model calls (free-tier rate limits)")
     ap.add_argument("--min-pass", type=float, default=0.0, help="fail the run below this pass rate (0-1)")
     ap.add_argument("-v", "--verbose", action="store_true", help="print each answer")
     a = ap.parse_args()
 
-    items = yaml.safe_load((Path(__file__).parent / "questions.yaml").read_text(encoding="utf-8"))
+    items = yaml.safe_load(Path(a.questions or Path(__file__).parent / "questions.yaml").read_text(encoding="utf-8"))
     only = {x for x in a.only.split(",") if x}
     items = [q for q in items if (not only or q["id"] in only) and (not a.offline or q.get("det"))]
 
-    s = Settings(_env_file=str(BACK / ".env"), usage_log_dir="", enable_semantic_cache=False)
+    s = Settings(_env_file=str(BACK / ".env"), usage_log_dir="", enable_semantic_cache=False, **({"app_knowledge_dir": str(Path(a.knowledge).resolve())} if a.knowledge else {}))
     llm = NoLLM() if a.offline else Counting(make_llm(s))
     if not a.offline and not s.llm_api_key:
         print("No LLM key (backend/.env). Use --offline for the deterministic questions.")

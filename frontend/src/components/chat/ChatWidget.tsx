@@ -29,7 +29,7 @@ export interface ChatWidgetProps {
 }
 
 // starter chips: each is answered by the application knowledge (most cost 0 tokens)
-const SUGGESTIONS = ["What does a pulse oximeter do?", "How do I connect the sensor?", "Which blocks do I need?", "Why does it show 0?", "What does SpO2 mean?"];
+const SUGGESTIONS = ["How do I connect the alcohol sensor?", "Which sensors use I2C?", "Which blocks do I need for the pulse oximeter?", "Which pins are digital GPIO on the controller?", "What is I2C?"];
 
 export function ChatWidget({
   apiUrl, getToken, title = "Grovator Assistant", storageKey, defaultOpen = false, onAuthError, pageId,
@@ -72,7 +72,7 @@ export function ChatWidget({
               <MemoryPanel cfg={cfg} />
             ) : messages.length === 0 ? (
               <div className={s.welcome} data-testid="welcome">
-                Hi! I'm the Grovator Assistant. Ask me about the pulse oximeter project, your kit, sensors, wiring and blocks.
+                Hi! I'm the Grovator Assistant. Ask me about sensors, kits, wiring, block code and applications.
                 <div className={s.suggestions}>
                   {suggestions.map((q) => (
                     <button key={q} type="button" className={s.chip} onClick={() => void send(q)}>{q}</button>

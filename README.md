@@ -55,6 +55,10 @@ flowchart TD
 Every layer is enforced **in code**, never only in a prompt. The LLM never chooses whose data to fetch: scope comes
 from the JWT and is applied by retrieval filters and by `tools/policy.py`.
 
+## Generic knowledge assistant (sensors, kits, block code, applications)
+
+The live knowledge base (`backend/knowledge/`) holds **sensors** (the controller and ESP sensor lists, ~58), **kits** (ESP32 kit and Grovator controller, pin rules), **blocks** (block code, e.g. the pulse oximeter) and **media**. It holds no application or lesson text. Applications are an optional feature: drop `applications/<slug>/application.yaml` into the knowledge dir and the assistant also answers build steps, thresholds and line-by-line questions for it. The pulse oximeter lesson that was seeded first now lives in `backend/tests/fixtures/knowledge_app/` (used by the tests and `eval/questions_lesson.yaml`).
+
 ## Application assistant (pulse oximeter lesson and beyond)
 
 The assistant answers student questions about **applications** (lessons built with the Block Designer and Circuit Designer). The
@@ -101,6 +105,7 @@ off-topic/unsafe, "I don't have that detail" traps):
 ```bash
 # from the repository root, with the backend's Python
 backend/.venv/bin/python -m eval.run --offline   # the `det: true` questions only: no LLM, free, deterministic
+backend/.venv/bin/python -m eval.run --offline --knowledge backend/tests/fixtures/knowledge_app --questions eval/questions_lesson.yaml   # the installed-application feature
 backend/.venv/bin/python -m eval.run -v          # everything, real model (uses your Groq/Gemini quota; --pace sets the delay)
 ```
 

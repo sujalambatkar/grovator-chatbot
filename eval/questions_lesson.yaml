@@ -1,0 +1,46 @@
+# Evaluation questions for the application assistant. `python -m eval.run` (see README).
+# Fields:
+#   id, tag, q            what is asked (tag groups the summary table)
+#   prior: [..]           earlier messages of the same conversation (multi-turn cases)
+#   det: true             answered from the knowledge files with no model call: checked offline AND live, with 0 LLM calls expected
+#   intent: ..            expected intent (default: not checked)
+#   not_documented: true  the answer must say "I don't have that detail yet"
+#   must_all / must_any   substrings (case-insensitive) that must appear in the answer text, table, blocks or code
+#   no_table: true        the answer must NOT carry a wiring table (no mapping may be invented)
+#   must_not              substrings that must NOT appear;  must_not_re: regexes that must not match
+# Short substrings like "TX" are matched as whole words, see must_not_re.
+# Pulse oximeter LESSON as an installed application (backend/tests/fixtures/knowledge_app). Run:
+#   python -m eval.run --knowledge backend/tests/fixtures/knowledge_app --questions eval/questions_lesson.yaml
+- {id: goal-1, tag: build, det: true, q: "How do I create this application?", must_all: ["pulse oximeter", "ESP32", "LED board", "GPIO21", "GPIO22", "Circuit Designer", "Block Designer", "Read PulseOximeter Data"]}
+- {id: goal-2, tag: build, det: true, q: "What sensors are required?", must_all: ["pulse oximeter", "ESP32", "LED board"]}
+- {id: goal-3, tag: build, det: true, q: "Give me step by step instructions to build the health monitoring project", must_all: ["Step by step", "1. Get the parts", "Run the program"]}
+- {id: steps-1, tag: steps, det: true, q: "What are the 5 steps of this project?", must_all: ["Understand the problem", "Circuit Designer", "Block Designer"]}
+- {id: steps-2, tag: steps, det: true, q: "Where do I start with the health monitoring project?", must_all: ["Understand the problem", "Find a solution"]}
+- {id: steps-3, tag: steps, q: "What is the challenge in this lesson?", must_any: ["oxygen"]}
+- {id: steps-4, tag: steps, q: "What is the input, the processor and the output in this project?", must_all: ["oximeter", "LED"], must_any: ["ESP32", "gateway"]}
+- {id: wire-5, tag: wiring, q: "Which GPIO is LED 2 connected to?", must_any: ["GPIO23", "GPIO 23"]}
+- {id: blk-1, tag: blocks, det: true, q: "Which blocks do I need?", must_all: ["Use [Pulseoximeter(Max30102)]", "Read PulseOximeter Data", "Store Heart rate and Oximeter Data"]}
+- {id: blk-2, tag: blocks, det: true, q: "In what order do I stack the blocks?", must_all: ["Use [Pulseoximeter(Max30102)]", "Store Heart rate and Oximeter Data"]}
+- {id: blk-5, tag: blocks, det: true, prior: ["Which blocks do I need?"], q: "show the code", must_any: ["ADDR = 0x57", "def get_heart_rate_spo2"]}
+- {id: code-1, tag: code, det: true, q: "Show me the lesson code", must_all: ["while True:", "led_1 = machine.Pin(27", "MAX30102(i2c)"]}
+- {id: code-2, tag: code, det: true, q: "Explain the code line by line", must_all: ["Configures LED 1 on GPIO 27", "infinite loop"]}
+- {id: code-3, tag: code, det: true, q: "What does time.sleep(0.5) do in the program?", must_any: ["wait", "pause", "delay", "half a second", "0.5"]}
+- {id: code-4, tag: code, det: true, q: "What does led_1.on() do?", must_any: ["LED 1", "led_1", "turns on", "turn on"]}
+- {id: code-5, tag: code, q: "Why does the program use while True?", must_any: ["forever", "infinite", "continuous", "again and again", "keeps"]}
+- {id: code-6, tag: code, q: "How does the block code find a heartbeat?", must_any: ["30000", "infrared", "IR"]}
+- {id: thr-1, tag: thresholds, det: true, q: "What SpO2 value counts as normal oxygen level in the program?", must_all: ["95"]}
+- {id: thr-2, tag: thresholds, det: true, q: "Which LED lights up for medium heart rate?", must_all: ["LED 2", "80"]}
+- {id: thr-3, tag: thresholds, q: "At what heart rate does LED 1 turn on?", must_any: ["90"]}
+- {id: thr-4, tag: thresholds, q: "What happens when the BPM is below 80?", must_any: ["LED 3"]}
+- {id: thr-5, tag: thresholds, det: true, q: "The low heart rate message says LED 3 OFF. Is LED 3 off?", must_all: ["typing mistake", "ON"]}
+- {id: msg-1, tag: messy, det: true, q: "it shows 0", must_any: ["Place Your Finger", "no valid reading"]}
+- {id: msg-2, tag: messy, det: true, q: "led not on", must_any: ["heart rate is not 0", "valid reading"]}
+- {id: msg-3, tag: messy, det: true, q: "bro my oximeter not working", must_any: ["finger"]}
+- {id: msg-4, tag: messy, det: true, q: "sensor wont connect", must_any: ["GPIO21"]}
+- {id: msg-5, tag: messy, prior: ["How do I connect the pulse oximeter?"], q: "what about the LED?", must_any: ["LED"]}
+- {id: hlth-1, tag: health, det: true, q: "Is the pulse oximeter reading accurate? Can I use it to check my health?", must_any: ["not a medical device"], must_not: ["is medically accurate"]}
+- {id: hlth-3, tag: health, det: true, q: "what are normal oxygen levels in the lesson", must_any: ["learning project"]}
+- {id: gap-5, tag: not_documented, q: "Which terminal of the LED board does led_1 use?", must_any: ["don't have that", "not documented", "not readable"]}
+- {id: gap-6, tag: not_documented, det: true, q: "What is the expected serial output when I place my finger?", must_all: ["Heartrate :", "Place Your Finger"], must_any: ["don't have typical values", "no sample"]}
+- {id: ext-1, tag: extension, det: true, q: "Give me the video link for the pulse sensor", must_all: ["youtu.be/N3MCvREORVA"]}
+- {id: ext-2, tag: extension, det: true, q: "What are the home assignment reflection questions?", must_all: ["What have you learnt"]}

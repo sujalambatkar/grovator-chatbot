@@ -1,0 +1,34 @@
+id: ecg_sensor
+name: ECG Sensor
+aliases:
+- ecg sensor
+- ecg
+- electrocardiogram sensor
+category: Input
+working: Measures the electrical activity of the heart with electrodes on the body. The analog output voltage follows the heartbeat
+  and draws the ECG waveform.
+example_code: Ecg_sensor.py.py
+gateway_key: ''
+description: Measures the electrical activity of the heart with electrodes on the body.
+sensor_type: INPUT
+interface: analog
+kit_connections:
+- kit: govator_controller_pi
+  interface: analog
+  pins:
+  - pin: VCC
+    connects_to: 3-5V
+  - pin: GND
+    connects_to: GND
+  - pin: Signal
+    connects_to: Analog input (AI1, AI2, AI3, AI4)
+  note: ''
+  example_code: Ecg_sensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for ECG Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for ECG Sensor

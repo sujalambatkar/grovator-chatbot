@@ -1,0 +1,54 @@
+id: power_meter
+name: Power Meter
+aliases:
+- power meter
+- energy meter
+category: Input
+working: Measures voltage, current, power, energy, frequency and power factor, and sends them over UART (RS485 or Modbus depending on
+  the module).
+example_code: Power_meter.py.py
+gateway_key: ''
+description: Measures voltage, current, power, energy, frequency and power factor, and sends them over UART (RS485 or Modbus depending
+  on the module).
+sensor_type: INPUT
+interface: UART
+kit_connections:
+- kit: govator_controller_pi
+  interface: UART
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: Rx
+    connects_to: Tx of the controller
+  - pin: Tx
+    connects_to: Rx of the controller
+  note: The list writes 'Rx Tx / Tx Rx'; read here as crossed (sensor Rx to controller Tx, sensor Tx to controller Rx)
+  example_code: Power_meter.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Power Meter
+- kit: esp32_kit
+  interface: UART
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: Rx
+    connects_to: Tx of the controller
+  - pin: Tx
+    connects_to: Rx of the controller
+  note: The list writes 'Rx Tx / Tx Rx'; read here as crossed
+  example_code: Power Meter.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Power Meter
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Power Meter
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Power Meter

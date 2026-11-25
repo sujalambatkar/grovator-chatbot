@@ -1,0 +1,48 @@
+id: alcohol_sensor
+name: Alcohol Sensor
+aliases:
+- alcohol sensor
+category: Input
+working: Detects alcohol vapour in the air. The sensing element's resistance changes with alcohol; a built-in comparator with an adjustable
+  potentiometer threshold gives a digital HIGH when the alcohol level is above the threshold and LOW otherwise.
+example_code: Alcohol_sensor.py.py
+gateway_key: alcohol_sensor
+description: Detects alcohol vapour in the air.
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: DO
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  example_code: Alcohol_sensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Alcohol Sensor
+- kit: esp32_kit
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: DO
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  example_code: Alcohol Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Alcohol Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Alcohol Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Alcohol Sensor

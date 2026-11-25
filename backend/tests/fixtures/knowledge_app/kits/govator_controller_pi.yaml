@@ -1,0 +1,246 @@
+id: govator_controller_pi
+name: Grovator controller (Raspberry Pi based)
+aliases:
+- grovator controller
+- govator controller
+- grovator pi
+- pi controller
+- raspberry pi controller
+- pi style controller
+- govator pi
+- controller kit
+- the controller
+- rpi
+- rpi controller
+- raspberry pi
+- pi
+- controller
+description: 'The Raspberry Pi based Grovator controller (the sensor list calls it the ''RPI'' controller): USB, Ethernet, HDMI and
+  green screw terminals. Terminal labels come from four photos (not confirmed); the pin rules come from the sensor list. Its GPIO numbers
+  are Raspberry Pi numbers and do NOT match the ESP32 pins in the pulse oximeter lesson.'
+verified: false
+port_groups:
+- name: Front - USB / network / power
+  pins:
+  - 2x USB 2.0
+  - 2x USB 3.0
+  - Gigabit Ethernet
+  - Power 12V DC
+  photo: controller_photo_1_front
+- name: Front - Stepper Motor
+  pins:
+  - MOT
+  - 2B
+  - 2A
+  - 1A
+  - 1B
+  - GND
+  photo: controller_photo_1_front
+- name: Front - Motor
+  pins:
+  - MO1
+  - MO2
+  photo: controller_photo_1_front
+- name: Front - KEYPAD
+  pins:
+  - KEYPAD connector
+  photo: controller_photo_1_front
+- name: Front - I2C group 1
+  pins:
+  - GND
+  - 3.3V
+  - SDA
+  - SCL
+  photo: controller_photo_1_front
+- name: Front - I2C group 2
+  pins:
+  - GND
+  - 3.3V
+  - SDA
+  - SCL
+  photo: controller_photo_1_front
+- name: Front - I2C group 3
+  pins:
+  - GND
+  - 3.3V
+  - SDA
+  - SCL
+  photo: controller_photo_1_front
+- name: Front - Serial
+  pins:
+  - 3.3V
+  - GND
+  - RXD
+  - TXD
+  photo: controller_photo_1_front
+- name: Front - GPIO4
+  pins:
+  - 5V
+  - GPIO4
+  - GND
+  photo: controller_photo_1_front
+- name: Front - GPIO7
+  pins:
+  - 5V
+  - GPIO7
+  - GND
+  photo: controller_photo_1_front
+- name: Side 2 - GPIO8
+  pins:
+  - 5V
+  - GPIO8
+  - GND
+  photo: controller_photo_2_gpio
+- name: Side 2 - GPIO16
+  pins:
+  - 5V
+  - GPIO16
+  - GND
+  photo: controller_photo_2_gpio
+- name: Side 2 - GPIO17
+  pins:
+  - 5V
+  - GPIO17
+  - GND
+  photo: controller_photo_2_gpio
+- name: Side 2 - GPIO18
+  pins:
+  - 5V
+  - GPIO18
+  - GND
+  photo: controller_photo_2_gpio
+- name: Side 2 - GPIO20
+  pins:
+  - 5V
+  - GPIO20
+  - GND
+  photo: controller_photo_2_gpio
+- name: Side 2 - GPIO21
+  pins:
+  - 5V
+  - GPIO21
+  - GND
+  photo: controller_photo_2_gpio
+- name: Side 3 - GPIO24/25/27
+  pins:
+  - 5V
+  - GPIO24
+  - GPIO25
+  - GPIO27
+  - GND
+  photo: controller_photo_3_relay_analog
+- name: Side 3 - GPIO10/9/11
+  pins:
+  - 5V
+  - GPIO10
+  - GPIO9
+  - GPIO11
+  - GND
+  photo: controller_photo_3_relay_analog
+- name: Side 3 - Relay 1 (GPIO23)
+  pins:
+  - +12V
+  - GND
+  photo: controller_photo_3_relay_analog
+- name: Side 3 - Relay 2 (GPIO22)
+  pins:
+  - +12V
+  - GND
+  photo: controller_photo_3_relay_analog
+- name: Side 3 - Analog output AO
+  pins:
+  - +Vout
+  - GND
+  - +mAout
+  photo: controller_photo_3_relay_analog
+- name: Side 3 - Analog input AI1
+  pins:
+  - +5VExc
+  - AIN-
+  - AIN+
+  - DIN
+  photo: controller_photo_3_relay_analog
+- name: Side 3 - Analog input AI2
+  pins:
+  - +5VExc
+  - AIN-
+  - AIN+
+  - DIN
+  photo: controller_photo_3_relay_analog
+- name: Side 3 - Analog input AI3
+  pins:
+  - +5VExc
+  - AIN-
+  - AIN+
+  - DIN
+  photo: controller_photo_3_relay_analog
+- name: Side 3 - Analog input AI4
+  pins:
+  - +5VExc
+  - AIN-
+  - AIN+
+  - DIN
+  photo: controller_photo_3_relay_analog
+- name: Side 4 - Power and video
+  pins:
+  - USB-C power 5V/3A
+  - HDMI (micro)
+  - HDMI (micro)
+  - Stereo Audio
+  photo: controller_photo_4_side
+documented_facts:
+- 'Pin connection rules from the sensor list: digital GPIO 4, 7, 8, 16, 17, 18, 20, 21, 24, 25, 27, 10, 9, 11; analog AI1 to AI4; I2C
+  SCL and SDA; UART RX and TX; relay GPIO22 and GPIO23.'
+- 'Sensors connect by interface: digital sensors to any digital GPIO pin, analog sensors to AI1 to AI4, I2C sensors to the SDA and SCL
+  pins, UART sensors to RX and TX.'
+- Terminal labels read from photos (not confirmed).
+not_documented:
+- Any mapping between this controller's GPIO numbers and the ESP32 pins used in the pulse oximeter lesson (e.g. GPIO22 is a relay here,
+  but I2C SCL on the ESP32 kit).
+- Which exact terminal each sensor of the sensor list uses (the list says 'any digital GPIO pin', 'any SDA pin').
+- How the lesson's LED board connects to this controller.
+sources:
+- file: kit photos 1-4
+  where: label transcription
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: RPI Pin Connection Rules
+pin_rules:
+- name: digital
+  pins:
+  - GPIO4
+  - GPIO7
+  - GPIO8
+  - GPIO16
+  - GPIO17
+  - GPIO18
+  - GPIO20
+  - GPIO21
+  - GPIO24
+  - GPIO25
+  - GPIO27
+  - GPIO10
+  - GPIO9
+  - GPIO11
+  note: digital GPIO pins (RPI Pin Connection Rules)
+- name: analog
+  pins:
+  - AI1
+  - AI2
+  - AI3
+  - AI4
+  note: analog inputs
+- name: i2c
+  pins:
+  - SCL
+  - SDA
+  note: I2C pins; the photos show three [GND, 3.3V, SDA, SCL] terminal groups
+- name: uart
+  pins:
+  - RX
+  - TX
+  note: UART pins; the photos show a [3.3V, GND, RXD, TXD] terminal group
+- name: relay
+  pins:
+  - GPIO22
+  - GPIO23
+  note: Relay 2 = GPIO22, Relay 1 = GPIO23 (photo 3)

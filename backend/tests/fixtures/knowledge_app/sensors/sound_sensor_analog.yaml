@@ -1,0 +1,35 @@
+id: sound_sensor_analog
+name: Sound Sensor Analog
+aliases:
+- sound sensor analog
+- analog sound sensor
+category: Input
+working: 'An analog sound sensor: a microphone and amplifier give an analog voltage proportional to the sound level, which the ESP32
+  reads through its ADC (noise monitoring, sound detection, smart home).'
+example_code: ''
+gateway_key: ''
+description: 'An analog sound sensor: a microphone and amplifier give an analog voltage proportional to the sound level, which the ESP32
+  reads through its ADC (noise monitoring, sound detection, smart home).'
+sensor_type: INPUT
+interface: analog
+kit_connections:
+- kit: esp32_kit
+  interface: analog
+  pins:
+  - pin: VCC
+    connects_to: 3-5V
+  - pin: GND
+    connects_to: GND
+  - pin: Signal
+    connects_to: Analog GPIO32, GPIO36
+  note: ''
+  example_code: Sound Sensor Analog .py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Sound Sensor Analog
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+- Only in the ESP sensor list; the controller sensor list does not have it.
+sources:
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Sound Sensor Analog

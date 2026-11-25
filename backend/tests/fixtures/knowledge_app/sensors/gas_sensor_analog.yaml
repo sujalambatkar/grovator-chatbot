@@ -1,0 +1,54 @@
+id: gas_sensor_analog
+name: Gas Sensor (Analog)
+aliases:
+- gas sensor (analog)
+- gas sensor analog
+- gas sensor
+- analog gas sensor
+- mq gas sensor
+- mq2
+- mq 2
+category: Input
+working: Detects gases such as LPG, methane, propane and smoke. The sensing element's resistance changes with the gas, giving an analog
+  voltage that shows the concentration.
+example_code: Gas_sensor.py.py
+gateway_key: ''
+description: Detects gases such as LPG, methane, propane and smoke.
+sensor_type: INPUT
+interface: analog
+kit_connections:
+- kit: govator_controller_pi
+  interface: analog
+  pins:
+  - pin: VCC
+    connects_to: 3-5V
+  - pin: GND
+    connects_to: GND
+  - pin: Signal
+    connects_to: Analog input (AI1, AI2, AI3, AI4)
+  note: ''
+  example_code: Gas_sensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Gas Sensor (Analog)
+- kit: esp32_kit
+  interface: analog
+  pins:
+  - pin: VCC
+    connects_to: 3-5V
+  - pin: GND
+    connects_to: GND
+  - pin: Signal
+    connects_to: Analog GPIO32, GPIO36
+  note: 'ESP list name: Gas Sensor MQ2 (Analog)'
+  example_code: MQ2 Sensor Analog.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Gas Sensor (Analog)
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Gas Sensor (Analog)
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Gas Sensor (Analog)

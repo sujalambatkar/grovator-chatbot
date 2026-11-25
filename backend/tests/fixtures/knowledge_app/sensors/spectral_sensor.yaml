@@ -1,0 +1,36 @@
+id: spectral_sensor
+name: Spectral Sensor
+aliases:
+- spectral sensor
+category: Input
+working: Measures the intensity of light at different wavelengths across the visible and near-infrared spectrum, for detailed colour
+  analysis and material identification; sends digital data over I2C.
+example_code: ''
+gateway_key: ''
+description: Measures the intensity of light at different wavelengths across the visible and near-infrared spectrum, for detailed colour
+  analysis and material identification; sends digital data over I2C.
+sensor_type: INPUT
+interface: I2C
+kit_connections:
+- kit: esp32_kit
+  interface: I2C
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  example_code: Spectral Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Spectral Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+- Only in the ESP sensor list; the controller sensor list does not have it.
+sources:
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Spectral Sensor

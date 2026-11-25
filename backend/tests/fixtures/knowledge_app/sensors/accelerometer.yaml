@@ -1,0 +1,34 @@
+id: accelerometer
+name: Accelerometer
+aliases:
+- accelerometer
+- acceleration sensor
+category: Input
+working: Measures acceleration, tilt, vibration and movement along X, Y and Z with a MEMS element, and sends the values over I2C.
+example_code: Accelerometer.py.py
+gateway_key: ''
+description: Measures acceleration, tilt, vibration and movement along X, Y and Z with a MEMS element, and sends the values over I2C.
+sensor_type: INPUT
+interface: I2C
+kit_connections:
+- kit: govator_controller_pi
+  interface: I2C
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  example_code: Accelerometer.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Accelerometer
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Accelerometer

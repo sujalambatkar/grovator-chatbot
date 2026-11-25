@@ -1,0 +1,13 @@
+id: get_heartrate_v2_uart
+title: Get Heartrate
+category: Sensor (IoT / IIoT / AIoT)
+aliases: [get heart rate, get heartrate]
+sensor: pulseoximeter_v2_uart
+connection: Top - bottom
+description: Returns the heart rate (BPM) from the V2.0 (UART) sensor. It is the second value returned by read_spo2_hr().
+variant: UART version (Pulseoximeter_V2.0.pdf)
+verified: false
+code: |
+  read_spo2_hr()[1]
+sources:
+  - {file: Pulseoximeter_V2.0.pdf, where: "page 1, code 3"}

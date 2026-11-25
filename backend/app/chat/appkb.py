@@ -168,7 +168,7 @@ class AppKB:
 
     def app_label(self, e: Entities) -> str:
         a = (e.applications or e.weak or [self.default_app()])[0]
-        return self.apps[a].title if a else ""
+        return self.apps[a].title if a in self.apps else ""
 
     # ------------------------------------------------------------------ routing helpers
     def claims(self, message: str, e: Entities, recent: Entities | None = None) -> bool:
@@ -190,6 +190,8 @@ class AppKB:
             cat = self._catalog_answer(message, e)
             if cat:
                 return cat
+        if not self.apps:  # generic knowledge base: sensors, kits and blocks only (applications can be added later as files)
+            return self._generic_answer(message, e)
         if (e.sensors and all(self.k.sensors[x].kit_connections and x not in self._lesson_sensors() for x in e.sensors)
                 and not e.applications and not e.blocks):
             return None  # about another sensor of the list (e.g. "what if the ultrasonic sensor is not working"): not the lesson, so retrieval answers
@@ -318,7 +320,10 @@ class AppKB:
             wiring = _WIRING.search(msg)
             if wiring and not _STEPS.search(msg) and not _CODE.search(msg):
                 return self._sensor_connect(s, e.kits)
-            if _EXAMPLE.search(msg) or (_CODE.search(msg) and s.example_code and sid not in self._lesson_sensors()):
+            fact = self._sensor_fact(None, e, msg)
+            if fact:
+                return fact
+            if _EXAMPLE.search(msg) or (_CODE.search(msg) and s.example_code and sid not in self._lesson_sensors() and not s.blocks):
                 return self._sensor_example(s)
             if _ABOUT.search(msg) and not _TROUBLE.search(msg):
                 return self._sensor_about(s, e.kits)
@@ -401,6 +406,47 @@ class AppKB:
         text = f"{len(items)} documented:\n" + "\n".join(f"{g}: {', '.join(sorted(n))}" for g, n in sorted(groups.items()))
         return AppAnswer("sensor_list", text + "\n\nAsk me how any of them works or connects.", ["Sensor list"])
 
+    # ---- generic mode (no application installed) -------------------------------------------------------
+    def _generic_answer(self, message: str, e: Entities) -> AppAnswer | None:
+        msg = message
+        sensors = [x for x in e.sensors]
+        s = self.k.sensors[sensors[0]] if sensors else None
+        if _MEASURE.search(msg):
+            having = [self.k.sensors[x] for x in sensors if self.k.sensors[x].how_it_measures] or [x for x in self.k.sensors.values() if x.how_it_measures]
+            if len(having) == 1:
+                h = having[0]
+                return AppAnswer("how_it_measures", f"How the block code of the {h.name.split(' (')[0]} measures:\n" + "\n".join(f"- {t}" for t in h.how_it_measures), [f"{h.name} > How the block code measures"])
+        if s:
+            fact = self._sensor_fact(None, e, msg)
+            if fact:
+                return fact
+        if e.blocks:
+            b = self.k.blocks[e.blocks[0]]
+            if _CODE.search(msg):
+                return self._block_code_answer([b])
+            if _BLOCK_Q.search(msg):
+                return self._block_detail(b)
+        if _BLOCKS.search(msg) or _CODE.search(msg) or (s and s.blocks and re.search(r"\bblocks?\b", msg, re.I)):
+            if s and s.blocks:
+                bl = [self.k.blocks[b] for b in s.blocks]
+                if _CODE.search(msg) and not _BLOCKS.search(msg):
+                    return self._block_code_answer(bl)
+                chain = " -> ".join(f"[{b.title}]" for b in bl)
+                text = (f"For the {s.name.split(' (')[0]} the documented blocks are, stacked top to bottom: {chain}. "
+                        "Ask me to show the code of any block or what it does.")
+                return AppAnswer("blocks", text, [f"Block: {b.title}" for b in bl],
+                                 blocks=[{"order": i, "title": b.title, "description": b.description} for i, b in enumerate(bl, 1)])
+            having = [x for x in self.k.sensors.values() if x.blocks]
+            if having:
+                lines = [f"{x.name.split(' (')[0]}: " + " -> ".join(self.k.blocks[b].title for b in x.blocks) for x in having]
+                return AppAnswer("blocks", "Block code is documented for these sensors (tell me which one you need):\n" + "\n".join(lines), ["Blocks"])
+        return None
+
+    def _block_code_answer(self, bl) -> AppAnswer:
+        code = [{"title": b.title, "language": b.language, "code": b.code.rstrip(), "note": " ".join(b.code_notes)} for b in bl]
+        return AppAnswer("code", "Here is the code behind " + ("this block." if len(bl) == 1 else "these blocks, in the order you stack them."),
+                         [f"Block: {b.title}" for b in bl], code=code)
+
     def _statement(self, a, msg: str) -> AppAnswer | None:
         """"What does led_1.on() do?": find the line-by-line part of the lesson program that contains that statement."""
         toks = [re.sub(r"\s+", "", t.lower()) for t in _CODE_TOKEN.findall(msg.replace("`", ""))]
@@ -418,7 +464,7 @@ class AppKB:
 
     def _sensor_fact(self, a, e: Entities, msg: str) -> AppAnswer | None:
         """Plain facts of the sensor file (I2C address, frequency, UART baud rate, variable names): read from it, not searched for."""
-        sid = e.sensors[0] if e.sensors else (a.circuit.sensor if (e.any or not e.kits) else None)
+        sid = e.sensors[0] if e.sensors else (a.circuit.sensor if (a and (e.any or not e.kits)) else None)
         s = self.k.sensors.get(sid or "")
         if not s or not _FACT_Q.search(msg) or not (e.sensors or re.search(r"\b(?:sensor|oximeter|max30102|i2c|uart)\b", msg, re.I)):
             return None

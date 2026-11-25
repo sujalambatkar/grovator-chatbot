@@ -6,12 +6,12 @@ gateway_key: pulse_oximeter
 category: Input
 example_code: Pulseoximeter.py.py
 working: >-
-  Measures heart rate (BPM) and blood oxygen level (SpO2) from a fingertip. Red and infrared LEDs shine light through the finger, and the sensor measures how the light absorption changes with blood flow to work out pulse rate and oxygen saturation. (The sensor list names the chip MAX30100; the lesson and block specification say MAX30102: see GAPS.md.)
+  Measures heart rate (BPM) and blood oxygen level (SpO2) from a fingertip. Red and infrared LEDs shine light through the finger, and the sensor measures how the light absorption changes with blood flow to work out pulse rate and oxygen saturation. (The sensor lists name the chip MAX30100; the block specification says MAX30102: see GAPS.md.)
 kit_connections:
   - kit: esp32_kit
     interface: I2C
     example_code: Pulseoximeter Sensor.py
-    note: "the lesson's circuit diagram (ESP32 kit). The ESP sensor list says in general: VCC 3.3 or 5V, GND, SDA to any SDA pin, SCL to any SCL pin; the gateway dataset says VCC 'verify module voltage'"
+    note: "From the example circuit diagram (ESP32 kit). The ESP sensor list says in general: VCC 3.3 or 5V, GND, SDA to any SDA pin, SCL to any SCL pin; the gateway dataset says VCC 'verify module voltage'"
     pins:
       - {pin: VIN, connects_to: '3.3V'}
       - {pin: GND, connects_to: GND}
@@ -37,7 +37,7 @@ device_type: pulseoximeterV2.0
 interface: I2C
 i2c: {address: "0x57", scl: GPIO22, sda: GPIO21, freq: 400000}
 pins:
-  - {pin: VIN, connects_to: "3.3V", note: "red wire in the lesson's circuit diagram"}
+  - {pin: VIN, connects_to: "3.3V", note: "red wire in the example circuit diagram"}
   - {pin: GND, connects_to: "GND", note: "black wire"}
   - {pin: SDA, connects_to: "SDA (GPIO21)"}
   - {pin: SCL, connects_to: "SCL (GPIO22)"}
@@ -51,7 +51,7 @@ how_it_measures:
   - "If the average IR value is below 10000, there is no finger on the sensor and the result is 0, 0. If no beats are found, the result is also 0, 0."
   - "SpO2 is worked out from the ratio of the average red value to the average IR value."
 notes:
-  - "Two ways the same sensor appears in the documents: (a) the lesson program uses the `max30102` library, `sensor.get_values()` returns [bpm, spo2]; (b) the block specification uses raw register code, `get_heart_rate_spo2()` returns (bpm, spo2). Both read the same sensor."
+  - "Two ways the same sensor appears in the documents: (a) the example program uses the `max30102` library, `sensor.get_values()` returns [bpm, spo2]; (b) the block specification uses raw register code, `get_heart_rate_spo2()` returns (bpm, spo2). Both read the same sensor."
   - "The values are a classroom approximation. They are NOT medically accurate."
 sources:
   - {file: GE_-_Pulseoximeter_Application.pptx.pdf, where: "pages 8, 12-14, 18"}

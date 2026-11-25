@@ -1,0 +1,53 @@
+id: color_sensor
+name: Color Sensor
+aliases:
+- color sensor
+- colour sensor
+- rgb sensor
+category: Input
+working: Tells the colour of an object by measuring the red, green and blue light it reflects, and sends the values over I2C.
+example_code: Color_sensor.py.py
+gateway_key: ''
+description: Tells the colour of an object by measuring the red, green and blue light it reflects, and sends the values over I2C.
+sensor_type: INPUT
+interface: I2C
+kit_connections:
+- kit: govator_controller_pi
+  interface: I2C
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  example_code: Color_sensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Color Sensor
+- kit: esp32_kit
+  interface: I2C
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  example_code: Color sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Color Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Color Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Color Sensor

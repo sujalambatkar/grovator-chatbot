@@ -17,7 +17,7 @@ aliases:
 - controller
 description: 'The Raspberry Pi based Grovator controller (the sensor list calls it the ''RPI'' controller): USB, Ethernet, HDMI and
   green screw terminals. Terminal labels come from four photos (not confirmed); the pin rules come from the sensor list. Its GPIO numbers
-  are Raspberry Pi numbers and do NOT match the ESP32 pins in the pulse oximeter lesson.'
+  are Raspberry Pi numbers and do NOT match the ESP32 kit''s pins.'
 verified: false
 port_groups:
 - name: Front - USB / network / power
@@ -195,10 +195,9 @@ documented_facts:
   pins, UART sensors to RX and TX.'
 - Terminal labels read from photos (not confirmed).
 not_documented:
-- Any mapping between this controller's GPIO numbers and the ESP32 pins used in the pulse oximeter lesson (e.g. GPIO22 is a relay here,
-  but I2C SCL on the ESP32 kit).
+- Any mapping between this controller's GPIO numbers and the ESP32 kit's pins (e.g. GPIO22 is a relay here, but I2C SCL on the ESP32
+  kit).
 - Which exact terminal each sensor of the sensor list uses (the list says 'any digital GPIO pin', 'any SDA pin').
-- How the lesson's LED board connects to this controller.
 sources:
 - file: kit photos 1-4
   where: label transcription

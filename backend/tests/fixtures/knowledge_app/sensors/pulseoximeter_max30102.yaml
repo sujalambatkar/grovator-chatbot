@@ -1,0 +1,58 @@
+id: pulseoximeter_max30102
+name: Pulseoximeter Sensor 2.0 (MAX30102)
+aliases: [pulse oximeter, pulseoximeter, oximeter, spo2 sensor, heart rate sensor, heart rate and oximeter sensor, pulse sensor, max30102, max 30102, hw-058, hw058, max30100]
+supersedes: [pulse_oximeter]
+gateway_key: pulse_oximeter
+category: Input
+example_code: Pulseoximeter.py.py
+working: >-
+  Measures heart rate (BPM) and blood oxygen level (SpO2) from a fingertip. Red and infrared LEDs shine light through the finger, and the sensor measures how the light absorption changes with blood flow to work out pulse rate and oxygen saturation. (The sensor list names the chip MAX30100; the lesson and block specification say MAX30102: see GAPS.md.)
+kit_connections:
+  - kit: esp32_kit
+    interface: I2C
+    example_code: Pulseoximeter Sensor.py
+    note: "the lesson's circuit diagram (ESP32 kit). The ESP sensor list says in general: VCC 3.3 or 5V, GND, SDA to any SDA pin, SCL to any SCL pin; the gateway dataset says VCC 'verify module voltage'"
+    pins:
+      - {pin: VIN, connects_to: '3.3V'}
+      - {pin: GND, connects_to: GND}
+      - {pin: SDA, connects_to: 'SDA (GPIO21)'}
+      - {pin: SCL, connects_to: 'SCL (GPIO22)'}
+    source: {file: GE_-_Pulseoximeter_Application.pptx.pdf, where: page 8}
+  - kit: govator_controller_pi
+    interface: I2C
+    example_code: Pulseoximeter.py.py
+    note: I2C. The ESP32 GPIO numbers (21, 22) do not apply to the controller
+    pins:
+      - {pin: VCC, connects_to: '3.3 or 5V'}
+      - {pin: GND, connects_to: Ground}
+      - {pin: SDA, connects_to: 'any SDA pin of the controller'}
+      - {pin: SCL, connects_to: 'any SCL pin of the controller'}
+    source: {file: Sensor Details and Pin Configurations - Sensor List.pdf, where: row 9 (Pulseoximeter)}
+description: >-
+  A small board that measures heart rate (BPM) and blood oxygen level (SpO2) from your finger. It uses a red light and an
+  infrared light with a light detector, and talks to the ESP32 kit over I2C.
+sensor_type: INPUT
+modules: [Internet of Things, IIoT, AIoT]
+device_type: pulseoximeterV2.0
+interface: I2C
+i2c: {address: "0x57", scl: GPIO22, sda: GPIO21, freq: 400000}
+pins:
+  - {pin: VIN, connects_to: "3.3V", note: "red wire in the lesson's circuit diagram"}
+  - {pin: GND, connects_to: "GND", note: "black wire"}
+  - {pin: SDA, connects_to: "SDA (GPIO21)"}
+  - {pin: SCL, connects_to: "SCL (GPIO22)"}
+pins_verified: true
+variables: [pulseoximeterV2_n, pulseoximeterV2_n_heartrate, pulseoximeterV2_n_oximeter]
+blocks: [use_pulseoximeter_max30102, read_pulseoximeter_data, store_heartrate_oximeter_data]
+how_it_measures:
+  - "The block code reads the infrared (IR) and red light values from the sensor for about 3 seconds."
+  - "A heartbeat is counted when the IR value rises above 30000, and at least 300 ms have passed since the last beat."
+  - "BPM = 30000 divided by the average time between beats (in ms), kept between 40 and 180."
+  - "If the average IR value is below 10000, there is no finger on the sensor and the result is 0, 0. If no beats are found, the result is also 0, 0."
+  - "SpO2 is worked out from the ratio of the average red value to the average IR value."
+notes:
+  - "Two ways the same sensor appears in the documents: (a) the lesson program uses the `max30102` library, `sensor.get_values()` returns [bpm, spo2]; (b) the block specification uses raw register code, `get_heart_rate_spo2()` returns (bpm, spo2). Both read the same sensor."
+  - "The values are a classroom approximation. They are NOT medically accurate."
+sources:
+  - {file: GE_-_Pulseoximeter_Application.pptx.pdf, where: "pages 8, 12-14, 18"}
+  - {file: Max30102_Blocks_Requirement.pdf, where: "pages 1-4"}

@@ -1,0 +1,55 @@
+id: weight_sensor
+name: Weight Sensor
+aliases:
+- weight sensor
+- load cell
+- hx711
+- weighing sensor
+category: Input
+working: A load cell that measures weight or force. A very small signal is amplified and digitised by an HX711 module and read by the
+  Raspberry Pi.
+example_code: Weight_sensor.py.py
+gateway_key: ''
+description: A load cell that measures weight or force.
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: DT
+    connects_to: any digital GPIO pin of the controller
+  - pin: SCK
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  example_code: Weight_sensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Weight Sensor
+- kit: esp32_kit
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: DT
+    connects_to: any digital GPIO pin of the controller
+  - pin: SCK
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  example_code: Weight Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Weight Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Weight Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Weight Sensor

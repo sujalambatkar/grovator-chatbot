@@ -1,0 +1,53 @@
+id: npk_sensor
+name: NPK Sensor
+aliases:
+- npk sensor
+- npk
+- soil nutrient sensor
+category: Input
+working: Measures nitrogen (N), phosphorus (P) and potassium (K) in soil, sending the values over RS485 or Modbus.
+example_code: NPK_Sensor.py.py
+gateway_key: ''
+description: Measures nitrogen (N), phosphorus (P) and potassium (K) in soil, sending the values over RS485 or Modbus.
+sensor_type: INPUT
+interface: UART
+kit_connections:
+- kit: govator_controller_pi
+  interface: UART
+  pins:
+  - pin: VCC
+    connects_to: 3.3-5V
+  - pin: GND
+    connects_to: Ground
+  - pin: RX
+    connects_to: RX
+  - pin: TX
+    connects_to: TX
+  note: For the NPK sensor only, RX connects to RX and TX to TX
+  example_code: NPK_Sensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for NPK Sensor
+- kit: esp32_kit
+  interface: UART
+  pins:
+  - pin: VCC
+    connects_to: 3.3-5V
+  - pin: GND
+    connects_to: Ground
+  - pin: RX
+    connects_to: RX
+  - pin: TX
+    connects_to: TX
+  note: For the NPK sensor only, RX connects to RX and TX to TX
+  example_code: NPK Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for NPK Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for NPK Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for NPK Sensor

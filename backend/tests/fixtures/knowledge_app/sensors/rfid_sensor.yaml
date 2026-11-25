@@ -1,0 +1,37 @@
+id: rfid_sensor
+name: RFID Sensor
+aliases:
+- rfid sensor
+- rfid
+- rfid reader
+category: Input
+working: Reads the unique ID of RFID tags or cards without contact (access control, attendance, inventory). The working text says the
+  data is sent 'through a communication interface such as SPI', but the pins listed are UART RX and TX (see GAPS.md).
+example_code: ''
+gateway_key: ''
+description: Reads the unique ID of RFID tags or cards without contact (access control, attendance, inventory).
+sensor_type: INPUT
+interface: UART
+kit_connections:
+- kit: esp32_kit
+  interface: UART
+  pins:
+  - pin: VCC
+    connects_to: 3.3-5V
+  - pin: GND
+    connects_to: Ground
+  - pin: RX
+    connects_to: TX
+  - pin: TX
+    connects_to: RX
+  note: ''
+  example_code: RFID Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for RFID Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+- Only in the ESP sensor list; the controller sensor list does not have it.
+sources:
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for RFID Sensor

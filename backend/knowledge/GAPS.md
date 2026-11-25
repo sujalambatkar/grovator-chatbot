@@ -1,5 +1,7 @@
 # GAPS: unknowns and conflicts to resolve
 
+> The live knowledge base is now generic (sensors, kits, blocks, media). The pulse oximeter lesson (application.yaml, lesson text, build steps, FAQ) was moved to `backend/tests/fixtures/knowledge_app/` as a test fixture for the "application" feature. Items below that mention "the lesson" describe the source documents.
+
 The chatbot treats every item here as "not documented yet" or as an open conflict. When you resolve one, edit the YAML
 files named in the item and re-run `python -m knowledge.validate && python -m ingest.run`. Then delete the item here.
 

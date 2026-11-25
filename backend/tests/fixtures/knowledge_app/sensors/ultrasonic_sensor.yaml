@@ -1,0 +1,54 @@
+id: ultrasonic_sensor
+name: Ultrasonic Sensor
+aliases:
+- ultrasonic sensor
+- ultrasonic
+- distance sensor
+category: Input
+working: Measures distance with sound. It sends high-frequency pulses from TRIG and listens for the echo on ECHO; the program times
+  the echo and works out the distance in centimetres.
+example_code: Ultrasonicsensor.py.py
+gateway_key: ultrasonic_sensor
+description: Measures distance with sound.
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: TRIG
+    connects_to: any digital pin
+  - pin: ECHO
+    connects_to: any digital pin
+  note: ''
+  example_code: Ultrasonicsensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Ultrasonic Sensor
+- kit: esp32_kit
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: TRIG
+    connects_to: any digital pin
+  - pin: ECHO
+    connects_to: any digital pin
+  note: ''
+  example_code: Ultrasonic Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Ultrasonic Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Ultrasonic Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Ultrasonic Sensor

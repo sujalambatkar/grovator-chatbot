@@ -1,0 +1,39 @@
+id: keypad
+name: Keypad
+aliases:
+- keypad
+- matrix keypad
+category: Input
+working: A matrix keypad for typing numbers or characters. A key press joins one row and one column, and the program scans the rows
+  and columns to find the key.
+example_code: ''
+gateway_key: keypad
+description: A matrix keypad for typing numbers or characters.
+sensor_type: INPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  interface: digital
+  pins: []
+  note: keypad goes to the Keypad Slot (dedicated connector)
+  example_code: ''
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Keypad
+- kit: esp32_kit
+  interface: digital
+  pins:
+  - pin: keypad
+    connects_to: Keypad Slot
+  note: ''
+  example_code: Keypad.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Keypad
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Keypad
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Keypad

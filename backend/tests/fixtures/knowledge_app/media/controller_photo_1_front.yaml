@@ -1,0 +1,13 @@
+id: controller_photo_1_front
+file: controller_photo_1_front.jpg
+caption: 'Grovator controller: front panel'
+shows: USB 2.0/3.0, Gigabit Ethernet, 12V DC power, stepper motor and motor terminals, keypad connector and green terminal
+  groups (I2C, serial, GPIO4, GPIO7). Labels transcribed from the photo, not confirmed.
+related:
+  kit:
+  - govator_controller_pi
+verified: false
+origin: photo
+sources:
+- file: kit photos 1-4
+  where: ''

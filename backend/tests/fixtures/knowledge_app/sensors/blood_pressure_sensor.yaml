@@ -1,0 +1,36 @@
+id: blood_pressure_sensor
+name: Blood Pressure Sensor
+aliases:
+- blood pressure sensor
+- blood pressure
+category: Input
+working: A pressure cuff and sensing element that follow the pressure changes while the cuff inflates and deflates, to work out systolic
+  and diastolic blood pressure. Not a medical device.
+example_code: Blood_Pressure_sensor.py.py
+gateway_key: ''
+description: A pressure cuff and sensing element that follow the pressure changes while the cuff inflates and deflates, to work out
+  systolic and diastolic blood pressure.
+sensor_type: INPUT
+interface: UART
+kit_connections:
+- kit: govator_controller_pi
+  interface: UART
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: Rx
+    connects_to: Tx of the controller
+  - pin: Tx
+    connects_to: Rx of the controller
+  note: The list writes 'Rx Tx / Tx Rx'; read here as crossed
+  example_code: Blood_Pressure_sensor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Blood Pressure Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Blood Pressure Sensor

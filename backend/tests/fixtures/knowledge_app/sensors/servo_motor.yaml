@@ -1,0 +1,50 @@
+id: servo_motor
+name: Servo Motor
+aliases:
+- servo motor
+- servo
+category: Output
+working: Moves to a precise angle (usually 0 to 180 degrees) set by the width of a PWM pulse from the microcontroller, and holds that
+  angle.
+example_code: servomotor.py.py
+gateway_key: servo
+description: Moves to a precise angle (usually 0 to 180 degrees) set by the width of a PWM pulse from the microcontroller, and holds
+  that angle.
+sensor_type: OUTPUT
+interface: digital
+kit_connections:
+- kit: govator_controller_pi
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 5V (external supply recommended)
+  - pin: GND
+    connects_to: Ground
+  - pin: Signal
+    connects_to: any digital GPIO pin
+  note: ''
+  example_code: servomotor.py.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for Servo Motor
+- kit: esp32_kit
+  interface: digital
+  pins:
+  - pin: VCC
+    connects_to: 5V (external supply recommended)
+  - pin: GND
+    connects_to: Ground
+  - pin: Signal
+    connects_to: any digital GPIO pin
+  note: ''
+  example_code: Servo Motor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Servo Motor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Servo Motor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Servo Motor

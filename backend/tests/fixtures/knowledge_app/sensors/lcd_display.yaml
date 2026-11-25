@@ -1,0 +1,55 @@
+id: lcd_display
+name: LCD Display
+aliases:
+- lcd display
+- lcd
+- i2c lcd
+- display
+category: Output
+working: Shows text, numbers and simple characters. The microcontroller sends commands and data over I2C to put characters at given
+  positions.
+example_code: LCD.py
+gateway_key: i2c_lcd
+description: Shows text, numbers and simple characters.
+sensor_type: OUTPUT
+interface: I2C
+kit_connections:
+- kit: govator_controller_pi
+  interface: I2C
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  example_code: LCD.py
+  source:
+    file: Sensor Details and Pin Configurations - Sensor List.pdf
+    where: row for LCD Display
+- kit: esp32_kit
+  interface: I2C
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  example_code: LCD Display.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for LCD Display
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+sources:
+- file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for LCD Display
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for LCD Display
