@@ -12,6 +12,7 @@ sensor_type: INPUT
 interface: I2C
 kit_connections:
 - kit: govator_controller_pi
+  interface: I2C
   pins:
   - pin: VCC
     connects_to: 3.3 or 5V
@@ -22,11 +23,12 @@ kit_connections:
   - pin: SCL
     connects_to: any SCL pin of the controller
   note: ''
+  example_code: ''
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for Pressure Sensor
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
   where: row for Pressure Sensor

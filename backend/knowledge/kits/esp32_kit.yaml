@@ -32,6 +32,8 @@ sources:
   where: pages 8, 12-13
 - file: grovator-esp32-gateway.json
   where: interfaces, wiring_rules
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: 'ESP Pin Connection Rules: digital 5,4,19,25,26,18,32; analog GPIO32, GPIO36; I2C SCL, SDA; UART RX, TX; keypad; stepper motor'
 pin_rules:
 - name: digital
   pins:

@@ -88,6 +88,7 @@ _LIST_Q = re.compile(r"\b(?:which|what|list|show|give me|all|how many|name)\b[^?
 _PINRULE_Q = re.compile(r"\b(?:which|what|list|show|tell me)\b[^?.!]{0,30}\b(?:pins?|gpio|ports?|connectors?|terminals?)\b[^?.!]{0,40}\b(?:digital|analog|i2c|uart|relay|rx|tx|sda|scl|motor|keypad)\b"
                         r"|\b(?:digital|analog|i2c|uart|relay)\b[^?.!]{0,15}\b(?:pins?|gpio)\b|\bwiring rules\b|\bpin (?:rules|connection rules)\b", re.I)
 _MEASURE = re.compile(r"\bhow\b[^?.!]{0,40}\b(?:find|finds|detect|detects|count|counts|measure|measures|calculate|calculates|calculated|work out|works out|get|gets)\b[^?.!]{0,30}\b(?:heart ?beats?|beats?|bpm|heart rate|spo2|oxygen)\b|\bhow (?:does|do) the (?:block )?code (?:measure|work|read|find)\b", re.I)
+_GENERIC_REF = re.compile(r"(?:^|\b(?:the|my|this|our|that|a|an|your|connect|connecting|wont|won't|not|does|do|is|are|why|how)\s+)sensor\b|\b(?:the|this|my|our) (?:sensor|circuit|project|application|app|lesson|kit|program|code|blocks?|leds?)\b|\b(?:it|this|these|them|wires?|pins?|steps?|blocks?)\b|\bshows? 0\b|\bstart\b|\bsensors? (?:are|is)\b", re.I)
 _LED_Q = re.compile(r"\bled[ _]?([123])\b", re.I)
 _DEF_CUE = re.compile(r"\b(?:do|does|work|works|working|is|are|mean|means|for|use|used|measure|measures)\b", re.I)
 _BLOCK_Q = re.compile(r"\b(?:what|how|explain|does|do|tell|describe|purpose|used for|for)\b", re.I)
@@ -202,6 +203,7 @@ class AppKB:
             return None
         a = self.apps[app_id]
         msg = message
+        from_default = not (e.applications or e.sensors or e.blocks or e.kits or e.weak or recent.strong)  # nothing in the message points at the lesson
         if hw_named and not (e.applications or e.sensors or e.blocks):
             # a generic gateway word ("led") plus an application hint ("spo2", "LED 3 OFF"): only the exact FAQ / limits are safe to answer
             return (self._faq(a, msg) if e.weak else None) or (self._thresholds(a) if (e.weak and _THRESH.search(msg)) else None)
@@ -233,8 +235,8 @@ class AppKB:
         led = _LED_Q.search(msg)
         if led and (_WIRING.search(msg) or re.search(r"\b(?:gpio|pin|port)\b", msg, re.I)):
             return self._led_pin(a, int(led.group(1)))
-        if _WIRING.search(msg) and not _STEPS.search(msg):
-            return self._wiring(a, e)
+        if _WIRING.search(msg) and not _STEPS.search(msg) and (not from_default or _GENERIC_REF.search(msg)):
+            return self._wiring(a, e)  # ("how do I connect the MPU6050" must not be answered with the lesson's wiring)
         if _STEPS.search(msg):
             return self._steps(a)
         if _EXTRA.search(msg):
@@ -341,7 +343,7 @@ class AppKB:
         for kc in shown:
             kit = self._kit_short(kc.kit)
             pins = "; ".join(f"{p.pin} to {p.connects_to}" for p in kc.pins) or "no pins are given"
-            lines.append(f"{kit}: {pins}." + self._digital_hint(s, kc.kit) + (f" {kc.note}." if kc.note else "") + (f" Warning: {kc.warning}" if kc.warning else ""))
+            lines.append(f"{kit}{f' ({kc.interface})' if kc.interface else ''}: {pins}." + self._digital_hint(s, kc.kit) + (f" {kc.note}." if kc.note else "") + (f" Warning: {kc.warning}" if kc.warning else ""))
             rows += [{"sensor_pin": p.pin, "kit_pin": p.connects_to, "note": kit, "verified": True} for p in kc.pins]
         tail = ""
         if not kit_ids:
@@ -360,8 +362,9 @@ class AppKB:
         return AppAnswer("sensor_about", text, [f"{s.name} > Sensor details"])
 
     def _sensor_example(self, s) -> AppAnswer:
-        text = (f"The sensor list names the example program {s.example_code} for the {s.name}, but I don't have its code, so I can't show it." if s.example_code
-                else f"The sensor list gives no example program for the {s.name}. I don't have that detail yet.")
+        files = [(self._kit_short(kc.kit), kc.example_code) for kc in s.kit_connections if kc.example_code] or ([("sensor list", s.example_code)] if s.example_code else [])
+        text = (f"The sensor lists name these example programs for the {s.name}: " + "; ".join(f"{k}: {f}" for k, f in files)
+                + ". I don't have their code, so I can't show it." if files else f"The sensor lists give no example program for the {s.name}. I don't have that detail yet.")
         return AppAnswer("sensor_example", text, [f"{s.name} > Sensor details"])
 
     def _pin_rules(self, msg: str, kit_ids: list[str]) -> AppAnswer:
@@ -394,7 +397,7 @@ class AppKB:
             items = [s for s in items if s.category == want_cat or not s.category]
         groups: dict[str, list[str]] = {}
         for s in items:
-            groups.setdefault(f"{s.category or 'Other'} - {s.interface}", []).append(s.name)
+            groups.setdefault(f"{s.category if s.category not in ('', '-') else 'Other'} - {s.interface}", []).append(s.name)
         text = f"{len(items)} documented:\n" + "\n".join(f"{g}: {', '.join(sorted(n))}" for g, n in sorted(groups.items()))
         return AppAnswer("sensor_list", text + "\n\nAsk me how any of them works or connects.", ["Sensor list"])
 

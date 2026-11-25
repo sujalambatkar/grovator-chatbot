@@ -14,6 +14,7 @@ sensor_type: INPUT
 interface: UART
 kit_connections:
 - kit: govator_controller_pi
+  interface: UART
   pins:
   - pin: VCC
     connects_to: 3.3V or 5V
@@ -24,11 +25,30 @@ kit_connections:
   - pin: Tx
     connects_to: Rx of the controller
   note: The list writes 'Rx Tx / Tx Rx'; read here as crossed (sensor Rx to controller Tx, sensor Tx to controller Rx)
+  example_code: Power_meter.py.py
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for Power Meter
+- kit: esp32_kit
+  interface: UART
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: Rx
+    connects_to: Tx of the controller
+  - pin: Tx
+    connects_to: Rx of the controller
+  note: The list writes 'Rx Tx / Tx Rx'; read here as crossed
+  example_code: Power Meter.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Power Meter
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Power Meter
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
   where: row for Power Meter

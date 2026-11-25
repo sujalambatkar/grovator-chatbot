@@ -12,6 +12,7 @@ sensor_type: INPUT
 interface: I2C
 kit_connections:
 - kit: govator_controller_pi
+  interface: I2C
   pins:
   - pin: VCC
     connects_to: 3.3 or 5V
@@ -22,11 +23,30 @@ kit_connections:
   - pin: SCL
     connects_to: any SCL pin of the controller
   note: ''
+  example_code: Thermal_sensor.py.py
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for Thermal Sensor
+- kit: esp32_kit
+  interface: I2C
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  example_code: Thermal Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Thermal Sensor
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Thermal Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
   where: row for Thermal Sensor

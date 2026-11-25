@@ -12,17 +12,19 @@ sensor_type: OUTPUT
 interface: relay
 kit_connections:
 - kit: govator_controller_pi
+  interface: relay
   pins:
   - pin: VCC
     connects_to: 12V (GPIO22 and GPIO23) only, and also to any relay port
   - pin: GND
     connects_to: GND
   note: ''
+  example_code: Relaywaterpump.py.py
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for Peristaltic pump
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
   where: row for Peristaltic pump

@@ -1,0 +1,38 @@
+id: bme_sensor
+name: BME Sensor
+aliases:
+- bme sensor
+- bme280
+- bme
+category: Input
+working: A BME280 environmental sensor that measures temperature, humidity and atmospheric pressure in one module and sends them over
+  I2C (weather monitoring).
+example_code: ''
+gateway_key: ''
+description: A BME280 environmental sensor that measures temperature, humidity and atmospheric pressure in one module and sends them
+  over I2C (weather monitoring).
+sensor_type: INPUT
+interface: I2C
+kit_connections:
+- kit: esp32_kit
+  interface: I2C
+  pins:
+  - pin: VCC
+    connects_to: 3.3 or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: SDA
+    connects_to: any SDA pin of the controller
+  - pin: SCL
+    connects_to: any SCL pin of the controller
+  note: ''
+  example_code: BME Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for BME Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+- Only in the ESP sensor list; the controller sensor list does not have it.
+sources:
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for BME Sensor

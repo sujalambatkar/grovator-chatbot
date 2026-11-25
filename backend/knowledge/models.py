@@ -49,9 +49,11 @@ class SensorPin(_Model):
 class KitConnection(_Model):
     """How a sensor connects to ONE kit, as a document states it."""
     kit: str
+    interface: str = ""            # interface of the sensor ON THIS KIT (the two lists disagree for a few sensors)
     pins: list[SensorPin] = []
     note: str = ""
     warning: str = ""
+    example_code: str = ""         # example program file named in this kit's sensor list
     source: Source | None = None
 
 

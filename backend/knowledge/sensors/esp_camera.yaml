@@ -1,0 +1,37 @@
+id: esp_camera
+name: ESP Camera
+aliases:
+- esp camera
+- esp32 camera
+- esp32 cam
+- espcam
+category: Output
+working: 'A camera module for the ESP32 (the list''s example: home security solution using a camera).'
+example_code: ''
+gateway_key: ''
+description: 'A camera module for the ESP32 (the list''s example: home security solution using a camera).'
+sensor_type: OUTPUT
+interface: UART
+kit_connections:
+- kit: esp32_kit
+  interface: UART
+  pins:
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: Rx
+    connects_to: Tx
+  - pin: Tx
+    connects_to: Rx
+  note: The list writes 'Rx Tx / Tx Rx'; read here as crossed
+  example_code: ESPCam.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for ESP Camera
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+- Only in the ESP sensor list; the controller sensor list does not have it.
+sources:
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for ESP Camera

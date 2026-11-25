@@ -13,22 +13,27 @@ sensor_type: INPUT
 interface: digital
 kit_connections:
 - kit: govator_controller_pi
+  interface: digital
   pins: []
   note: keypad goes to the Keypad Slot (dedicated connector)
+  example_code: ''
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for Keypad
 - kit: esp32_kit
+  interface: digital
   pins:
-  - pin: connection
-    connects_to: Dedicated keypad connector
-  warning: ''
-  note: 'interface: dedicated'
+  - pin: keypad
+    connects_to: Keypad Slot
+  note: ''
+  example_code: Keypad.py
   source:
-    file: grovator-esp32-gateway.json
-    where: devices.keypad
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Keypad
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Keypad
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
   where: row for Keypad

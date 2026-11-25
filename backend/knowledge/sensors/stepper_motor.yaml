@@ -13,6 +13,7 @@ sensor_type: OUTPUT
 interface: dedicated
 kit_connections:
 - kit: govator_controller_pi
+  interface: dedicated
   pins:
   - pin: C1
     connects_to: 1B
@@ -23,6 +24,7 @@ kit_connections:
   - pin: C4
     connects_to: 2B
   note: Stepper motor slot
+  example_code: ''
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for Stepper Motor
@@ -36,7 +38,7 @@ kit_connections:
     file: grovator-esp32-gateway.json
     where: devices.stepper_motor
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
   where: row for Stepper Motor

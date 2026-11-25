@@ -17,15 +17,17 @@ sensor_type: INPUT
 interface: USB
 kit_connections:
 - kit: govator_controller_pi
+  interface: USB
   pins:
   - pin: USB
     connects_to: USB port
   note: ''
+  example_code: Particulate_matter_sensor.py.py
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for Particulate Matter Sensor
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
   where: row for Particulate Matter Sensor

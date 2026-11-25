@@ -93,7 +93,7 @@
 # ---------------------------------------------------------------- sensor list + gateway dataset: connections and sensor info for every sensor
 - {id: cat-1, tag: catalog, det: true, q: "How do I connect the alcohol sensor?", must_all: ["DO to any digital GPIO pin", "Grovator controller", "ESP32 kit", "3.3V or 5V"]}
 - {id: cat-2, tag: catalog, det: true, q: "How do I connect the ultrasonic sensor to the controller?", must_all: ["TRIG", "ECHO", "5V"], must_not: ["ESP32 kit:"]}
-- {id: cat-3, tag: catalog, det: true, q: "How do I connect the DHT11 to the ESP32 kit?", must_all: ["DATA", "Available digital GPIO"], must_not: ["Grovator controller:"]}
+- {id: cat-3, tag: catalog, det: true, q: "How do I connect the DHT11 to the ESP32 kit?", must_all: ["D0", "any digital GPIO pin", "ESP32 kit"], must_not: ["Grovator controller ("]}
 - {id: cat-4, tag: catalog, det: true, q: "What is a hall effect sensor?", must_any: ["magnetic field"]}
 - {id: cat-5, tag: catalog, det: true, q: "How does the soil moisture sensor work?", must_any: ["wet"]}
 - {id: cat-6, tag: catalog, det: true, q: "Which sensors use I2C?", must_all: ["Accelerometer", "LCD Display", "Thermal Sensor"]}
@@ -108,8 +108,22 @@
 - {id: cat-15, tag: catalog, det: true, q: "List all sensors", must_all: ["Alcohol Sensor", "Weight Sensor", "Stepper Motor", "Peristaltic pump"]}
 - {id: cat-16, tag: catalog, det: true, q: "How do I connect the LCD display?", must_all: ["SDA", "SCL"]}
 - {id: cat-17, tag: catalog, det: true, q: "How do I connect the keypad?", must_any: ["Keypad Slot", "keypad connector"]}
-- {id: cat-18, tag: catalog, det: true, q: "Give me the example code for the alcohol sensor", must_all: ["Alcohol_sensor.py.py", "don't have its code"]}
+- {id: cat-18, tag: catalog, det: true, q: "Give me the example code for the alcohol sensor", must_all: ["Alcohol_sensor.py.py", "Alcohol Sensor.py", "don't have their code"]}
 - {id: cat-19, tag: catalog, det: true, q: "How do I connect the RTC?", must_any: ["no pins are given", "No connection is given"]}
-- {id: cat-20, tag: catalog, det: true, q: "How do I connect the vibration sensor?", must_all: ["AI1", "D0"]}
+- {id: cat-20, tag: catalog, det: true, q: "How do I connect the vibration sensor?", must_all: ["AI1", "GPIO32"]}
 - {id: cat-21, tag: catalog, det: true, q: "How do I connect the NPK sensor?", must_all: ["RX to RX", "TX to TX"]}
-- {id: cat-22, tag: catalog, det: true, q: "How do I connect the buzzer to the ESP32 kit?", must_all: ["Signal", "Available digital GPIO"]}
+- {id: cat-22, tag: catalog, det: true, q: "How do I connect the buzzer to the ESP32 kit?", must_all: ["D0", "any digital GPIO pin"]}
+
+# ---------------------------------------------------------------- ESP sensor list (47 sensors, 8 only on the ESP list) + differences between the two lists
+- {id: esp-1, tag: esp_list, det: true, q: "How do I connect the BME280?", must_all: ["SDA", "SCL", "ESP32 kit"], must_not: ["Grovator controller ("]}
+- {id: esp-2, tag: esp_list, det: true, q: "How do I connect the wind speed sensor?", must_all: ["GPIO32", "GPIO36"]}
+- {id: esp-3, tag: esp_list, det: true, q: "How do I connect the current sensor?", must_all: ["Analog GPIO32, GPIO36"]}
+- {id: esp-4, tag: esp_list, det: true, q: "How do I connect the RFID sensor?", must_all: ["RX to TX", "UART"]}
+- {id: esp-5, tag: esp_list, det: true, q: "How do I connect the rainfall sensor?", must_all: ["Grovator controller (UART)", "ESP32 kit (I2C)"]}
+- {id: esp-6, tag: esp_list, det: true, q: "How do I connect the MPU6050?", must_all: ["SDA", "SCL"], must_not: ["oximeter"]}
+- {id: esp-7, tag: esp_list, det: true, q: "How do I connect the MQ135 air quality sensor?", must_all: ["GPIO32", "AI1"]}
+- {id: esp-8, tag: esp_list, det: true, q: "What does the spectral sensor measure?", must_any: ["wavelengths"]}
+- {id: esp-9, tag: esp_list, det: true, q: "How do I connect the ESP camera?", must_all: ["UART", "Rx"]}
+- {id: esp-10, tag: esp_list, det: true, q: "Which pins are digital GPIO on the ESP32 kit?", must_all: ["GPIO5", "GPIO19", "GPIO32"], must_not: ["Grovator controller"]}
+- {id: esp-11, tag: esp_list, det: true, q: "How do I connect the analog sound sensor?", must_all: ["Analog GPIO32, GPIO36", "ESP32 kit"]}
+- {id: esp-12, tag: esp_list, q: "How do I connect a thermistor to the kit?", must_not: ["oximeter", "SDA (GPIO21)"]}

@@ -1,0 +1,37 @@
+id: wind_speed_sensor
+name: Wind Speed Sensor
+aliases:
+- wind speed sensor
+- wind speed
+- anemometer
+category: Input
+working: 'An anemometer: rotating cups give pulses (reed switch, Hall effect or optical); the ESP32 counts pulses over a time interval
+  to work out the wind speed. The text says the pulses go to a digital input pin but the listed pins are analog GPIO32 and GPIO36 (see
+  GAPS.md).'
+example_code: ''
+gateway_key: ''
+description: 'An anemometer: rotating cups give pulses (reed switch, Hall effect or optical); the ESP32 counts pulses over a time interval
+  to work out the wind speed.'
+sensor_type: INPUT
+interface: analog
+kit_connections:
+- kit: esp32_kit
+  interface: analog
+  pins:
+  - pin: VCC
+    connects_to: 3-5V
+  - pin: GND
+    connects_to: GND
+  - pin: Signal
+    connects_to: Analog GPIO32, GPIO36
+  note: ''
+  example_code: Wind Speed Sensor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Wind Speed Sensor
+notes:
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
+- Only in the ESP sensor list; the controller sensor list does not have it.
+sources:
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+  where: row for Wind Speed Sensor

@@ -83,7 +83,7 @@ def render_all(k: Knowledge) -> list[Section]:
         for kc in s.kit_connections:
             kit = k.kits[kc.kit]
             rows = "; ".join(f"{p.pin} -> {p.connects_to}" for p in kc.pins) or "no pins listed"
-            body += f"Connection to the {kit.name}: {rows}." + (f" {kc.note}." if kc.note else "") + (f" Warning: {kc.warning}" if kc.warning else "") + "\n"
+            body += f"Connection to the {kit.name}" + (f" ({kc.interface})" if kc.interface else "") + f": {rows}." + (f" {kc.note}." if kc.note else "") + (f" Example program: {kc.example_code}." if kc.example_code else "") + (f" Warning: {kc.warning}" if kc.warning else "") + "\n"
         if s.pins:
             body += f"Pins (sensor pin -> kit):\n{pins}\n"
         if s.variables:

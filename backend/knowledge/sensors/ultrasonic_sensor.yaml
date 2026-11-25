@@ -14,6 +14,7 @@ sensor_type: INPUT
 interface: digital
 kit_connections:
 - kit: govator_controller_pi
+  interface: digital
   pins:
   - pin: VCC
     connects_to: 5V
@@ -24,26 +25,30 @@ kit_connections:
   - pin: ECHO
     connects_to: any digital pin
   note: ''
+  example_code: Ultrasonicsensor.py.py
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for Ultrasonic Sensor
 - kit: esp32_kit
+  interface: digital
   pins:
   - pin: VCC
     connects_to: 5V
   - pin: GND
-    connects_to: GND
+    connects_to: Ground
   - pin: TRIG
-    connects_to: Digital GPIO
+    connects_to: any digital pin
   - pin: ECHO
-    connects_to: Digital GPIO
-  warning: Verify ECHO signal voltage compatibility before connecting to an ESP32 GPIO.
-  note: 'interface: digital'
+    connects_to: any digital pin
+  note: ''
+  example_code: Ultrasonic Sensor.py
   source:
-    file: grovator-esp32-gateway.json
-    where: devices.ultrasonic_sensor
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Ultrasonic Sensor
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Ultrasonic Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
   where: row for Ultrasonic Sensor

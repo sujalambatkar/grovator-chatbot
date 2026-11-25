@@ -17,6 +17,7 @@ sensor_type: INPUT
 interface: digital
 kit_connections:
 - kit: govator_controller_pi
+  interface: digital
   pins:
   - pin: VCC
     connects_to: 3.3V or 5V
@@ -25,20 +26,28 @@ kit_connections:
   - pin: D0
     connects_to: any digital GPIO pin of the controller
   note: ''
+  example_code: DHT11 Climate Sensor.py.py
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for DHT11 Climate Sensor
 - kit: esp32_kit
+  interface: digital
   pins:
-  - pin: DATA
-    connects_to: Available digital GPIO
-  warning: ''
-  note: 'interface: digital'
+  - pin: VCC
+    connects_to: 3.3V or 5V
+  - pin: GND
+    connects_to: Ground
+  - pin: D0
+    connects_to: any digital GPIO pin of the controller
+  note: ''
+  example_code: DHT11.py
   source:
-    file: grovator-esp32-gateway.json
-    where: devices.dht11
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for DHT11 Climate Sensor
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for DHT11 Climate Sensor
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
   where: row for DHT11 Climate Sensor

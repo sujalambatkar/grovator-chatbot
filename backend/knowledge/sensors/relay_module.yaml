@@ -14,6 +14,7 @@ sensor_type: INPUT
 interface: relay
 kit_connections:
 - kit: govator_controller_pi
+  interface: relay
   pins:
   - pin: Right side VCC
     connects_to: 3 or 5V
@@ -30,11 +31,36 @@ kit_connections:
   - pin: Left side GND
     connects_to: GND of the load
   note: Written in the list as 'Right Side' and 'Left Side' connections; the layout is partly ambiguous (see GAPS.md)
+  example_code: Relaywaterpump.py.py
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for Relay
+- kit: esp32_kit
+  interface: relay
+  pins:
+  - pin: Right side VCC
+    connects_to: 3 or 5V
+  - pin: Right side GND
+    connects_to: GND
+  - pin: Right side Out
+    connects_to: any digital GPIO pin
+  - pin: Right side VCC (second)
+    connects_to: 12V
+  - pin: Right side GND (second)
+    connects_to: GND
+  - pin: Left side VCC
+    connects_to: VCC of the load (pump, DC motor, solenoid...)
+  - pin: Left side GND
+    connects_to: GND of the load
+  note: Same layout text as the other list; partly ambiguous
+  example_code: DC Motor.py
+  source:
+    file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
+    where: row for Relay
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Relay
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
   where: row for Relay

@@ -16,6 +16,7 @@ import yaml
 from knowledge.loader import KNOWLEDGE_DIR
 
 PDF = "Sensor Details and Pin Configurations - Sensor List.pdf"
+PDF_ESP = "Sensor Details and Pin Configurations - ESP Sensor Iist.pdf"
 CTRL, ESP = "govator_controller_pi", "esp32_kit"
 GW = Path(__file__).resolve().parents[1] / "knowledge_src" / "hardware" / "grovator-esp32-gateway.json"
 ANY_DIG = "any digital GPIO pin of the controller"
@@ -55,9 +56,9 @@ T = [
  ("lcd_display", "LCD Display", "Output", "I2C", "i2c_lcd", ["lcd", "i2c lcd", "lcd display", "display"], "Shows text, numbers and simple characters. The microcontroller sends commands and data over I2C to put characters at given positions.", I2C, "", "LCD.py"),
  ("camera", "Camera", "Output", "USB", "camera", ["usb camera"], "A camera that plugs into a USB port.", [("USB", "USB port")], "", ""),
  ("water_pump", "Water Pump", "Output", "digital", "water_pump", ["pump"], "Pumps and circulates water. It is switched by a relay module: a HIGH control signal activates the relay and turns the pump ON, LOW turns it OFF.", [("VCC", "12V (GPIO22 and GPIO23) only, and also to any relay port"), ("GND", "GND")], "", "waterpump.py.py"),
- ("air_quality_sensor", "Air Quality Sensor", "Input", "analog", "", ["air quality", "air quality detector"], "Measures the conductivity of the air: low when the air is clean, high when it holds combustible gases.", ana(), "", "Airqualitysensor.py.py"),
+ ("air_quality_sensor", "Air Quality Sensor", "Input", "analog", "", ["air quality", "air quality detector", "mq135", "mq 135", "air quality sensor mq135"], "Measures the conductivity of the air: low when the air is clean, high when it holds combustible gases.", ana(), "", "Airqualitysensor.py.py"),
  ("ecg_sensor", "ECG Sensor", "Input", "analog", "", ["ecg", "electrocardiogram sensor"], "Measures the electrical activity of the heart with electrodes on the body. The analog output voltage follows the heartbeat and draws the ECG waveform.", ana(), "", "Ecg_sensor.py.py"),
- ("gas_sensor_analog", "Gas Sensor (Analog)", "Input", "analog", "", ["gas sensor", "analog gas sensor", "mq gas sensor"], "Detects gases such as LPG, methane, propane and smoke. The sensing element's resistance changes with the gas, giving an analog voltage that shows the concentration.", ana(), "", "Gas_sensor.py.py"),
+ ("gas_sensor_analog", "Gas Sensor (Analog)", "Input", "analog", "", ["gas sensor", "analog gas sensor", "mq gas sensor", "mq2", "mq 2"], "Detects gases such as LPG, methane, propane and smoke. The sensing element's resistance changes with the gas, giving an analog voltage that shows the concentration.", ana(), "", "Gas_sensor.py.py"),
  ("gsr_sensor", "GSR Sensor", "Input", "analog", "", ["gsr", "galvanic skin response sensor"], "Measures skin conductance with two electrodes on the skin; it changes with sweat gland activity, so it can show stress or emotional arousal. Output is an analog voltage.", ana(), "", "GSR_sensor_values.py.py"),
  ("particulate_matter_sensor", "Particulate Matter Sensor", "Input", "USB", "", ["pm sensor", "dust sensor", "pm2.5 sensor", "particulate matter"], "Measures fine dust (PM1.0, PM2.5, PM10) with a laser that counts airborne particles, and sends the readings to the Raspberry Pi over USB.", [("USB", "USB port")], "", "Particulate_matter_sensor.py.py"),
  ("ph_sensor", "PH Sensor", "Input", "analog", "", ["ph sensor", "ph meter"], "Measures how acidic or alkaline a liquid is. A pH probe and signal circuit give an analog voltage that changes with the pH.", ana(), "", "PH_sensor.py.py"),
@@ -74,7 +75,7 @@ T = [
  ("co_sensor", "CO Sensor", "Input", "analog", "", ["carbon monoxide sensor", "co gas sensor"], "Detects and measures carbon monoxide gas in the air; its output value changes with the CO level.", ana(), "", "CO_sensor.py.py"),
  ("flow_sensor", "Flow Sensor", "Input", "digital", "", ["water flow sensor"], "Measures the rate of water flow in a pipe so the amount of water used can be calculated.", d3("D0"), "", ""),
  ("gps_sensor", "GPS Sensor", "Input", "UART", "", ["gps", "gps module"], "Finds position (latitude, longitude), speed, altitude and time from GPS satellites and sends them over UART.", UART, "The list writes 'Rx Tx / Tx Rx'; read here as crossed", "GPS_sensor.py.py"),
- ("gyroscope_sensor", "Gyroscope Sensor", "Input", "I2C", "", ["gyroscope", "gyro", "gyro sensor"], "Measures angular velocity and rotation around one or more axes and sends the values over I2C (or SPI).", I2C, "", "Gyroscope.py.py"),
+ ("gyroscope_sensor", "Gyroscope Sensor", "Input", "I2C", "", ["gyroscope", "gyro", "gyro sensor", "mpu6050", "mpu 6050", "mpu-6050"], "Measures angular velocity and rotation around one or more axes and sends the values over I2C (or SPI).", I2C, "", "Gyroscope.py.py"),
  ("motion_sensor", "Motion Sensor", "Input", "digital", "", ["pir sensor", "pir", "motion detector"], "Detects the presence and movement of objects or people in range (usually from infrared radiation) and sets a digital output.", d3("D0"), "", "motion_sensor.py.py"),
  ("npk_sensor", "NPK Sensor", "Input", "UART", "", ["npk", "soil nutrient sensor"], "Measures nitrogen (N), phosphorus (P) and potassium (K) in soil, sending the values over RS485 or Modbus.", UART_RR, "For the NPK sensor only, RX connects to RX and TX to TX", "NPK_Sensor.py.py"),
  ("pressure_sensor", "Pressure Sensor", "Input", "I2C", "", ["pressure sensor", "barometer"], "Measures the pressure of gases or liquids and sends it over I2C.", I2C, "", ""),
@@ -97,29 +98,96 @@ def esp32_connection(gw: dict, key: str) -> dict | None:
     return {"kit": ESP, "pins": pins, "warning": dev.get("warning", ""), "note": f"interface: {dev['interface']}",
             "source": {"file": "grovator-esp32-gateway.json", "where": f"devices.{key}"}}
 
+ESP_DIG = lambda sig: d3(sig)  # noqa: E731  (the ESP list says "any digital GPIO pin of the controller")
+ESP_ANA = [("VCC", "3-5V"), ("GND", "GND"), ("Signal", "Analog GPIO32, GPIO36")]
+UART_XR = [("VCC", "3.3-5V"), ("GND", "Ground"), ("RX", "TX"), ("TX", "RX")]
+
+# ESP Sensor List (47 rows): id -> (type on the ESP kit, pins, note, example file). Only ids not in T need the extra fields below.
+E = {
+ "alcohol_sensor": ("digital", ESP_DIG("DO"), "", "Alcohol Sensor.py"), "flame_sensor": ("digital", ESP_DIG("D0"), "", "Flame Sensor.py"),
+ "hall_effect_sensor": ("digital", ESP_DIG("D0"), "", "Halleffect Sensor.py"), "ir_sensor": ("digital", ESP_DIG("D0"), "", "IR Sensor.py"),
+ "keypad": ("digital", [("keypad", "Keypad Slot")], "", "Keypad.py"), "ldr_sensor": ("digital", ESP_DIG("D0"), "", "LDR Sensor.py"),
+ "metal_detection_sensor": ("digital", ESP_DIG("D0"), "", "Metal Detector Sensor.py"), "soil_moisture_sensor": ("digital", ESP_DIG("D0"), "", "Soilmoisture Sensor.py"),
+ "raindrop_sensor": ("digital", ESP_DIG("D0"), "", "Raindrop Sensor.py"), "dht11_climate_sensor": ("digital", ESP_DIG("D0"), "", "DHT11.py"),
+ "ultrasonic_sensor": ("digital", [("VCC", "5V"), ("GND", "Ground"), ("TRIG", "any digital pin"), ("ECHO", "any digital pin")], "", "Ultrasonic Sensor.py"),
+ "vibration_sensor": ("analog", ESP_ANA, "The ESP list's text also says it gives a digital HIGH above a threshold (see GAPS.md)", "Vibration Sensor.py"),
+ "dc_motor": ("digital", [], "No pins are listed in the ESP list (only a small relay diagram)", "DC Motor.py"),
+ "servo_motor": ("digital", [("VCC", "5V (external supply recommended)"), ("GND", "Ground"), ("Signal", "any digital GPIO pin")], "", "Servo Motor.py"),
+ "buzzer": ("digital", ESP_DIG("D0"), "", "Buzzer.py"), "led_module": ("digital", ESP_DIG("D0"), "", "LED Module.py"), "lcd_display": ("I2C", I2C, "", "LCD Display.py"),
+ "water_pump": ("digital", [], "No pins are listed in the ESP list (only a small relay diagram)", "ESPRelay.py"),
+ "air_quality_sensor": ("analog", ESP_ANA, "ESP list name: Air Quality Sensor (MQ135)", "Air Quality Sensor (MQ135).py"),
+ "gas_sensor_analog": ("analog", ESP_ANA, "ESP list name: Gas Sensor MQ2 (Analog)", "MQ2 Sensor Analog.py"), "gsr_sensor": ("analog", ESP_ANA, "", "GSR Sensor.py"),
+ "ph_sensor_v2": ("analog", ESP_ANA, "", "PH Sensor V2.py"), "rtc": ("I2C", I2C, "", ""), "tds_sensor": ("analog", ESP_ANA, "", "TDS Sensor.py"),
+ "weight_sensor": ("digital", [("VCC", "3.3V or 5V"), ("GND", "Ground"), ("DT", ANY_DIG), ("SCK", ANY_DIG)], "", "Weight Sensor.py"),
+ "power_meter": ("UART", UART, "The list writes 'Rx Tx / Tx Rx'; read here as crossed", "Power Meter.py"),
+ "relay_module": ("relay", T_RELAY if (T_RELAY := [t for t in T if t[0] == "relay_module"][0][7]) else [], "Same layout text as the other list; partly ambiguous", "DC Motor.py"),
+ "color_sensor": ("I2C", I2C, "", "Color sensor.py"), "compass_sensor": ("I2C", I2C, "", "Compass Sensor.py"), "co_sensor": ("analog", ESP_ANA, "", "CO Sensor (Carbon Monoxide Sensor).py"),
+ "flow_sensor": ("digital", ESP_DIG("D0"), "", "Flow Sensor .py"), "gyroscope_sensor": ("I2C", I2C, "ESP list name: MPU6050", "MPU6050.py"),
+ "motion_sensor": ("digital", ESP_DIG("D0"), "", "Motion Sensor.py"), "npk_sensor": ("UART", UART_RR, "For the NPK sensor only, RX connects to RX and TX to TX", "NPK Sensor.py"),
+ "rainfall_sensor": ("I2C", I2C, "The ESP list gives this sensor as I2C (the controller list gives UART)", "Rainfall Sensor.py"),
+ "soil_sensor": ("UART", UART_XR, "RX to TX and TX to RX (the controller list says RX to RX)", "Soil Sensor.py"),
+ "thermal_sensor": ("I2C", I2C, "", "Thermal Sensor.py"), "voltage_sensor": ("analog", ESP_ANA, "", "Voltage Sensor.py"),
+}
+# sensors that only the ESP list has: id, name, category, type, aliases, working, pins, note, example
+N = [
+ ("sound_sensor_analog", "Sound Sensor Analog", "Input", "analog", ["analog sound sensor", "sound sensor analog"], "An analog sound sensor: a microphone and amplifier give an analog voltage proportional to the sound level, which the ESP32 reads through its ADC (noise monitoring, sound detection, smart home).", ESP_ANA, "", "Sound Sensor Analog .py"),
+ ("esp_camera", "ESP Camera", "Output", "UART", ["esp camera", "esp32 camera", "esp32 cam", "espcam"], "A camera module for the ESP32 (the list's example: home security solution using a camera).", [("VCC", "3.3V or 5V"), ("GND", "Ground"), ("Rx", "Tx"), ("Tx", "Rx")], "The list writes 'Rx Tx / Tx Rx'; read here as crossed", "ESPCam.py"),
+ ("current_sensor", "Current Sensor", "Input", "analog", ["current sensor"], "Measures the electric current flowing through a circuit or device and gives a proportional analog signal that the ESP32 reads through its ADC (power monitoring, overload detection, energy management).", ESP_ANA, "", "Current Sensor.py"),
+ ("rfid_sensor", "RFID Sensor", "Input", "UART", ["rfid", "rfid sensor", "rfid reader"], "Reads the unique ID of RFID tags or cards without contact (access control, attendance, inventory). The working text says the data is sent 'through a communication interface such as SPI', but the pins listed are UART RX and TX (see GAPS.md).", UART_XR, "", "RFID Sensor.py"),
+ ("spectral_sensor", "Spectral Sensor", "Input", "I2C", ["spectral sensor"], "Measures the intensity of light at different wavelengths across the visible and near-infrared spectrum, for detailed colour analysis and material identification; sends digital data over I2C.", I2C, "", "Spectral Sensor.py"),
+ ("wind_direction_sensor", "Wind Direction Sensor", "Input", "analog", ["wind direction", "wind vane"], "A wind vane with a set of resistors that gives a different analog voltage for each direction (North, South, East, West).", ESP_ANA, "", "Wind Direction Sensor.py"),
+ ("wind_speed_sensor", "Wind Speed Sensor", "Input", "analog", ["wind speed", "anemometer"], "An anemometer: rotating cups give pulses (reed switch, Hall effect or optical); the ESP32 counts pulses over a time interval to work out the wind speed. The text says the pulses go to a digital input pin but the listed pins are analog GPIO32 and GPIO36 (see GAPS.md).", ESP_ANA, "", "Wind Speed Sensor.py"),
+ ("bme_sensor", "BME Sensor", "Input", "I2C", ["bme280", "bme sensor", "bme"], "A BME280 environmental sensor that measures temperature, humidity and atmospheric pressure in one module and sends them over I2C (weather monitoring).", I2C, "", "BME Sensor.py"),
+]
+
+
+def _conn(kit, typ, pins, note, code, src_file, where, extra=None):
+    d = {"kit": kit, "interface": IFACE[typ], "pins": [{"pin": a, "connects_to": b} for a, b in pins], "note": note,
+         "example_code": code, "source": {"file": src_file, "where": where}}
+    return {**d, **(extra or {})}
+
 
 def main() -> None:
     gw = json.loads(GW.read_text(encoding="utf-8"))
     out = KNOWLEDGE_DIR / "sensors"
+    marker = "generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)"
+    n = 0
     for sid, name, cat, typ, gkey, extra, working, pins, note, code in T:
         path = out / f"{sid}.yaml"
         if path.exists() and "generated: true" not in path.read_text(encoding="utf-8"):
             continue
         conns = []
         if pins or note:
-            conns.append({"kit": CTRL, "pins": [{"pin": a, "connects_to": b} for a, b in pins], "note": note,
-                          "source": {"file": PDF, "where": f"row for {name}"}})
-        e = esp32_connection(gw, gkey) if gkey else None
-        if e:
-            conns.append(e)
-        aliases = list(dict.fromkeys([name.lower(), sid.replace("_", " "), *extra]))  # no bare "weight" / "pressure" / "flow": those are ordinary words
+            conns.append(_conn(CTRL, typ, pins, note, code, PDF, f"row for {name}"))
+        if sid in E:
+            et, epins, enote, ecode = E[sid]
+            if epins:
+                conns.append(_conn(ESP, et, epins, enote, ecode, PDF_ESP, f"row for {name}"))
+            else:  # the ESP list gives no pins: fall back to the gateway dataset, say so
+                g = esp32_connection(gw, gkey) if gkey else None
+                if g:
+                    conns.append({**g, "interface": IFACE[et], "example_code": ecode, "note": f"{enote}; gateway dataset: {g['note']}"})
+        elif gkey and (g := esp32_connection(gw, gkey)):
+            conns.append(g)
+        aliases = list(dict.fromkeys([name.lower(), sid.replace("_", " "), *extra]))
         doc = {"id": sid, "name": name, "aliases": [a for a in aliases if len(a) >= 3], "category": cat, "working": working,
                "example_code": code, "gateway_key": gkey, "description": working.split(". ")[0].rstrip(".") + ".",
                "sensor_type": "OUTPUT" if cat == "Output" else "INPUT", "interface": IFACE[typ], "kit_connections": conns,
-               "notes": ["generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)"],
-               "sources": [{"file": PDF, "where": f"row for {name}"}]}
+               "notes": [marker], "sources": [{"file": PDF, "where": f"row for {name}"}] + ([{"file": PDF_ESP, "where": f"row for {name}"}] if sid in E else [])}
         path.write_text(yaml.safe_dump(doc, sort_keys=False, allow_unicode=True, width=130), encoding="utf-8")
-    print(f"wrote {len(T)} sensor files")
+        n += 1
+    for sid, name, cat, typ, extra, working, pins, note, code in N:
+        path = out / f"{sid}.yaml"
+        if path.exists() and "generated: true" not in path.read_text(encoding="utf-8"):
+            continue
+        aliases = list(dict.fromkeys([name.lower(), sid.replace("_", " "), *extra]))
+        doc = {"id": sid, "name": name, "aliases": [a for a in aliases if len(a) >= 3], "category": cat, "working": working, "example_code": "",
+               "gateway_key": "", "description": working.split(". ")[0].rstrip(".") + ".", "sensor_type": "OUTPUT" if cat == "Output" else "INPUT",
+               "interface": IFACE[typ], "kit_connections": [_conn(ESP, typ, pins, note, code, PDF_ESP, f"row for {name}")],
+               "notes": [marker, "Only in the ESP sensor list; the controller sensor list does not have it."], "sources": [{"file": PDF_ESP, "where": f"row for {name}"}]}
+        path.write_text(yaml.safe_dump(doc, sort_keys=False, allow_unicode=True, width=130), encoding="utf-8")
+        n += 1
+    print(f"wrote {n} sensor files")
 
 
 if __name__ == "__main__":

@@ -206,7 +206,7 @@ async def test_build_guide_has_parts_connections_and_numbered_steps(retriever, q
 @pytest.mark.parametrize("q,must", [
     ("How do I connect the alcohol sensor?", ["DO to any digital GPIO pin", "ESP32 kit"]),
     ("what is a flame sensor?", ["infrared"]),
-    ("How do I connect the DHT11?", ["D0", "DATA"]),
+    ("How do I connect the DHT11?", ["D0", "ESP32 kit"]),
     ("how do i connect the gps sensor", ["Rx", "Tx", "UART"]),
     ("Which pins support analog input?", ["GPIO32", "AI1"]),
     ("which sensors use I2C", ["Accelerometer", "LCD Display", "Pulseoximeter"]),

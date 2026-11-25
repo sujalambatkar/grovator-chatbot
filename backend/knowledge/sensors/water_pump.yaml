@@ -13,12 +13,14 @@ sensor_type: OUTPUT
 interface: digital
 kit_connections:
 - kit: govator_controller_pi
+  interface: digital
   pins:
   - pin: VCC
     connects_to: 12V (GPIO22 and GPIO23) only, and also to any relay port
   - pin: GND
     connects_to: GND
   note: ''
+  example_code: waterpump.py.py
   source:
     file: Sensor Details and Pin Configurations - Sensor List.pdf
     where: row for Water Pump
@@ -27,12 +29,16 @@ kit_connections:
   - pin: connection
     connects_to: Motor interface
   warning: ''
-  note: 'interface: motor'
+  note: 'No pins are listed in the ESP list (only a small relay diagram); gateway dataset: interface: motor'
   source:
     file: grovator-esp32-gateway.json
     where: devices.water_pump
+  interface: digital
+  example_code: ESPRelay.py
 notes:
-- 'generated: true (from the sensor list; edit this file freely, remove this note to protect it from re-import)'
+- 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:
 - file: Sensor Details and Pin Configurations - Sensor List.pdf
+  where: row for Water Pump
+- file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
   where: row for Water Pump
