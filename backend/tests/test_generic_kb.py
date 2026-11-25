@@ -62,3 +62,11 @@ async def test_an_unknown_device_gets_no_invented_wiring(retriever):
 async def test_worry_about_a_reading_gets_the_safety_reply_without_a_model_call(retriever):
     d, llm = await ask(retriever, "My oxygen reading is 90. Should I be worried?")
     assert not llm.calls and ("trusted adult" in d["answer"] or "professional" in d["answer"])
+
+
+@pytest.mark.asyncio
+async def test_weight_size_price_questions_say_not_documented(retriever):
+    d, llm = await ask(retriever, "What is the weight of the sensor?")
+    assert not llm.calls and "don't have that detail" in d["answer"] and d["refused_reason"] == "not_documented"
+    d2, llm2 = await ask(retriever, "How do I connect the weight sensor?")       # the Weight Sensor itself is still a sensor
+    assert d2["canned"] == "sensor_connect"

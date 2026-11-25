@@ -89,6 +89,7 @@ _PINRULE_Q = re.compile(r"\b(?:which|what|list|show|tell me)\b[^?.!]{0,30}\b(?:p
                         r"|\b(?:digital|analog|i2c|uart|relay)\b[^?.!]{0,15}\b(?:pins?|gpio)\b|\bwiring rules\b|\bpin (?:rules|connection rules)\b", re.I)
 _MEASURE = re.compile(r"\bhow\b[^?.!]{0,40}\b(?:find|finds|detect|detects|count|counts|measure|measures|calculate|calculates|calculated|work out|works out|get|gets)\b[^?.!]{0,30}\b(?:heart ?beats?|beats?|bpm|heart rate|spo2|oxygen)\b|\bhow (?:does|do) the (?:block )?code (?:measure|work|read|find)\b", re.I)
 _GENERIC_REF = re.compile(r"(?:^|\b(?:the|my|this|our|that|a|an|your|connect|connecting|wont|won't|not|does|do|is|are|why|how)\s+)sensor\b|\b(?:the|this|my|our) (?:sensor|circuit|project|application|app|lesson|kit|program|code|blocks?|leds?)\b|\b(?:it|this|these|them|wires?|pins?|steps?|blocks?)\b|\bshows? 0\b|\bstart\b|\bsensors? (?:are|is)\b", re.I)
+_SPEC_Q = re.compile(r"\b(?:the )?(?:weight|price|cost|size|dimensions?)\s+(?:of|for)\b|\bhow much (?:does|is|do)\b|\b(?:price|cost|warranty)\b|\bwhere (?:to|can i) buy\b|\bhow (?:heavy|big|large)\b", re.I)
 _LED_Q = re.compile(r"\bled[ _]?([123])\b", re.I)
 _DEF_CUE = re.compile(r"\b(?:do|does|work|works|working|is|are|mean|means|for|use|used|measure|measures)\b", re.I)
 _BLOCK_Q = re.compile(r"\b(?:what|how|explain|does|do|tell|describe|purpose|used for|for)\b", re.I)
@@ -186,6 +187,8 @@ class AppKB:
     # ------------------------------------------------------------------ answers
     def answer(self, message: str, e: Entities, recent: Entities, hw_named: bool = False, page_only: bool = False) -> AppAnswer | None:
         """A deterministic answer, or None to fall through to retrieval / the model."""
+        if _SPEC_Q.search(message) and (e.sensors or e.kits or re.search(r"\b(?:sensor|kit|controller|module|board)\b", message, re.I)):
+            return AppAnswer("not_documented", NOT_DOCUMENTED + " (The sensor and kit documents do not give weight, size or price.)", ["Sensor list"])
         if not (hw_named and not page_only and not e.strong):  # a gateway device NAMED in the message (not just an open page) keeps the old flow
             cat = self._catalog_answer(message, e)
             if cat:
