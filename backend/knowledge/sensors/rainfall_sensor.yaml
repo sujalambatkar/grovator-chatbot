@@ -3,7 +3,6 @@ name: Rain Fall Sensor
 aliases:
 - rain fall sensor
 - rainfall sensor
-- rain fall
 - rain gauge
 category: Input
 working: Detects and measures the presence and intensity of rainfall and sends the data over UART.

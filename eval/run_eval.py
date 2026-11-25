@@ -439,9 +439,9 @@ async def main() -> int:
     if a.mode == "offline":
         chosen = [s for s in chosen if not SUITES[s][2]]
 
-    settings = Settings(knowledge_dir=kdir, usage_log_dir="")  # production defaults: all optimisations ON
+    settings = Settings(knowledge_dir=kdir, usage_log_dir="", app_knowledge_dir="")  # this harness tests the gateway dataset; the application assistant has eval/questions.yaml  # production defaults: all optimisations ON
     if a.mode == "live" and not settings.llm_api_key:
-        settings = Settings(_env_file=str(BACK / ".env"), knowledge_dir=kdir, usage_log_dir="")
+        settings = Settings(_env_file=str(BACK / ".env"), knowledge_dir=kdir, usage_log_dir="", app_knowledge_dir="")
     retriever = HybridRetriever(KnowledgeStore(make_client("memory"), "knowledge"))
     n_chunks = await ingest(Path(settings.knowledge_dir), retriever)
     ctx = Ctx(a.mode, a.pace, settings, retriever)

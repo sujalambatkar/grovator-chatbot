@@ -2,7 +2,6 @@ id: flame_sensor
 name: Flame Sensor
 aliases:
 - flame sensor
-- flame
 category: Input
 working: Detects the infrared light given off by a flame. An onboard comparator (adjustable with the potentiometer) gives a digital
   HIGH when a flame is detected and LOW when not.

@@ -220,3 +220,10 @@ async def test_catalog_questions_are_answered_from_the_files(retriever, q, must)
     assert not llm.calls, d["answer"]
     for m in must:
         assert m in text, (q, m, d["answer"])
+
+
+@pytest.mark.asyncio
+async def test_troubleshooting_on_another_sensors_page_is_not_the_lessons_faq(retriever):
+    svc = build(retriever, FakeLLM("Check the wires."), **OVER)
+    d = await turn(svc, "What if it is not working?", "gw-page-4", page="devices/ultrasonic_sensor")
+    assert d.get("canned") is None and "Place Your Finger" not in d["answer"]

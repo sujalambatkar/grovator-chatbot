@@ -2,7 +2,6 @@ id: metal_detection_sensor
 name: Metal Detection Sensor
 aliases:
 - metal detection sensor
-- metal detection
 - metal detector
 - metal sensor
 category: Input

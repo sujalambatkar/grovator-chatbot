@@ -2,7 +2,6 @@ id: pressure_sensor
 name: Pressure Sensor
 aliases:
 - pressure sensor
-- pressure
 - barometer
 category: Input
 working: Measures the pressure of gases or liquids and sends it over I2C.

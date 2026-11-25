@@ -112,7 +112,7 @@ def main() -> None:
         e = esp32_connection(gw, gkey) if gkey else None
         if e:
             conns.append(e)
-        aliases = list(dict.fromkeys([name.lower(), sid.replace("_", " "), re.sub(r" sensor$", "", name.lower()), *extra]))
+        aliases = list(dict.fromkeys([name.lower(), sid.replace("_", " "), *extra]))  # no bare "weight" / "pressure" / "flow": those are ordinary words
         doc = {"id": sid, "name": name, "aliases": [a for a in aliases if len(a) >= 3], "category": cat, "working": working,
                "example_code": code, "gateway_key": gkey, "description": working.split(". ")[0].rstrip(".") + ".",
                "sensor_type": "OUTPUT" if cat == "Output" else "INPUT", "interface": IFACE[typ], "kit_connections": conns,

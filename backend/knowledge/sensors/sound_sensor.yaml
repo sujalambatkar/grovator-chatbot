@@ -2,7 +2,6 @@ id: sound_sensor
 name: Sound Sensor
 aliases:
 - sound sensor
-- sound
 - microphone sensor
 category: Input
 working: Detects sound level with a microphone, amplifier and comparator (adjustable). It gives a digital HIGH when the sound is above

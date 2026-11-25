@@ -2,7 +2,6 @@ id: thermal_sensor
 name: Thermal Sensor
 aliases:
 - thermal sensor
-- thermal
 - contactless temperature sensor
 category: Input
 working: Measures the temperature of objects or surroundings without touching them and sends it over I2C.

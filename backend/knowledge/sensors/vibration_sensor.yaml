@@ -2,7 +2,6 @@ id: vibration_sensor
 name: Vibration Sensor
 aliases:
 - vibration sensor
-- vibration
 category: Input
 working: 'Measures the strength of vibrations or shocks. Its output voltage changes with the vibration, read through an analog input:
   more vibration gives a higher reading. (The ESP32 gateway dataset lists it as digital D0: see GAPS.md.)'

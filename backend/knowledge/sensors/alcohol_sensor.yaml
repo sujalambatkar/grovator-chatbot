@@ -2,7 +2,6 @@ id: alcohol_sensor
 name: Alcohol Sensor
 aliases:
 - alcohol sensor
-- alcohol
 category: Input
 working: Detects alcohol vapour in the air. The sensing element's resistance changes with alcohol; a built-in comparator with an adjustable
   potentiometer threshold gives a digital HIGH when the alcohol level is above the threshold and LOW otherwise.

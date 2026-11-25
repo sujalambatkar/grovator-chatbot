@@ -2,7 +2,6 @@ id: color_sensor
 name: Color Sensor
 aliases:
 - color sensor
-- color
 - colour sensor
 - rgb sensor
 category: Input

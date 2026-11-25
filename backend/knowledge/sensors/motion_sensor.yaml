@@ -2,7 +2,6 @@ id: motion_sensor
 name: Motion Sensor
 aliases:
 - motion sensor
-- motion
 - pir sensor
 - pir
 - motion detector

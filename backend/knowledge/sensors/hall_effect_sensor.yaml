@@ -2,8 +2,8 @@ id: hall_effect_sensor
 name: Hall Effect Sensor
 aliases:
 - hall effect sensor
-- hall effect
 - hall sensor
+- hall effect
 category: Input
 working: 'Detects a magnetic field: when a magnet comes near, it produces a signal, and a comparator gives a digital output. The sensor
   list''s text contradicts itself about whether the output is HIGH or LOW when a magnet is detected (see GAPS.md).'

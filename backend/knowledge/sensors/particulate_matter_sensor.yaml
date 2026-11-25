@@ -2,10 +2,10 @@ id: particulate_matter_sensor
 name: Particulate Matter Sensor
 aliases:
 - particulate matter sensor
-- particulate matter
 - pm sensor
 - dust sensor
 - pm2.5 sensor
+- particulate matter
 category: Input
 working: Measures fine dust (PM1.0, PM2.5, PM10) with a laser that counts airborne particles, and sends the readings to the Raspberry
   Pi over USB.

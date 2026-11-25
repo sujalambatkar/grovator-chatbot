@@ -139,7 +139,7 @@ try {
   await step("HTML in a message is inert", async () => {
     await ask(page, `<img src=x onerror="window.__xss=1"> what is a sensor?`);
     assert.equal(await page.evaluate(() => window.__xss), undefined);
-    assert.equal(await page.getByTestId("chat-panel").locator("img").count(), 0);
+    assert.equal(await page.getByTestId("chat-panel").locator("img").count(), 0, "images in the chat: " + (await page.getByTestId("chat-panel").locator("img").evaluateAll((els) => els.map((e) => e.getAttribute("alt") + " <- " + e.closest("[data-testid=msg-bot]").innerText.slice(0, 90)))).join(" | "));
   }, page);
 
   await step("the conversation survives a reload (per-user session storage)", async () => {

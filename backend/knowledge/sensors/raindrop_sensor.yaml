@@ -2,7 +2,6 @@ id: raindrop_sensor
 name: Raindrop Sensor
 aliases:
 - raindrop sensor
-- raindrop
 - rain sensor
 - rain drop sensor
 category: Input

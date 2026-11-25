@@ -2,7 +2,6 @@ id: flow_sensor
 name: Flow Sensor
 aliases:
 - flow sensor
-- flow
 - water flow sensor
 category: Input
 working: Measures the rate of water flow in a pipe so the amount of water used can be calculated.

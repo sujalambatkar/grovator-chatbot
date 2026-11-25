@@ -2,7 +2,6 @@ id: soil_sensor
 name: Soil Sensor
 aliases:
 - soil sensor
-- soil
 category: Input
 working: Measures the moisture in soil and sends the readings over UART, e.g. for irrigation.
 example_code: ''

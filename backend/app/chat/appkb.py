@@ -81,11 +81,13 @@ _BUILD = re.compile(r"\b(?:how (?:do|can|should|to) (?:i |we )?(?:create|build|m
                     r"|\bstep[- ]by[- ]step\b|\bbuild guide\b|\bcreate this (?:application|project)\b", re.I)
 _FACT_Q = re.compile(r"\b(?:i2c|i²c)? ?address\b|\bfrequency\b|\bbaud(?: rate)?\b|\bwhich interface\b|\bwhat interface\b|\b(?:i2c|uart)\b[^?.!]{0,20}\b(?:or|and)\b[^?.!]{0,20}\b(?:uart|i2c)\b|\bvariable names?\b|\bdevice type\b|\bsensor type\b", re.I)
 _CODE_TOKEN = re.compile(r"[a-z_][a-z0-9_]*(?:\.[a-z0-9_]+)*\([^)]*\)|\bwhile true\b|\bi2c\([^)]*\)", re.I)
+_TROUBLE = re.compile(r"\bnot working\b|\bnot (?:detect|reading|respond|turn|light|show)\w*|\bdoes(?:n't| not)\b|\bwon'?t\b|\bwrong\b|\bproblem|\berror\b|\bbroken\b|\bfix\b|\bissue\b|\bwhat if\b|\bfaulty\b", re.I)
 _ABOUT = re.compile(r"^\W*(?:what(?:'s| is| are| does| do)?|how does|how do|explain|tell me about|describe|about|info(?:rmation)? (?:on|about)|details? (?:of|about|on))\b", re.I)
 _EXAMPLE = re.compile(r"\bexample (?:code|program)|\bsample (?:code|program)|\bpython file\b", re.I)
 _LIST_Q = re.compile(r"\b(?:which|what|list|show|give me|all|how many|name)\b[^?.!]{0,30}\b(?:sensors|modules|devices|actuators|components|peripherals)\b|\bsensors? list\b", re.I)
 _PINRULE_Q = re.compile(r"\b(?:which|what|list|show|tell me)\b[^?.!]{0,30}\b(?:pins?|gpio|ports?|connectors?|terminals?)\b[^?.!]{0,40}\b(?:digital|analog|i2c|uart|relay|rx|tx|sda|scl|motor|keypad)\b"
                         r"|\b(?:digital|analog|i2c|uart|relay)\b[^?.!]{0,15}\b(?:pins?|gpio)\b|\bwiring rules\b|\bpin (?:rules|connection rules)\b", re.I)
+_MEASURE = re.compile(r"\bhow\b[^?.!]{0,40}\b(?:find|finds|detect|detects|count|counts|measure|measures|calculate|calculates|calculated|work out|works out|get|gets)\b[^?.!]{0,30}\b(?:heart ?beats?|beats?|bpm|heart rate|spo2|oxygen)\b|\bhow (?:does|do) the (?:block )?code (?:measure|work|read|find)\b", re.I)
 _LED_Q = re.compile(r"\bled[ _]?([123])\b", re.I)
 _DEF_CUE = re.compile(r"\b(?:do|does|work|works|working|is|are|mean|means|for|use|used|measure|measures)\b", re.I)
 _BLOCK_Q = re.compile(r"\b(?:what|how|explain|does|do|tell|describe|purpose|used for|for)\b", re.I)
@@ -152,6 +154,10 @@ class AppKB:
                 e.weak.append(app_id)
         return e
 
+    def about_lesson(self, e: Entities) -> bool:
+        """The message names the application, one of its blocks, its sensor, or a lesson word (LED, SpO2...)."""
+        return bool(e.applications or e.blocks or e.weak or (set(e.sensors) & self._lesson_sensors()))
+
     def sensor_for_gateway_key(self, key: str) -> str | None:
         """The catalog sensor that replaces a device of the generic gateway dataset ("servo" -> servo_motor)."""
         return next((s.id for s in self.k.sensors.values() if s.gateway_key == key and s.kit_connections), None)
@@ -183,6 +189,9 @@ class AppKB:
             cat = self._catalog_answer(message, e)
             if cat:
                 return cat
+        if (e.sensors and all(self.k.sensors[x].kit_connections and x not in self._lesson_sensors() for x in e.sensors)
+                and not e.applications and not e.blocks):
+            return None  # about another sensor of the list (e.g. "what if the ultrasonic sensor is not working"): not the lesson, so retrieval answers
         ctx = e.merge(recent) if (e.strong or recent.strong) else e
         app_id = (ctx.applications or ctx.weak or [None])[0]
         if app_id is None and ctx.sensors:
@@ -204,6 +213,10 @@ class AppKB:
             return self._line_by_line(a)
         if _BUILD.search(msg) and not _CODE.search(msg):
             return self._build_guide(a)
+        if _MEASURE.search(msg):
+            how = self.k.sensors[a.circuit.sensor].how_it_measures
+            if how:
+                return AppAnswer("how_it_measures", "How the block code measures:\n" + "\n".join(f"- {h}" for h in how), [f"sensors/{a.circuit.sensor}/measure"])
         stmt = self._statement(a, msg)
         if stmt:
             return stmt
@@ -289,6 +302,8 @@ class AppKB:
 
     def _catalog_answer(self, message: str, e: Entities) -> AppAnswer | None:
         msg = message
+        if _LED_Q.search(msg):
+            return None  # "LED 1 / led_2" are the lesson's LEDs
         sensors = [x for x in e.sensors if self.k.sensors[x].kit_connections]
         if sensors == ["relay_module"] and _PINRULE_Q.search(msg):
             return self._pin_rules(msg, e.kits)  # "which pins are the relay pins" is about the kit, not the relay module
@@ -303,7 +318,7 @@ class AppKB:
                 return self._sensor_connect(s, e.kits)
             if _EXAMPLE.search(msg) or (_CODE.search(msg) and s.example_code and sid not in self._lesson_sensors()):
                 return self._sensor_example(s)
-            if _ABOUT.search(msg):
+            if _ABOUT.search(msg) and not _TROUBLE.search(msg):
                 return self._sensor_about(s, e.kits)
             return None
         if _PINRULE_Q.search(msg):

@@ -448,7 +448,7 @@ class ChatService:
             base, answer, grounded=not blocked, refused_reason=out.reason if blocked else None, sources=sources,
             input_tokens=final.input_tokens if final else 0, output_tokens=final.output_tokens if final else 0,
             model=final.model if final else None, truncated=truncated,
-            images=(self.appkb.images_for([h.source for h in used]) if (self.appkb and not blocked) else []),
+            images=(self.appkb.images_for([h.source for h in used[:1]]) if (self.appkb and self.appkb.about_lesson(ents) and not blocked) else []),  # only when the question is about the application
             standalone_query=route.query, memories_used=len(mems), naive_tokens=naive,
             tokens_total=base["router_tokens"] + (final.input_tokens + final.output_tokens if final else 0),
         )

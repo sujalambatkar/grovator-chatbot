@@ -2,7 +2,6 @@ id: dht11_climate_sensor
 name: DHT11 Climate Sensor
 aliases:
 - dht11 climate sensor
-- dht11 climate
 - dht11
 - dht 11
 - temperature and humidity sensor
