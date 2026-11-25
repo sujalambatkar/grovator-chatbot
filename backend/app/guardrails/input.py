@@ -70,6 +70,7 @@ PII_REQUEST = _rx(
 )
 
 ADVICE = _rx(
+    r"\bshould i (?:be )?(?:worried|concerned|scared)\b|\b(?:my|i have) (?:oxygen|heart ?rate|bpm|spo2|pulse|blood pressure)\b[^?.!]{0,40}\b(?:low|high|worried|dangerous|serious|bad)\b",
     r"\b(?:should i take|dosage|prescri\w+|symptoms? of|diagnos\w+ me|medicine for|cure for|treatment for|am i sick)\b",
     r"\b(?:legal advice|sue\b|lawsuit|lawyer|court case|is it legal)\b",
     r"\b(?:invest(?:ing|ment|ments)?|stocks?|crypto(?:currency)?|bitcoin|loans?|tax advice|mutual funds?|trading)\b",

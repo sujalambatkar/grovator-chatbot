@@ -56,3 +56,9 @@ async def test_generic_questions_answered_from_the_files(retriever, q, must):
 async def test_an_unknown_device_gets_no_invented_wiring(retriever):
     d, llm = await ask(retriever, "How do I connect a thermistor to the kit?", FakeLLM("I don't have that detail yet."))
     assert not d.get("connection_table") and "SDA (GPIO21)" not in d["answer"]
+
+
+@pytest.mark.asyncio
+async def test_worry_about_a_reading_gets_the_safety_reply_without_a_model_call(retriever):
+    d, llm = await ask(retriever, "My oxygen reading is 90. Should I be worried?")
+    assert not llm.calls and ("trusted adult" in d["answer"] or "professional" in d["answer"])
