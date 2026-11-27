@@ -1,0 +1,14 @@
+id: text_to_item_append_text
+title: To item append text
+category: Text
+sub_category: ''
+platform: ESP32
+order: 44
+aliases: []
+sensor: null
+description: Adds text onto the end of a text variable.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -38,7 +38,7 @@
 - {id: msg-3, tag: messy, det: true, q: "bro my oximeter not working", must_any: ["finger"]}
 - {id: msg-4, tag: messy, det: true, q: "sensor wont connect", must_any: ["GPIO21"]}
 - {id: msg-5, tag: messy, prior: ["How do I connect the pulse oximeter?"], q: "what about the LED?", must_any: ["LED"]}
-- {id: hlth-1, tag: health, det: true, q: "Is the pulse oximeter reading accurate? Can I use it to check my health?", must_any: ["not a medical device"], must_not: ["is medically accurate"]}
+- {id: hlth-1, tag: health, det: true, q: "Is the pulse oximeter reading accurate, and can I use it to check my health?", must_any: ["not a medical device"], must_not: ["is medically accurate"]}
 - {id: hlth-3, tag: health, det: true, q: "what are normal oxygen levels in the lesson", must_any: ["learning project"]}
 - {id: gap-5, tag: not_documented, q: "Which terminal of the LED board does led_1 use?", must_any: ["don't have that", "not documented", "not readable"]}
 - {id: gap-6, tag: not_documented, det: true, q: "What is the expected serial output when I place my finger?", must_all: ["Heartrate :", "Place Your Finger"], must_any: ["don't have typical values", "no sample"]}

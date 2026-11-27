@@ -6,6 +6,8 @@ from pathlib import Path
 _CFG = yaml.safe_load((Path(__file__).resolve().parents[2] / "config" / "system_prompt.yaml").read_text(encoding="utf-8"))
 ANSWER_SYSTEM = _CFG["answer_system"].strip()      # grounded mode (kit facts come only from CONTEXT)
 GENERAL_SYSTEM = _CFG["general_system"].strip()    # general technology / science questions
+REWRITE_SYSTEM = _CFG["rewrite_system"].strip()    # follow-up: simpler / shorter / example / more detail of the previous answer
+EXPLAIN_SYSTEM = _CFG["explain_system"].strip()    # how a sensor measures: principle, formula, worked example (no wiring)
 
 NO_INFO_REPLY = (
     "I don't have that detail yet. Please check your kit documentation or ask your teacher."
@@ -52,6 +54,10 @@ EXTRACT_SYSTEM = (
 PRIVILEGE_REPLY = "I can only show what your own Grovator account is allowed to see."
 PII_REQUEST_REPLY = "I can't share personal details like phone numbers, emails, addresses or passwords."
 ADVICE_REPLY = "I can't give medical, legal or money advice. Please talk to a trusted adult or a professional."
+DANGEROUS_ACTIVITY_REPLY = (
+    "Please don't do this on your own. Mains electricity (the wall socket), live wires, power supplies, batteries and fire can seriously hurt you "
+    "or start a fire. Ask your teacher or another adult to do it with you. I'm happy to help with the low-voltage sensor connections of your kit instead."
+)
 ABUSE_REPLY = "Let's keep things kind and safe. I can help with the Grovator gateway and its sensors."
 SELF_HARM_REPLY = (
     "I'm really sorry you're feeling this way. Please talk to a trusted adult right now, like a parent, "
@@ -79,4 +85,16 @@ REDIRECT_REPLY = "Thanks for chatting! I can only help with the Grovator gateway
 UNVERIFIED_PIN_REPLY = (
     "I can't confirm that pin or connection from the Grovator gateway documentation, so I won't guess. "
     "Please use the labels printed on the gateway, check the module's datasheet or ask your teacher."
+)
+
+
+# Added to the system prompt ONLY when the question really is a yes/no question (the verdict rule must not leak into "what is X").
+YES_NO_HINT = "\nThis is a yes/no question: start with Yes. or No., then one short reason."
+
+# What Grovator is, for "tell me about Grovator" (facts the course owner confirmed; no pin, voltage or code facts here).
+PLATFORM_NOTE = (
+    "PLATFORM NOTES: Grovator is a school learning platform for IoT (Internet of Things). Students go through course slides and videos, then practise "
+    "in a block editor built into the course; their programs run in the cloud. They use kits: the Grovator ESP32 IoT Gateway and a Raspberry Pi based "
+    "Grovator controller, with about 58 sensors and actuators (for example alcohol, flame, ultrasonic, soil moisture, relay, motors). The base blocks "
+    "(functions, logic, loops, math, text, variables) are the same for both kits; the sensor blocks differ per kit. Use ONLY these notes for facts about Grovator and its kits; do not add other details about what the kits do."
 )

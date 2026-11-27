@@ -1,0 +1,14 @@
+id: math_number_is_even_odd_prime
+title: Number is even / odd / prime ...
+category: Math
+sub_category: ''
+platform: ESP32
+order: 30
+aliases: []
+sensor: null
+description: Tests a number (even, odd, prime, whole, positive, negative, divisible by); gives true/false.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

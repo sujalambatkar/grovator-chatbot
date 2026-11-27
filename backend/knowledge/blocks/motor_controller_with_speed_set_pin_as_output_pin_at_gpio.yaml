@@ -1,0 +1,14 @@
+id: motor_controller_with_speed_set_pin_as_output_pin_at_gpio
+title: Set pin as Output Pin at GPIO
+category: Sensors-ESP32
+sub_category: Motor Controller with Speed
+platform: ESP32
+order: 127
+aliases: []
+sensor: dc_motor
+description: Assigns a GPIO pin as a motor output (direction/enable) pin.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

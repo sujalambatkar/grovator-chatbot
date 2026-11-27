@@ -1,0 +1,14 @@
+id: common_actions_esp32_function_name
+title: Function Name
+category: Common Actions-ESP32
+sub_category: ''
+platform: ESP32
+order: 66
+aliases: []
+sensor: null
+description: Calls a function you defined (edit the name to match).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

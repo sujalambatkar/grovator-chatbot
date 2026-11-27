@@ -1,0 +1,14 @@
+id: buzzer_turn_on_off_buzzer_named
+title: Turn On/Off Buzzer (named)
+category: Sensors-ESP32
+sub_category: Buzzer
+platform: ESP32
+order: 80
+aliases: []
+sensor: buzzer
+description: Switches the specified buzzer on or off.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

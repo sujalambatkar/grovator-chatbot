@@ -1,0 +1,14 @@
+id: math_round_column_by_digits_from_dataframe
+title: Round column by digits from dataframe
+category: Math
+sub_category: ''
+platform: ESP32
+order: 40
+aliases: []
+sensor: null
+description: Rounds all values in a column (or the whole table) of a dataframe to the given decimals.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

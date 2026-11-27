@@ -1,0 +1,14 @@
+id: mobile_mode_mobile
+title: Mode (Mobile)
+category: Mobile
+sub_category: ''
+platform: ESP32
+order: 12
+aliases: []
+sensor: null
+description: Selects the mode for mobile communication (value chosen by dropdown); outputs it as a value.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

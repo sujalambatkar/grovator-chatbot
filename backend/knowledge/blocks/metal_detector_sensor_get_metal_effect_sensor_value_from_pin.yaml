@@ -1,0 +1,14 @@
+id: metal_detector_sensor_get_metal_effect_sensor_value_from_pin
+title: Get Metal Effect Sensor Value from Pin
+category: Sensors-ESP32
+sub_category: Metal Detector Sensor
+platform: ESP32
+order: 120
+aliases: []
+sensor: metal_detection_sensor
+description: Reads the metal detector's value (detects metal nearby). Label says 'Metal Effect' in the IDE.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

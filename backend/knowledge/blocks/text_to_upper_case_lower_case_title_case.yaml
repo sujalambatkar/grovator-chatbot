@@ -1,0 +1,14 @@
+id: text_to_upper_case_lower_case_title_case
+title: To UPPER CASE / lower case / Title Case
+category: Text
+sub_category: ''
+platform: ESP32
+order: 50
+aliases: []
+sensor: null
+description: 'Changes text case: UPPER CASE, lower case or Title Case.'
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: soil_sensor_get_moisture
+title: Get Moisture
+category: Sensors-ESP32
+sub_category: Soil Sensor
+platform: ESP32
+order: 175
+aliases: []
+sensor: soil_sensor
+description: Returns the soil moisture.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

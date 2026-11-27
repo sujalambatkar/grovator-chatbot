@@ -1,0 +1,14 @@
+id: mobile_is_data_received_from_mobile_for_key
+title: 'Is data received from mobile for: key'
+category: Mobile
+sub_category: ''
+platform: ESP32
+order: 17
+aliases: []
+sensor: null
+description: True if the mobile app has sent data under the given key name.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

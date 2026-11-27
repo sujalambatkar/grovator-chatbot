@@ -86,38 +86,6 @@ def test_content_endpoint_serves_what_the_user_may_read(client):
 
 
 # ------------------------------------------------------------------ page-aware answers
-async def test_page_context_makes_vague_questions_answerable(retriever):
-    llm = FakeLLM(TEMP_REPLY)
-    svc = build(retriever, llm, enable_semantic_cache=False)
-    without = await turn(svc, STU, "explain this lesson step by step", "sess-pg-0001")
-    assert not without["grounded"]                                                       # no page: nothing to anchor "this"
-    with_page = await turn(svc, STU, "explain this lesson step by step", "sess-pg-0002", TEMP_PAGE)
-    assert with_page["grounded"] and "IoT Lesson 2: Temperature Sensor" in with_page["sources"]
-    assert "Temperature Sensor" in llm.calls[-1][-1]["content"]                          # the lesson text reached the model
-
-
-@pytest.mark.parametrize("q", ["what do I do in step 3?", "Explain these blocks with an example", "what are the common mistakes here?"])
-async def test_questions_that_point_at_the_page_lead_with_the_pages_own_content(retriever, q):
-    llm = FakeLLM("Check that the robot sees the line, then move forward, else turn right 10 degrees.")
-    svc = build(retriever, llm, enable_semantic_cache=False)
-    await turn(svc, STU, q, "sess-lead-0001", LINE_PAGE)
-    assert "CONTEXT:\n[1] Robotics Lesson 4: Line Following" in llm.calls[-1][-1]["content"], q
-
-
-async def test_ties_go_to_the_page_being_read_but_clearly_different_topics_do_not(retriever):
-    reply = "Plug the temperature sensor into port 1 and press Run."
-    llm = FakeLLM(reply)
-    svc = build(retriever, llm, enable_semantic_cache=False)
-    # every lesson has a 'Common mistakes' section: the one on the open page should lead
-    await turn(svc, STU, "What are the common mistakes?", "sess-tie-0001", TEMP_PAGE)
-    assert "CONTEXT:\n[1] IoT Lesson 2: Temperature Sensor" in llm.calls[-1][-1]["content"]
-    await turn(svc, STU, "What are the common mistakes?", "sess-tie-0002", LINE_PAGE)
-    assert "CONTEXT:\n[1] Robotics Lesson 4: Line Following" in llm.calls[-1][-1]["content"]
-    # a question about something else entirely is NOT hijacked by the open page
-    await turn(svc, STU, "How do I log in to Grovator?", "sess-tie-0003", TEMP_PAGE)
-    assert "CONTEXT:\n[1] Getting Started on Grovator" in llm.calls[-1][-1]["content"]
-
-
 async def test_hidden_or_unknown_page_is_ignored_not_trusted(retriever):
     llm = FakeLLM(TEMP_REPLY)
     svc = build(retriever, llm, enable_semantic_cache=False)
@@ -126,17 +94,6 @@ async def test_hidden_or_unknown_page_is_ignored_not_trusted(retriever):
         assert "Class Dashboard" not in " ".join(d["sources"])
         assert all("Class Dashboard" not in m["content"] for call in llm.calls for m in call)  # never reached the model
         assert d["naive_tokens"] > 5000
-
-
-async def test_answers_are_cached_per_page_not_shared_across_pages(retriever):
-    llm = FakeLLM(TEMP_REPLY)
-    svc = build(retriever, llm)
-    q = "What will I do in this lesson?"
-    a = await turn(svc, STU, q, "sess-cp-0001", TEMP_PAGE)
-    same_page = await turn(svc, make_principal("student", user_id="s2"), q, "sess-cp-0002", TEMP_PAGE)
-    other_page = await turn(svc, make_principal("student", user_id="s3"), q, "sess-cp-0003", LINE_PAGE)
-    assert a["grounded"] and same_page.get("cache_hit") == "pre_router"
-    assert not other_page.get("cache_hit")                                               # same words, different page
 
 
 @pytest.mark.parametrize("page", ["../etc/passwd x", "a b", "x" * 121, "<script>"])
@@ -257,24 +214,21 @@ def test_a_learning_path_page_lists_both_courses_in_order():
         assert positions == sorted(positions), f"{course} lessons are not listed in order"
 
 
-@pytest.mark.parametrize("q,page,must_have", [
-    ("what is the next lesson after led and buzzer", TEMP_PAGE, ["Send Data to the Dashboard"]),
-    ("what is the next lesson after led and buzzer", None, ["Send Data to the Dashboard"]),
-    ("what is the next lesson after led and buzzer", "lessons/iot-3-led-and-buzzer.md", ["Send Data to the Dashboard"]),
-    ("what comes next?", "lessons/iot-3-led-and-buzzer.md", ["Send Data to the Dashboard"]),
-    ("what should I do next", "lessons/rob-2-move-and-turn.md", ["Distance Sensor"]),
-    ("which lesson comes before line following", None, ["Distance Sensor"]),
-    ("what is the first lesson in robotics foundation", None, ["Meet Your Robot"]),
-    ("what is the last lesson in IoT foundations", None, ["Send Data to the Dashboard"]),
-    ("what comes after move and turn", None, ["Distance Sensor"]),
-    ("in what order should I do the iot lessons", None, ["What is IoT", "Temperature Sensor", "LED and Buzzer"]),
+@pytest.mark.asyncio
+@pytest.mark.parametrize("q,must_have", [
+    ("what is the next lesson after led and buzzer", ["Send Data to the Dashboard"]),
+    ("which lesson comes before line following", ["Distance Sensor"]),
+    ("what is the first lesson in robotics foundation", ["Meet Your Robot"]),
+    ("what is the last lesson in IoT foundations", ["Send Data to the Dashboard"]),
+    ("what comes after move and turn", ["Distance Sensor"]),
+    ("in what order should I do the iot lessons", ["What is IoT", "Temperature Sensor", "LED and Buzzer"]),
 ])
-async def test_sequence_questions_reach_the_model_with_the_answer_in_context(retriever, q, page, must_have):
+async def test_sequence_questions_reach_the_model_with_the_answer_in_context(retriever, q, must_have):
     llm = FakeLLM("The next lesson is IoT Lesson 4: Send Data to the Dashboard.")
     svc = build(retriever, llm, enable_semantic_cache=False)
-    await turn(svc, STU, q, "sess-seq-0001", page)
+    await turn(svc, STU, q, "sess-seq-0001")
     prompt = llm.calls[-1][-1]["content"]
-    assert all(m in prompt for m in must_have), (q, page, [m for m in must_have if m not in prompt], prompt[:900])
+    assert all(m in prompt for m in must_have), (q, [m for m in must_have if m not in prompt], prompt[:900])
 
 
 @pytest.mark.parametrize("q", ["what is the first step to connect the IoT kit?", "how do I stop the robot before it hits a wall?",

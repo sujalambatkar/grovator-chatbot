@@ -1,0 +1,14 @@
+id: logic_comparison
+title: Comparison (=)
+category: Logic
+sub_category: ''
+platform: ESP32
+order: 5
+aliases: []
+sensor: null
+description: Compares two values (=, ≠, <, ≤, >, ≥) and gives true or false.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

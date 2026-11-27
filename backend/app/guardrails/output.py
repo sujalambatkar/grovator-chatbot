@@ -78,12 +78,15 @@ def _shingles(text: str, n: int = 6) -> set[tuple[str, ...]]:
     return {tuple(w[i : i + n]) for i in range(max(0, len(w) - n + 1))}
 
 
+from app.guardrails.format import tidy  # noqa: E402
+
+
 def check_output(
     answer: str, *, source_text: str, secrets: list[str] | None = None, strict_numbers: bool = False,
     numbers_source: str | None = None,
     min_support: float = 0.35, prompts: tuple[str, ...] = (P.ANSWER_SYSTEM, P.GENERAL_SYSTEM, P.ROUTER_SYSTEM, P.SUMMARY_SYSTEM, P.EXTRACT_SYSTEM),
 ) -> OutputVerdict:
-    text = answer.strip()
+    text = tidy(answer)
     if not text:
         return OutputVerdict(P.NO_INFO_REPLY, "replaced", "empty")
     if _VENDOR.search(text):

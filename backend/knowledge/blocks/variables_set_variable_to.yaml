@@ -1,0 +1,14 @@
+id: variables_set_variable_to
+title: Set variable to
+category: Variables
+sub_category: ''
+platform: ESP32
+order: 55
+aliases: []
+sensor: null
+description: Stores a value in the chosen variable.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

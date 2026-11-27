@@ -1,0 +1,14 @@
+id: spectral_sensor_get_colour_data_violet
+title: Get colour Data (violet ...)
+category: Sensors-ESP32
+sub_category: Spectral Sensor
+platform: ESP32
+order: 183
+aliases: []
+sensor: spectral_sensor
+description: Returns the intensity of the chosen wavelength band (violet, blue, etc.) from the last reading.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

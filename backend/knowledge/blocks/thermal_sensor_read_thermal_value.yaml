@@ -1,0 +1,14 @@
+id: thermal_sensor_read_thermal_value
+title: Read Thermal Value
+category: Sensors-ESP32
+sub_category: Thermal Sensor
+platform: ESP32
+order: 187
+aliases: []
+sensor: thermal_sensor
+description: Returns the temperature value from the thermal sensor.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

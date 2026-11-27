@@ -1,0 +1,14 @@
+id: math_constrain_value_low_high
+title: Constrain value low high
+category: Math
+sub_category: ''
+platform: ESP32
+order: 34
+aliases: []
+sensor: null
+description: Forces a number to stay within the low–high range; values outside are clamped to the limit.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

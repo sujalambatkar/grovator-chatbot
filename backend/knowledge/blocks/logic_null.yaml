@@ -1,0 +1,14 @@
+id: logic_null
+title: 'Null'
+category: Logic
+sub_category: ''
+platform: ESP32
+order: 9
+aliases: []
+sensor: null
+description: An empty / 'no value' placeholder.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

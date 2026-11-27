@@ -1,0 +1,14 @@
+id: pulse_oximeter_get_spo2
+title: Get SpO2
+category: Sensors-ESP32
+sub_category: Pulse Oximeter
+platform: ESP32
+order: 155
+aliases: []
+sensor: pulseoximeter_max30102
+description: Returns the stored blood-oxygen (SpO2) level.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

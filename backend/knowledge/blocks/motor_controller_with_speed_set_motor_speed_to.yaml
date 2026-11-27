@@ -1,0 +1,14 @@
+id: motor_controller_with_speed_set_motor_speed_to
+title: Set Motor Speed to
+category: Sensors-ESP32
+sub_category: Motor Controller with Speed
+platform: ESP32
+order: 126
+aliases: []
+sensor: dc_motor
+description: Sets the specified motor's speed (value, e.g. 0–100).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: soil_moisture_set_moisture_sensor_as_input_at_pin
+title: Set Moisture Sensor as Input at Pin
+category: Sensors-ESP32
+sub_category: Soil Moisture
+platform: ESP32
+order: 171
+aliases: []
+sensor: soil_moisture_sensor
+description: Sets the pin the soil-moisture sensor is connected to.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

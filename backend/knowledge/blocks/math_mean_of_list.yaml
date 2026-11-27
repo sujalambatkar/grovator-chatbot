@@ -1,0 +1,14 @@
+id: math_mean_of_list
+title: Mean of (list)
+category: Math
+sub_category: ''
+platform: ESP32
+order: 37
+aliases: []
+sensor: null
+description: Statistic of a list/data (mean and similar options) for data analysis.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

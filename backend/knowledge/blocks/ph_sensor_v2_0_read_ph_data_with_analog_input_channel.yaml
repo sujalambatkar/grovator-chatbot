@@ -1,0 +1,14 @@
+id: ph_sensor_v2_0_read_ph_data_with_analog_input_channel
+title: Read pH Data with Analog Input Channel
+category: Sensors-ESP32
+sub_category: PH Sensor V2.0
+platform: ESP32
+order: 143
+aliases: []
+sensor: ph_sensor_v2
+description: Reads the pH value on an analog channel.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

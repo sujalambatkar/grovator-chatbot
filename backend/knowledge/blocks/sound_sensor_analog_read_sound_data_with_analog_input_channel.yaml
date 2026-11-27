@@ -1,0 +1,14 @@
+id: sound_sensor_analog_read_sound_data_with_analog_input_channel
+title: Read Sound Data with Analog input Channel
+category: Sensors-ESP32
+sub_category: Sound Sensor Analog
+platform: ESP32
+order: 180
+aliases: []
+sensor: sound_sensor_analog
+description: Reads the sound level on an analog channel.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

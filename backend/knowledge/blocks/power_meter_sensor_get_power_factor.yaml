@@ -1,0 +1,14 @@
+id: power_meter_sensor_get_power_factor
+title: Get Power Factor
+category: Sensors-ESP32
+sub_category: Power Meter Sensor
+platform: ESP32
+order: 151
+aliases: []
+sensor: power_meter
+description: Returns the power factor of the load.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

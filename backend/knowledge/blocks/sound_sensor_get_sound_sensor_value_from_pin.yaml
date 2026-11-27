@@ -1,0 +1,14 @@
+id: sound_sensor_get_sound_sensor_value_from_pin
+title: Get Sound Sensor Value from Pin
+category: Sensors-ESP32
+sub_category: Sound Sensor
+platform: ESP32
+order: 179
+aliases: []
+sensor: sound_sensor
+description: Reads the sound sensor's value from the pin.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

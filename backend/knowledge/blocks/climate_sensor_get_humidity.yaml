@@ -1,0 +1,14 @@
+id: climate_sensor_get_humidity
+title: Get Humidity
+category: Sensors-ESP32
+sub_category: Climate Sensor
+platform: ESP32
+order: 88
+aliases: []
+sensor: dht11_climate_sensor
+description: Returns the humidity from the last climate reading.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

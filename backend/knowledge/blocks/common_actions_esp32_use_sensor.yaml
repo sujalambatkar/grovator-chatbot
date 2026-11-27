@@ -1,0 +1,14 @@
+id: common_actions_esp32_use_sensor
+title: Use [Sensor]
+category: Common Actions-ESP32
+sub_category: ''
+platform: ESP32
+order: 58
+aliases: []
+sensor: null
+description: Declares which sensor (chosen by dropdown) the program uses, so its library/setup is included.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

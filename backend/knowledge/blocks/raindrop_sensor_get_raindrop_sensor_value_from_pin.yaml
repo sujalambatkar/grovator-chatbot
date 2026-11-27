@@ -1,0 +1,14 @@
+id: raindrop_sensor_get_raindrop_sensor_value_from_pin
+title: Get Raindrop Sensor Value from Pin
+category: Sensors-ESP32
+sub_category: Raindrop Sensor
+platform: ESP32
+order: 162
+aliases: []
+sensor: raindrop_sensor
+description: Reads the raindrop sensor's value (detects rain/water drops).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

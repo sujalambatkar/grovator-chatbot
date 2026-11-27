@@ -1,0 +1,14 @@
+id: metal_detector_sensor_set_metal_detector_sensor_as_input_at_pin
+title: Set Metal Detector Sensor as Input at Pin
+category: Sensors-ESP32
+sub_category: Metal Detector Sensor
+platform: ESP32
+order: 119
+aliases: []
+sensor: metal_detection_sensor
+description: Sets the pin the metal detector is connected to.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

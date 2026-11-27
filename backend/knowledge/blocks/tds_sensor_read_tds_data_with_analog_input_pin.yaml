@@ -1,0 +1,14 @@
+id: tds_sensor_read_tds_data_with_analog_input_pin
+title: Read TDS Data with Analog Input Pin
+category: Sensors-ESP32
+sub_category: TDS Sensor
+platform: ESP32
+order: 186
+aliases: []
+sensor: tds_sensor
+description: Reads the TDS value on an analog pin.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

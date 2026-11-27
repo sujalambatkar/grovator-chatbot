@@ -1,0 +1,14 @@
+id: mobile_connect_to_mobile
+title: Connect to mobile
+category: Mobile
+sub_category: ''
+platform: ESP32
+order: 10
+aliases: []
+sensor: null
+description: Starts the connection between the ESP32 board and the mobile app.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

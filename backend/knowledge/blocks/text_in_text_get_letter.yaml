@@ -1,0 +1,14 @@
+id: text_in_text_get_letter
+title: In text get letter
+category: Text
+sub_category: ''
+platform: ESP32
+order: 48
+aliases: []
+sensor: null
+description: Gets one letter at a position (from start, from end, first, last or random).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: variables_change_variable_by
+title: Change variable by
+category: Variables
+sub_category: ''
+platform: ESP32
+order: 56
+aliases: []
+sensor: null
+description: Adds a number to the variable's current value (use a negative number to subtract).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

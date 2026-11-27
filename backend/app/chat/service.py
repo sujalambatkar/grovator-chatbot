@@ -14,7 +14,10 @@ from collections.abc import AsyncIterator
 from dataclasses import replace as dc_replace
 from typing import Any
 
-from app.chat.appkb import AppAnswer, AppKB, Entities, with_health_note
+from app.chat.appkb import _YN_START, GENERAL_CUE, AppAnswer, AppKB, Entities, with_health_note
+from app.chat.splitter import split_questions, strip_greeting
+from app.guardrails.format import drop_stray_verdict, mentions_wiring, strip_wiring
+from app.guardrails.safety import safety_warnings
 from app.chat.canned import CannedAnswers
 from app.chat.cache import SemanticCache, cacheable
 from app.chat.prompting import build_answer_messages
@@ -29,7 +32,7 @@ from app.guardrails.input import check_input
 from app.guardrails.output import OutputVerdict, check_output, cited_sources, unsupported_pins
 from app.llm.llm_client import LLMClient, LLMError
 from app.llm.prompts import (
-    ANSWER_SYSTEM, BUDGET_REPLY, GENERAL_SYSTEM, MY_DATA_REPLY, NO_INFO_REPLY, OFF_TOPIC_REPLY, REDIRECT_REPLY, SMALLTALK_FALLBACK, SUMMARY_SYSTEM, UNSAFE_REPLY,
+    ANSWER_SYSTEM, BUDGET_REPLY, EXPLAIN_SYSTEM, GENERAL_SYSTEM, REWRITE_SYSTEM, PLATFORM_NOTE, YES_NO_HINT, MY_DATA_REPLY, NO_INFO_REPLY, OFF_TOPIC_REPLY, REDIRECT_REPLY, SMALLTALK_FALLBACK, SUMMARY_SYSTEM, UNSAFE_REPLY,
     UNVERIFIED_PIN_REPLY,
 )
 from app.memory.long_term import MemoryManager
@@ -80,13 +83,15 @@ def _salient(text: str) -> set[str]:
 _CLARIFY_STARTS = ("Which sensor or module do you mean", "Do you mean the")
 _CITATION = re.compile(r"【[^】]*】")
 # Hardware conversation: which sensor/module are we talking about? ("it", "what next?", "where does VCC go?")
-_GENERIC_ONE = re.compile(r"\b(?:the|a|my|this|that)\s+(?:sensor|module|device|component)\b", re.I)
+_GENERIC_ONE = re.compile(r"\b(?:the|a|my|this|that)\s+(?:sensor|module|device|component)\b|\b(?:connect|wire|plug|attach|hook(?: up)?)\s+(?:this|it|that)\b", re.I)
 _PLURAL_OR_LIST = re.compile(r"\b(?:sensors|modules|devices|components|all|list|which|what)\b", re.I)
 _WIRING = re.compile(r"\b(?:connect\w*|wir\w+|pins?|vcc|gnd|ground|signal|trig|echo|plug\w*|power\w*|output|work\w*|respon\w+)\b", re.I)
 _LIST_Q = re.compile(r"\b(?:sensors|modules|devices|components|everything|all|list|available|supported)\b", re.I)
 _DEFINITION = re.compile(r"^\W*(?:what(?:'s| is| are)|define|explain|tell me about)\b", re.I)
 _PIN_IN_TEXT = re.compile(r"\bGPIO\s?-?\d{1,2}\b", re.I)
+_FOLLOW_SENSOR_Q = re.compile(r"\b(?:it|its|this|these|that one|the (?:sensor|module|device)|vcc|gnd|trig|echo|signal|d0|sda|scl|rx|tx)\b", re.I)
 _PAGE_SENSOR_Q = re.compile(r"\b(?:this|these|it|its|vcc|gnd|trig|echo|signal|d0|sda|scl|pins?|wires?|wiring|connect\w*|work|works|working)\b", re.I)
+_REFUSAL = re.compile(r"^\W*(?:i'?m sorry|i[’']?m sorry|sorry|i can(?:no|[’']?)t|i cannot)", re.I)
 _SINGULAR_REF = re.compile(r"\b(?:it|its|this (?:sensor|module|one|device)|that (?:sensor|module|one|device)|the (?:sensor|module|device))\b", re.I)
 
 
@@ -145,6 +150,8 @@ class ChatService:
         t0 = time.perf_counter()
         rid = uuid.uuid4().hex
         async for ev in self._run(p, message, session_id, page):
+            if ev["type"] == "done" and not ev.get("refused_reason") and "warnings" not in ev:
+                ev["warnings"] = self._safety(message, ev)
             if ev["type"] in ("done", "error"):
                 ev["latency_ms"] = int((time.perf_counter() - t0) * 1000)
                 ev["request_id"] = rid
@@ -158,6 +165,18 @@ class ChatService:
                     except Exception as exc:  # noqa: BLE001 - observability must never break a chat
                         log.warning("usage_log_failed %s", type(exc).__name__)
             yield ev
+
+    def _safety(self, message: str, ev: dict) -> list[dict]:
+        """Student safety warnings for this answer: from the question, the sensors it is about (message + answer sources) and the answer text."""
+        try:
+            # the sensors the student NAMED; the sources of the answer count only for a follow-up ("how do I connect it?")
+            follow_up = bool(_SINGULAR_REF.search(message) or re.search(r"\b(?:this|these|that|them|those|here)\b", message, re.I))
+            sensors = self.appkb.detect(message + (" " + " ".join(ev.get("sources") or []) if follow_up else "")).sensors if self.appkb else []
+            kind = ev.get("canned") or ("grounded" if ev.get("grounded") else None)
+            return safety_warnings(message, ev.get("answer", ""), sensors, kind, ev.get("intent"))
+        except Exception as exc:  # noqa: BLE001 - a warning must never break a chat
+            log.warning("safety_failed %s", type(exc).__name__)
+            return []
 
     async def _run(self, p: Principal, message: str, session_id: str | None, page: str | None = None) -> AsyncIterator[Event]:
         sid = session_id or uuid.uuid4().hex
@@ -176,27 +195,60 @@ class ChatService:
             yield self._done(base, BUDGET_REPLY, grounded=False, refused_reason="budget_exceeded")
             return
 
+        message = strip_greeting(message)   # "hello tell me about grovator" is the question "tell me about grovator"
+        parts, dropped = split_questions(message)
+        if len(parts) > 1:   # several questions in one message: each is answered on its own, never just the first or the wrong one
+            async for ev in self._multi(p, parts, dropped, sid, page):
+                yield ev
+            return
+        message = parts[0]
+
         state = await self.sessions.get(p.user_id, sid)
         had_history = bool(state.turns or state.summary)
-        page_doc = self.catalog.get(p, page) if (self.catalog and page) else None
+        page_doc = None   # the open page is NOT used: the bot answers from the question and the conversation only (the `page` field is accepted and ignored)
         mentioned = self.hw.detect(message) if self.hw.devices else []
         ents, app_recent, app_ctx = Entities(), Entities(), False
         if self.appkb:
             ents, app_recent = self.appkb.detect(message), self._recent_entities(state)
             if mentioned and not ents.strong and self.appkb.claims(message, ents, app_recent):
                 mentioned = []  # "LED 2", "LED 3 OFF": the lesson's LEDs, not the gateway's generic LED module
-            on_gateway_page = page_doc is not None and page_doc.source.startswith("devices/")
-            if on_gateway_page and not mentioned and not ents.strong and _PAGE_SENSOR_Q.search(message) and not re.search(r"\brules?\b|\bwhich sensors\b", message, re.I):
-                sid = self.appkb.sensor_for_gateway_key(page_doc.source.split("/", 1)[1])  # "how do I connect this?" on the Servo page: that sensor, both kits
-                if sid:
-                    ents = Entities(sensors=[sid])
-            ans = self.appkb.answer(message, ents, app_recent, hw_named=bool(mentioned) or (on_gateway_page and not ents.strong), page_only=not mentioned)  # a gateway device page is open: its questions are about that device unless the application is named
+            if self.appkb.is_rewrite_request(message, ents) and not self.appkb.explain_target(message, ents, app_recent):
+                # "simplify it", "explain that again", "give me an example": the PREVIOUS ANSWER reworked; never a fresh search, never the open page
+                if not state.turns:
+                    ask_first = AppAnswer("clarify", "Tell me what you would like me to explain or simplify. Ask a question first, then I can make it simpler, shorter or add an example.", [], grounded=False)
+                    async for ev in self._serve_app(p, sid, state, message, ask_first, base, page_doc):
+                        yield ev
+                    return
+                prev = state.turns[-1].assistant
+                async for ev in self._general(p, sid, state, message, message, base, extra_note="PREVIOUS ANSWER:\n" + truncate_tokens(prev, 700) + "\n\n",
+                                              system=REWRITE_SYSTEM, no_wiring=not mentions_wiring(prev)):
+                    yield ev
+                return
+            # a general concept question ("what are pins?") names no sensor; "it" / "VCC" / "the sensor" mean the sensor the student was just talking about
+            concept_q = bool(GENERAL_CUE.search(message)) and not re.search(r"\b(?:this|these|it|its|here|that one|the (?:sensor|module|device))\b", message, re.I)
+            if not mentioned and not ents.strong and not concept_q and _FOLLOW_SENSOR_Q.search(message) and not re.search(r"\brules?\b|\bwhich sensors\b", message, re.I):
+                last = self._last_sensor(state)
+                if last:
+                    ents = Entities(sensors=[last])
+            simple = len(message.split()) <= 40   # a long, rambling message is not a template question: the model reads it
+            ans = self.appkb.hazard_answer(message, ents) or (self.appkb.answer(message, ents, app_recent, hw_named=bool(mentioned), page_only=not mentioned) if simple else None)  # a gateway device page is open: its questions are about that device unless the application is named
+            if not ans and state.turns and simple:
+                ans = self.appkb.follow_up(message, state.turns[-1].user)   # "explain those blocks" after a block answer
             if ans:  # wiring tables, block order, code, thresholds, "not documented yet": built from the files, 0 tokens
                 async for ev in self._serve_app(p, sid, state, message, ans, base, page_doc):
                     yield ev
                 return
             app_ctx = (ents.strong or app_recent.strong or bool(ents.weak)) and not (mentioned and not ents.strong)
-            if self.appkb.is_general(message, ents, bool(mentioned)):  # "what is SpO2?": model knowledge, simple words
+            target = self.appkb.explain_target(message, ents, app_recent)
+            if target:   # "how does it measure / the formula / in centimetres": principle + formula + worked example, never wiring
+                async for ev in self._general(p, sid, state, message, message, base, extra_note=self.appkb.explain_notes(target) + "\n\n", system=EXPLAIN_SYSTEM, no_wiring=True):
+                    yield ev
+                return
+            if self.appkb.is_platform_question(message, ents):   # "tell me about Grovator": the platform, never the open page
+                async for ev in self._general(p, sid, state, message, message, base, extra_note=PLATFORM_NOTE):
+                    yield ev
+                return
+            if self.appkb.is_general(message, ents, bool(mentioned)) or self.appkb.is_phenomenon_question(message, ents):  # "what is SpO2?": model knowledge, simple words
                 async for ev in self._general(p, sid, state, message, message, base):
                     yield ev
                 return
@@ -210,9 +262,7 @@ class ChatService:
             return
         if mentioned:
             state.focus = mentioned[:3]  # the sensor(s) now being discussed; saved with the turn
-        on_device_page = page_doc is not None and page_doc.source.startswith("devices/")
-        if not mentioned and on_device_page and (DEICTIC.search(message) or (not state.focus and _SINGULAR_REF.search(message))):
-            state.focus = [page_doc.source.split("/", 1)[1]]  # "how do I connect THIS" / (no sensor discussed yet) "which pins does IT use" = the open device
+        on_device_page = False   # the open page is not used
         focus = list(state.focus)
         canned = self.canned.match(message, mentioned, focus) if self.canned else None
         if canned:
@@ -376,6 +426,7 @@ class ChatService:
             question=route.query if direct else message,
             memories=[m.text for m in mems], memory_cap=self.s.memory_prompt_tokens,
             total_budget=self.s.answer_total_budget, context_cap=self.s.context_token_budget,
+            system_hint=YES_NO_HINT if _YN_START.search(message) else "",
         )
         async def generate(msgs):
             parts, fin = [], None
@@ -397,7 +448,7 @@ class ChatService:
             log.error("answer_failed cause=%r", exc.__cause__)
             yield {"type": "error", "message": "The assistant is busy right now. Please try again."}
             return
-        raw = _CITATION.sub("", raw)  # the model sometimes emits fake citation markers
+        raw = drop_stray_verdict(message, _CITATION.sub("", raw))  # the model sometimes emits fake citation markers; no "Yes." on a "what is" question
 
         # L7: authoritative output check on the full text. Context = what the model was legitimately given.
         source = "\n".join([*(h.text for h in used), message, state.summary,
@@ -454,6 +505,18 @@ class ChatService:
         )
 
     # ------------------------------------------------------------------ application assistant
+    def _last_sensor(self, state: SessionState) -> str | None:
+        """The catalog sensor the student most recently talked about (their own words first, then the assistant's)."""
+        for t in reversed(state.turns[-3:]):
+            found = self.appkb.detect(t.user).sensors
+            if found:
+                return found[0]
+        for t in reversed(state.turns[-1:]):
+            found = self.appkb.detect(t.assistant).sensors
+            if found:
+                return found[0]
+        return None
+
     def _recent_entities(self, state: SessionState) -> Entities:
         e = Entities()
         for t in state.turns[-2:]:
@@ -471,22 +534,58 @@ class ChatService:
         await self._persist_turn(p, sid, state, message, out.text)
         yield self._done(base, out.text, grounded=ans.grounded and ans.kind != "not_documented", sources=ans.sources, canned=ans.kind,
                          refused_reason="not_documented" if ans.kind == "not_documented" else None, standalone_query=message,
-                         connection_table=ans.table, block_stack=ans.blocks, code_blocks=ans.code, images=ans.images, memories_used=0,
+                         connection_table=ans.table, block_stack=ans.blocks, code_blocks=ans.code, images=ans.images, footer=ans.footer, memories_used=0,
                          input_tokens=0, output_tokens=0, tokens_total=0, naive_tokens=base["naive_tokens"])
 
-    async def _general(self, p: Principal, sid: str, state: SessionState, message: str, query: str, base: dict) -> AsyncIterator[Event]:
+    async def _multi(self, p: Principal, parts: list[str], dropped: int, sid: str, page: str | None) -> AsyncIterator[Event]:
+        """Several questions in one message: answer each one (at most MAX_PARTS) and return them together, one heading per question."""
+        base: dict[str, Any] = {"session_id": sid, "intent": Intent.platform_faq.value, "router_tokens": 0}
+        yield {"type": "meta", **base}
+        blocks, dones = [], []
+        for i, part in enumerate(parts, 1):
+            done, failed = None, False
+            async for ev in self._run(p, part, sid, page):
+                if ev["type"] == "error":
+                    failed = True   # one failed question must not hide the answers to the others
+                if ev["type"] == "done":
+                    done = ev
+            if done is not None:
+                dones.append((part, done))
+                blocks.append(f"### {i}. {part[:90]}\n\n{done['answer']}")
+            elif failed:
+                blocks.append(f"### {i}. {part[:90]}\n\nI could not answer this one right now. Please ask it again.")
+        if not dones:
+            yield {"type": "error", "message": "The assistant is busy right now. Please try again."}
+            return
+        text = "\n\n".join(blocks) + (f"\n\nI answered the first {len(parts)} questions. Please send the others again." if dropped else "")
+        warnings: list[dict] = []
+        for part, d in dones:
+            for w in self._safety(part, d):
+                if all(w["id"] != x["id"] for x in warnings):
+                    warnings.append(w)
+        warnings.sort(key=lambda w: 0 if w["level"] == "danger" else 1)
+        for chunk in _chunks(text):
+            yield {"type": "token", "t": chunk}
+        yield self._done(base, text, grounded=all(d.get("grounded") for _, d in dones),
+                         sources=list(dict.fromkeys(s for _, d in dones for s in (d.get("sources") or []))),
+                         code_blocks=[c for _, d in dones for c in (d.get("code_blocks") or [])], images=[i for _, d in dones for i in (d.get("images") or [])],
+                         warnings=warnings[:3], input_tokens=sum(d.get("input_tokens", 0) for _, d in dones), output_tokens=sum(d.get("output_tokens", 0) for _, d in dones),
+                         tokens_total=sum(d.get("tokens_total", 0) for _, d in dones), naive_tokens=sum(d.get("naive_tokens", 0) for _, d in dones),
+                         standalone_query=" | ".join(parts))
+
+    async def _general(self, p: Principal, sid: str, state: SessionState, message: str, query: str, base: dict, extra_note: str = "", system: str = GENERAL_SYSTEM, no_wiring: bool = False) -> AsyncIterator[Event]:
         """General technology/science question: model knowledge, no retrieval, no 'from the docs' claim."""
         base = {**base, "intent": Intent.general_tech.value}
         yield {"type": "meta", **base}
         app = next(iter(self.appkb.apps.values()), None) if self.appkb else None
-        note = f"PROJECT NOTES: the student is working on '{app.title}': {app.summary}\n\n" if app else ""
-        msgs: list[dict[str, str]] = [{"role": "system", "content": GENERAL_SYSTEM}]
+        note = (extra_note + "\n\n" if extra_note else "") + (f"PROJECT NOTES: the student is working on '{app.title}': {app.summary}\n\n" if app else "")
+        msgs: list[dict[str, str]] = [{"role": "system", "content": system + (YES_NO_HINT if _YN_START.search(message) else "")}]
         for t in state.turns[-MAX_TURNS:]:
             msgs += [{"role": "user", "content": truncate_tokens(t.user, 80)}, {"role": "assistant", "content": truncate_tokens(t.assistant, 80)}]
         msgs.append({"role": "user", "content": f"{note}QUESTION: {truncate_tokens(query, 300)}"})
-        try:
+        async def once(m):
             parts, fin = [], None
-            async for kind, val in self.llm.answer_stream(msgs):
+            async for kind, val in self.llm.answer_stream(m):
                 if kind == "delta":
                     parts.append(val)
                 else:
@@ -494,7 +593,20 @@ class ChatService:
             if fin:
                 await self._record(p, fin.input_tokens, "answer_in")
                 await self._record(p, fin.output_tokens, "answer_out")
-            raw = _CITATION.sub("", (fin.text if fin else "".join(parts)).strip())
+            return fin, _CITATION.sub("", (fin.text if fin else "".join(parts)).strip())
+
+        try:
+            fin, raw = await once(msgs)
+            if _REFUSAL.match(raw) and len(raw) < 160:   # the model sometimes refuses a harmless science question ("what is alcohol?"): ask once more, never show that refusal
+                retry = [*msgs[:-1], {"role": "user", "content": msgs[-1]["content"] + "\n\nThis is a harmless school science question. Answer it simply, in 2 to 4 sentences."}]
+                fin2, raw2 = await once(retry)
+                if raw2 and not _REFUSAL.match(raw2):
+                    if fin and fin2:
+                        fin2 = dc_replace(fin2, input_tokens=fin.input_tokens + fin2.input_tokens, output_tokens=fin.output_tokens + fin2.output_tokens)
+                    fin, raw = fin2, raw2
+            raw = drop_stray_verdict(message, raw)
+            if no_wiring:
+                raw = strip_wiring(raw)
         except LLMError as exc:
             log.error("general_failed cause=%r", exc.__cause__)
             yield {"type": "error", "message": "The assistant is busy right now. Please try again."}

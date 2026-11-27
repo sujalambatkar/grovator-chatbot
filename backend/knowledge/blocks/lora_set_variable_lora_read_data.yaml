@@ -1,0 +1,14 @@
+id: lora_set_variable_lora_read_data
+title: Set variable LoRa Read Data
+category: Sensors-ESP32
+sub_category: LoRa
+platform: ESP32
+order: 117
+aliases: []
+sensor: null
+description: Stores the received LoRa data into the chosen variable.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

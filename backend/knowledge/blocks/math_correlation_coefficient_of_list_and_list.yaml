@@ -1,0 +1,14 @@
+id: math_correlation_coefficient_of_list_and_list
+title: Correlation coefficient of (list) and (list)
+category: Math
+sub_category: ''
+platform: ESP32
+order: 38
+aliases: []
+sensor: null
+description: Calculates how strongly two data lists are correlated.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -5,6 +5,18 @@ import type { ChatMessage, FeedbackReason, Rating } from "@/lib/types";
 
 export const MAX_CHARS = 1000; // mirrors the server limit
 
+/** Instant (0-token) answers wait this long, so the typing dots show first and the bot feels like it is thinking. Model answers already take longer. */
+export const MIN_THINK_MS = Number(process.env.NEXT_PUBLIC_MIN_THINK_MS ?? 600);
+
+function sleep(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) return reject(new DOMException("Aborted", "AbortError"));
+    const t = setTimeout(() => { signal.removeEventListener("abort", onAbort); resolve(); }, ms);
+    const onAbort = () => { clearTimeout(t); reject(new DOMException("Aborted", "AbortError")); };
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 interface Options {
@@ -73,8 +85,17 @@ export function useChat(cfg: ApiConfig, opts: Options = {}) {
       const ctl = new AbortController();
       abortRef.current = ctl;
       setBusy(true);
+      const startedAt = Date.now();
+      let thought = false;
+      const think = async () => {   // the first text never appears sooner than MIN_THINK_MS after the question was sent
+        if (thought) return;
+        thought = true;
+        const wait = MIN_THINK_MS - (Date.now() - startedAt);
+        if (wait > 0) await sleep(wait, ctl.signal);
+      };
       try {
         for await (const ev of streamChat(cfgRef.current, { message: text, sessionId: sessionRef.current, page: pageRef.current, signal: ctl.signal })) {
+          if (ev.type === "token" || ev.type === "done") await think();
           if (ev.type === "meta") sessionRef.current = ev.data.session_id;
           else if (ev.type === "token") patch(botId, (m) => ({ text: m.text + ev.data.t }));
           else if (ev.type === "done")
@@ -92,6 +113,8 @@ export function useChat(cfg: ApiConfig, opts: Options = {}) {
               blocks: ev.data.block_stack ?? [],
               code: ev.data.code_blocks ?? [],
               images: ev.data.images ?? [],
+              footer: ev.data.footer ?? "",
+              warnings: ev.data.warnings ?? [],
             });
           else if (ev.type === "error") patch(botId, { text: ev.data.message, status: "error" });
         }

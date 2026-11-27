@@ -4,8 +4,8 @@ aliases:
 - water pump
 - pump
 category: Output
-working: 'Pumps and circulates water. It is switched by a relay module: a HIGH control signal activates the relay and turns the pump
-  ON, LOW turns it OFF.'
+working: 'Pumps and circulates water. It is switched by a relay module: a HIGH control signal activates the relay and turns the pump ON, LOW turns
+  it OFF.'
 example_code: waterpump.py.py
 gateway_key: water_pump
 description: Pumps and circulates water.
@@ -28,7 +28,8 @@ kit_connections:
   pins:
   - pin: connection
     connects_to: Motor interface
-  warning: ''
+  warning: The motor connector gives 9 to 12V depending on the supplied power. Connect only the pump there, never a sensor or a GPIO pin, and
+    observe current and voltage limits.
   note: 'No pins are listed in the ESP list (only a small relay diagram); gateway dataset: interface: motor'
   source:
     file: grovator-esp32-gateway.json

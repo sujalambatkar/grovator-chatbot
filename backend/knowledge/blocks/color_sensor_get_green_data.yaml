@@ -1,0 +1,14 @@
+id: color_sensor_get_green_data
+title: Get Green Data
+category: Sensors-ESP32
+sub_category: Color Sensor
+platform: ESP32
+order: 91
+aliases: []
+sensor: color_sensor
+description: Returns the green channel value from the colour sensor.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

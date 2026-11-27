@@ -89,6 +89,24 @@ T = [
 IFACE = {"digital": "digital", "analog": "analog", "I2C": "I2C", "UART": "UART", "USB": "USB", "relay": "relay", "dedicated": "dedicated", "none": "none"}
 
 
+# Student-safety warnings of the gateway dataset (device warnings, the motor interface voltage and the wiring rule about 5V signals),
+# copied onto the ESP32 connection of the matching sensor so they appear in the wiring answer.
+MOTOR_WARNING = ("The motor connector gives 9 to 12V depending on the supplied power. Connect only the {what} there, never a sensor or a GPIO pin, "
+                 "and observe current and voltage limits.")
+ECHO_RULE = " Do not assume 5V signals are safe for ESP32 GPIOs; use level shifting when required."
+
+
+def esp_warning(gw: dict, sid: str, gkey: str) -> str:
+    w = (gw["devices"].get(gkey) or {}).get("warning", "") if gkey else ""
+    if sid == "ultrasonic_sensor" and w:
+        w += ECHO_RULE
+    if sid in ("dc_motor", "water_pump"):
+        w = MOTOR_WARNING.format(what="motor" if sid == "dc_motor" else "pump")
+    if sid == "stepper_motor":
+        w = "The stepper connector is internally connected to the motor interface (9 to 12V depending on the supplied power). Connect only the stepper motor there, never a sensor or a GPIO pin."
+    return w
+
+
 def esp32_connection(gw: dict, key: str) -> dict | None:
     dev = gw["devices"].get(key)
     if not dev:
@@ -162,11 +180,11 @@ def main() -> None:
         if sid in E:
             et, epins, enote, ecode = E[sid]
             if epins:
-                conns.append(_conn(ESP, et, epins, enote, ecode, PDF_ESP, f"row for {name}"))
+                conns.append({**_conn(ESP, et, epins, enote, ecode, PDF_ESP, f"row for {name}"), "warning": esp_warning(gw, sid, gkey)})
             else:  # the ESP list gives no pins: fall back to the gateway dataset, say so
                 g = esp32_connection(gw, gkey) if gkey else None
                 if g:
-                    conns.append({**g, "interface": IFACE[et], "example_code": ecode, "note": f"{enote}; gateway dataset: {g['note']}"})
+                    conns.append({**g, "interface": IFACE[et], "example_code": ecode, "note": f"{enote}; gateway dataset: {g['note']}", "warning": esp_warning(gw, sid, gkey) or g.get("warning", "")})
         elif gkey and (g := esp32_connection(gw, gkey)):
             conns.append(g)
         aliases = list(dict.fromkeys([name.lower(), sid.replace("_", " "), *extra]))

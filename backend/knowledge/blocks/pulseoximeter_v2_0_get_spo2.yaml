@@ -1,0 +1,14 @@
+id: pulseoximeter_v2_0_get_spo2
+title: Get SpO2
+category: Sensors-ESP32
+sub_category: Pulseoximeter V2.0
+platform: ESP32
+order: 156
+aliases: []
+sensor: pulseoximeter_v2_uart
+description: Returns the blood-oxygen (SpO2) level from the V2.0 sensor.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

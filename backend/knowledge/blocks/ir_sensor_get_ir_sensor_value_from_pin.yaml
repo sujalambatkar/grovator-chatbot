@@ -1,0 +1,14 @@
+id: ir_sensor_get_ir_sensor_value_from_pin
+title: Get IR Sensor Value from Pin
+category: Sensors-ESP32
+sub_category: IR Sensor
+platform: ESP32
+order: 107
+aliases: []
+sensor: ir_sensor
+description: Reads the IR sensor's value (obstacle/reflection detection).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

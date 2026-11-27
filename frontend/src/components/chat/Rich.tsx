@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import type { BlockStackItem, CodeBlock, ConnectionTable as Table, ImageRef } from "@/lib/types";
+import type { BlockStackItem, CodeBlock, ConnectionTable as Table, ImageRef, SafetyWarning } from "@/lib/types";
 import s from "./widget.module.css";
 
 /** Wiring table built from the knowledge files. Unconfirmed rows are marked. */
@@ -34,6 +34,7 @@ export function BlockStack({ blocks }: { blocks: BlockStackItem[] }) {
       {blocks.map((b) => (
         <li key={b.order} className={s.stackBlock} title={b.description}>
           <span className={s.stackNo}>{b.order}</span> {b.title}
+          {b.description && <span className={s.stackDesc}>{b.description}</span>}
         </li>
       ))}
     </ol>
@@ -103,5 +104,18 @@ export function Sources({ sources }: { sources: string[] }) {
       <summary>Sources ({sources.length})</summary>
       <ul>{sources.map((x) => <li key={x}>{x}</li>)}</ul>
     </details>
+  );
+}
+
+/** Safety reminders for students (decided by the backend from config/safety.yaml): one quiet grey line each, danger first. */
+export function Warnings({ warnings }: { warnings: SafetyWarning[] }) {
+  return (
+    <div className={s.warnList} data-testid="safety-warnings" role="note" aria-label="Safety">
+      {warnings.map((w) => (
+        <div key={w.id} className={s.warn} data-testid={`warning-${w.id}`}>
+          <span aria-hidden="true">{w.level === "danger" ? "\u26D4" : "\u26A0"}</span> {w.text}
+        </div>
+      ))}
+    </div>
   );
 }

@@ -1,0 +1,14 @@
+id: math_round_round_round_up_round_down
+title: Round (round, round up, round down)
+category: Math
+sub_category: ''
+platform: ESP32
+order: 31
+aliases: []
+sensor: null
+description: Rounds a number (round, round up, round down).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

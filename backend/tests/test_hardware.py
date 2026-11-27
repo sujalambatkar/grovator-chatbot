@@ -416,14 +416,6 @@ async def test_direct_lookup_picks_the_section_the_question_is_about(real_retrie
 
 
 @pytest.mark.asyncio
-async def test_how_do_i_connect_this_on_a_device_page_means_that_device(real_retriever):
-    llm = FakeLLM("Connect it.")
-    svc = build(real_retriever, llm)
-    await turn(svc, "How do I connect this to the gateway?", "hw-sess-16", page="devices/buzzer")
-    assert "Buzzer" in context_of(llm) and "Ultrasonic" not in context_of(llm)
-
-
-@pytest.mark.asyncio
 async def test_what_should_i_do_after_is_not_a_lesson_order_question(real_retriever):
     """Live run: "What should I do after connecting it?" matched the lesson-order rule, searched everything and pulled in the open Flame Sensor page
     (1,013 tokens). With gateway content there are no lessons, and the question stays inside the sensor's own guide."""

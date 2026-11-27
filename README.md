@@ -59,6 +59,14 @@ from the JWT and is applied by retrieval filters and by `tools/policy.py`.
 
 The live knowledge base (`backend/knowledge/`) holds **sensors** (the controller and ESP sensor lists, ~58), **kits** (ESP32 kit and Grovator controller, pin rules), **blocks** (block code, e.g. the pulse oximeter) and **media**. It holds no application or lesson text. Applications are an optional feature: drop `applications/<slug>/application.yaml` into the knowledge dir and the assistant also answers build steps, thresholds and line-by-line questions for it. The pulse oximeter lesson that was seeded first now lives in `backend/tests/fixtures/knowledge_app/` (used by the tests and `eval/questions_lesson.yaml`).
 
+## Student safety
+
+Answers about wiring, motors, water, relays, gas / flame sensors, batteries and tools carry a highlighted safety box (for example "Switch the kit off before you connect wires", "Do NOT connect anything to mains by yourself"). Rules live in `backend/config/safety.yaml`. Requests to do something hands-on and dangerous (mains, live wires, opening power supplies, shorting batteries, fire) get a fixed "please don't do this on your own, ask your teacher" reply.
+
+## Block palette
+
+The 201 blocks of the ESP32 block editor (`block_codes_with_purpose.pdf`) are files in `backend/knowledge/blocks/` (category, sub-category, order; no code). The bot answers, with 0 tokens: where a block is ("Where is the Start block?"), which blocks a sensor or category has ("Which blocks do I need for the buzzer?", "What blocks are in the Math category?"), how many there are, and what a block does. Questions about a task ("which blocks to detect fire?") go through retrieval. Regenerate with `python -m ingest.import_block_sheet`.
+
 ## Application assistant (pulse oximeter lesson and beyond)
 
 The assistant answers student questions about **applications** (lessons built with the Block Designer and Circuit Designer). The

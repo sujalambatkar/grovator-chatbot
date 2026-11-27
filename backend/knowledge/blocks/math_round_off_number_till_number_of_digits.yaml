@@ -1,0 +1,14 @@
+id: math_round_off_number_till_number_of_digits
+title: Round off number till number of digits
+category: Math
+sub_category: ''
+platform: ESP32
+order: 39
+aliases: []
+sensor: null
+description: Rounds a number to the given count of decimal places.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

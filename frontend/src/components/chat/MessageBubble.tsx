@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import type { ChatMessage, FeedbackReason, Rating } from "@/lib/types";
-import { BlockStack, CodeCard, ConnectionTable, Images, Sources } from "./Rich";
+import { BlockStack, CodeCard, ConnectionTable, Images, Sources, Warnings } from "./Rich";
 import { SafeText } from "./SafeText";
 import s from "./widget.module.css";
 
@@ -45,6 +45,8 @@ export function MessageBubble({ msg, onRate, showTokens = false, baseUrl = "" }:
         {msg.status === "done" && !!msg.blocks?.length && <BlockStack blocks={msg.blocks} />}
         {msg.status === "done" && msg.code?.map((c, i) => <CodeCard key={i} block={c} />)}
         {msg.status === "done" && !!msg.images?.length && <Images images={msg.images} baseUrl={baseUrl} />}
+        {msg.status === "done" && !!msg.footer && <div className={s.footer} data-testid="msg-footer">{msg.footer}</div>}
+        {msg.status === "done" && !!msg.warnings?.length && <Warnings warnings={msg.warnings} />}
       </div>
       {msg.status === "done" && (
         <div className={s.meta}>

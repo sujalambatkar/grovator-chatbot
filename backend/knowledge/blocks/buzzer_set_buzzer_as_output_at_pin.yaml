@@ -1,0 +1,14 @@
+id: buzzer_set_buzzer_as_output_at_pin
+title: Set Buzzer as Output at Pin
+category: Sensors-ESP32
+sub_category: Buzzer
+platform: ESP32
+order: 77
+aliases: []
+sensor: buzzer
+description: Sets the pin the buzzer is wired to as an output.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

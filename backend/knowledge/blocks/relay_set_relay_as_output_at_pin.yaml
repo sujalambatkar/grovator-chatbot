@@ -1,0 +1,14 @@
+id: relay_set_relay_as_output_at_pin
+title: Set Relay as Output at Pin
+category: Sensors-ESP32
+sub_category: Relay
+platform: ESP32
+order: 166
+aliases: []
+sensor: relay_module
+description: Sets a given relay on a given pin as an output.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

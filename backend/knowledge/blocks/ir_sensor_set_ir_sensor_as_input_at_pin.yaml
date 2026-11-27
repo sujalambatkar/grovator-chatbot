@@ -1,0 +1,14 @@
+id: ir_sensor_set_ir_sensor_as_input_at_pin
+title: Set IR Sensor as Input at Pin
+category: Sensors-ESP32
+sub_category: IR Sensor
+platform: ESP32
+order: 106
+aliases: []
+sensor: ir_sensor
+description: Sets the pin the infrared sensor is connected to.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

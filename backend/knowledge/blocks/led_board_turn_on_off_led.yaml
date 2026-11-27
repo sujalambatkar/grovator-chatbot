@@ -1,0 +1,14 @@
+id: led_board_turn_on_off_led
+title: Turn On/Off LED
+category: Sensors-ESP32
+sub_category: LED Board
+platform: ESP32
+order: 114
+aliases: []
+sensor: led_module
+description: Switches the specified LED on or off.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

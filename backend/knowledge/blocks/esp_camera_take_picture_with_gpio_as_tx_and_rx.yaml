@@ -1,0 +1,14 @@
+id: esp_camera_take_picture_with_gpio_as_tx_and_rx
+title: Take Picture with GPIO as Tx and Rx
+category: Sensors-ESP32
+sub_category: ESP Camera
+platform: ESP32
+order: 96
+aliases: []
+sensor: esp_camera
+description: Captures a picture with the ESP camera module using the chosen Tx/Rx GPIO pins.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: text_length_of_text
+title: Length of text
+category: Text
+sub_category: ''
+platform: ESP32
+order: 45
+aliases: []
+sensor: null
+description: Gives the number of characters in the text.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

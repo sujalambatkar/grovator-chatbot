@@ -1,0 +1,14 @@
+id: math_round_off_by_digits
+title: Round off by digits
+category: Math
+sub_category: ''
+platform: ESP32
+order: 41
+aliases: []
+sensor: null
+description: Rounds the connected value to the given number of digits.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: compass_sensor_compass_axis_x_y_z
+title: Compass Axis (X / Y / Z)
+category: Sensors-ESP32
+sub_category: Compass Sensor
+platform: ESP32
+order: 93
+aliases: []
+sensor: compass_sensor
+description: Returns the compass heading / magnetic field on the chosen axis (X, Y or Z).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

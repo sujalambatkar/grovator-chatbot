@@ -1,0 +1,14 @@
+id: text_create_text_with
+title: Create text with
+category: Text
+sub_category: ''
+platform: ESP32
+order: 43
+aliases: []
+sensor: null
+description: Joins several values/texts into one text (gear adds more inputs).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

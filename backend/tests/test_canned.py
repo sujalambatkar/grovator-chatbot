@@ -53,7 +53,7 @@ def test_canned_answers_never_contain_a_gpio_the_dataset_does_not_have():
 
 
 def test_what_is_is_answered_only_when_the_dataset_defines_the_device():
-    assert "estimates distance" in C.what("ultrasonic_sensor").text and "GND" in C.what("ultrasonic_sensor").text
+    assert "estimates distance" in C.what("ultrasonic_sensor").text and "GND" not in C.what("ultrasonic_sensor").text   # the concept only: no wiring nobody asked for
     assert C.what("buzzer") is None and C.what("servo") is None          # no definition in the data: a template must not make one up
     assert m("what is a buzzer") is None                                # so the model answers (from the glossary + general knowledge)
     assert m("what is an ultrasonic sensor").kind == "what"
@@ -166,8 +166,8 @@ async def test_every_suggested_question_on_every_page_is_answered_for_zero_token
 
 
 def test_suggestions_follow_the_data_not_a_fixed_list():
-    assert "What is it?" in C.suggestions("devices/ultrasonic_sensor")          # the dataset defines it
-    assert "What is it?" not in C.suggestions("devices/buzzer")                # no definition: asking would cost tokens
+    assert "What is the Ultrasonic Sensor?" in C.suggestions("devices/ultrasonic_sensor")          # the dataset defines it
+    assert "What is the Buzzer?" not in C.suggestions("devices/buzzer")                # no definition: asking would cost tokens
     assert "Which pins are I2C?" in C.suggestions("interfaces/i2c")
     assert all(len(C.suggestions(s_)) >= 2 for s_ in ("devices/servo", "gateway/overview", "interfaces/keypad", "concepts/glossary", "nonsense/x"))
     for q in sum((C.suggestions(f"devices/{k}") for k in DEVICES), []):
@@ -183,5 +183,5 @@ def test_the_content_api_serves_the_suggestions(real_retriever):
     with TestClient(app) as client:
         r = client.get("/content", headers={"Authorization": f"Bearer {make_token('student')}"})
         docs = {d["source"]: d for d in r.json()["docs"]}
-        assert "Which pins does it use?" in docs["devices/servo"]["suggestions"]
+        assert "Which pins does the Servo use?" in docs["devices/servo"]["suggestions"]
         assert "What is it?" not in docs["devices/buzzer"]["suggestions"]

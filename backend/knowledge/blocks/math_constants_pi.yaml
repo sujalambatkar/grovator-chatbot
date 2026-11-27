@@ -1,0 +1,14 @@
+id: math_constants_pi
+title: Constants (pi ...)
+category: Math
+sub_category: ''
+platform: ESP32
+order: 29
+aliases: []
+sensor: null
+description: A mathematical constant (π, e, φ, √2, √½, ∞) chosen by dropdown.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

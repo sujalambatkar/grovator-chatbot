@@ -1,0 +1,16 @@
+id: loops_repeat_while_until
+title: Repeat while / until
+category: Loops
+sub_category: ''
+platform: ESP32
+order: 23
+aliases:
+- repeat while
+- while loop
+sensor: null
+description: Repeats the inner blocks while (or until, via dropdown) the condition holds.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

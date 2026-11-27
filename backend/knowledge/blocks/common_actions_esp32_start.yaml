@@ -1,0 +1,16 @@
+id: common_actions_esp32_start
+title: Start
+category: Common Actions-ESP32
+sub_category: ''
+platform: ESP32
+order: 60
+aliases:
+- start block
+sensor: null
+description: 'Marks where your program begins. It is only there to make the blocks easier to read: the program works even
+  without it.'
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

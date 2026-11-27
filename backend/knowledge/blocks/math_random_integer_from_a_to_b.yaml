@@ -1,0 +1,14 @@
+id: math_random_integer_from_a_to_b
+title: Random integer from a to b
+category: Math
+sub_category: ''
+platform: ESP32
+order: 35
+aliases: []
+sensor: null
+description: Gives a random whole number between the two limits.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: buzzer_set_buzzer_named_as_output_at_pin
+title: Set Buzzer (named) as Output at Pin
+category: Sensors-ESP32
+sub_category: Buzzer
+platform: ESP32
+order: 79
+aliases: []
+sensor: buzzer
+description: Sets a numbered/named buzzer on a given pin as an output (for projects with several buzzers).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

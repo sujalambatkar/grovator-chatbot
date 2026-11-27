@@ -1,0 +1,14 @@
+id: tds_sensor_calculate_tds_value_function
+title: Calculate TDS Value-function
+category: Sensors-ESP32
+sub_category: TDS Sensor
+platform: ESP32
+order: 185
+aliases: []
+sensor: tds_sensor
+description: Converts the raw TDS reading into a TDS value (ppm).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

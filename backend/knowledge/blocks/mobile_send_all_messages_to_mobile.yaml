@@ -1,0 +1,14 @@
+id: mobile_send_all_messages_to_mobile
+title: Send all messages to mobile
+category: Mobile
+sub_category: ''
+platform: ESP32
+order: 20
+aliases: []
+sensor: null
+description: Pushes all queued messages to the mobile app at once.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

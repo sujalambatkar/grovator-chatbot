@@ -26,6 +26,8 @@ export interface DoneEvent {
   block_stack?: BlockStackItem[];
   code_blocks?: CodeBlock[];
   images?: ImageRef[];
+  footer?: string;
+  warnings?: SafetyWarning[];
 }
 
 export type StreamEvent =
@@ -63,6 +65,15 @@ export interface ChatMessage {
   blocks?: BlockStackItem[];
   code?: CodeBlock[];
   images?: ImageRef[];
+  footer?: string;
+  warnings?: SafetyWarning[];
+}
+
+export interface SafetyWarning {
+  id: string;
+  level: "danger" | "caution";
+  title: string;
+  text: string;
 }
 
 export interface ContentDoc {

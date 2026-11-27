@@ -1,0 +1,14 @@
+id: logic_and_or
+title: And / Or
+category: Logic
+sub_category: ''
+platform: ESP32
+order: 6
+aliases: []
+sensor: null
+description: Combines two conditions with AND or OR; gives true/false.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

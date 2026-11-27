@@ -1,0 +1,14 @@
+id: npk_sensor_get_phosphorus
+title: Get Phosphorus
+category: Sensors-ESP32
+sub_category: NPK Sensor
+platform: ESP32
+order: 140
+aliases: []
+sensor: npk_sensor
+description: Returns the soil phosphorus level.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

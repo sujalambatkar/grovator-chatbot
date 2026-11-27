@@ -1,0 +1,14 @@
+id: pulseoximeter_v3_0_store_heartrate_and_oximeter_data
+title: Store Heartrate and Oximeter Data
+category: Sensors-ESP32
+sub_category: Pulseoximeter V3.0
+platform: ESP32
+order: 158
+aliases: []
+sensor: null
+description: Saves the heart rate and SpO2 readings into the connected variables (V3.0 sensor).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -8,12 +8,15 @@ import difflib
 import re
 from dataclasses import dataclass, field
 
+from app.guardrails.hazard import detect_hazard
 from knowledge.loader import Knowledge
 
 HEALTH_NOTE = ("Remember: this is a learning project, not a medical device. For real health concerns, "
                "talk to a doctor or a trusted adult.")
+PALETTE_NOTE = ""    # the "purposes are inferred" caveat lives in knowledge/GAPS.md; students do not see it
+PALETTE_FOOTER = ""
 NOT_DOCUMENTED = "I don't have that detail yet. Please check your kit documentation or ask your teacher."
-_HEALTH = re.compile(r"\b(?:spo2|oxygen|heart ?rate|heartrate|bpm|pulse rate|readings?|health|healthy|diagnos\w*|medical|doctor|covid|accurate|accuracy|normal)\b", re.I)
+_HEALTH = re.compile(r"\b(?:spo2|oxygen|heart ?rate|heartrate|bpm|pulse(?: rate)?|oximeter|ecg|blood pressure|health|healthy|diagnos\w*|medical|doctor|covid)\b", re.I)
 _MEDIA_URL = "/media/"
 
 
@@ -60,6 +63,7 @@ class AppAnswer:
     blocks: list[dict] = field(default_factory=list)   # [{"order", "title", "description"}]
     code: list[dict] = field(default_factory=list)     # [{"title", "language", "code", "note"}]
     images: list[dict] = field(default_factory=list)   # [{"url", "caption", "verified"}]
+    footer: str = ""                     # small print shown under the structured parts (block list, table...)
     grounded: bool = True
 
 
@@ -90,15 +94,30 @@ _PINRULE_Q = re.compile(r"\b(?:which|what|list|show|tell me)\b[^?.!]{0,30}\b(?:p
 _MEASURE = re.compile(r"\bhow\b[^?.!]{0,40}\b(?:find|finds|detect|detects|count|counts|measure|measures|calculate|calculates|calculated|work out|works out|get|gets)\b[^?.!]{0,30}\b(?:heart ?beats?|beats?|bpm|heart rate|spo2|oxygen)\b|\bhow (?:does|do) the (?:block )?code (?:measure|work|read|find)\b", re.I)
 _GENERIC_REF = re.compile(r"(?:^|\b(?:the|my|this|our|that|a|an|your|connect|connecting|wont|won't|not|does|do|is|are|why|how)\s+)sensor\b|\b(?:the|this|my|our) (?:sensor|circuit|project|application|app|lesson|kit|program|code|blocks?|leds?)\b|\b(?:it|this|these|them|wires?|pins?|steps?|blocks?)\b|\bshows? 0\b|\bstart\b|\bsensors? (?:are|is)\b", re.I)
 _SPEC_Q = re.compile(r"\b(?:the )?(?:weight|price|cost|size|dimensions?)\s+(?:of|for)\b|\bhow much (?:does|is|do)\b|\b(?:price|cost|warranty)\b|\bwhere (?:to|can i) buy\b|\bhow (?:heavy|big|large)\b", re.I)
+_CODE_WORDS = re.compile(r"\bpython\b|\bmicropython\b|\bscript\b|\bsource\b|\bsnippet\b|\bimplementation\b|\bc\+\+\b|\barduino\b|(?<!block )\bcodes?\b(?! block)", re.I)
 _LED_Q = re.compile(r"\bled[ _]?([123])\b", re.I)
 _DEF_CUE = re.compile(r"\b(?:do|does|work|works|working|is|are|mean|means|for|use|used|measure|measures)\b", re.I)
+_CALC_Q = re.compile(r"\bformula\b|\bequation\b|\bcalculat\w*|\bcompute\w*|\bconvert\w*|\bhow (?:is|are) [^?.!]{0,40}(?:measured|calculated|computed|found|worked out|determined)\b"
+                     r"|\b(?:explain|describe)\b[^?.!]{0,40}\b(?:in detail|in depth|concept|principle|physics|maths?|working)\b|\bin (?:detail|depth)\b"
+                     r"|\b(?:how|what)\b[^?.!]{0,50}\b(?:read|get|find|measure|display|show|work out)\b[^?.!]{0,40}\bin (?:centi\w*|cm|met(?:er|re)s?|mm|inch\w*|celsius|fahrenheit|\u00b0c|kelvin|ppm|percent|%|lit(?:er|re)s?|ml|volts?|amps?|kg|grams?|pascals?|hpa|lux|db)\b"
+                     r"|\b(?:which|what) units?\b|\bunits? (?:of|for|is|are)\b", re.I)
+_REWRITE_Q = re.compile(r"\bsimplif\w*|\bsimpler\b|\bsimply\b|\bsimple (?:words|terms|way|language|english)\b|\beasier\b|\beasy to understand\b|\bshorter\b|\bshorten\b|\bbrief(?:ly)?\b|\bsummari[sz]e\b|\btl;?dr\b|\beli5\b"
+                         r"|\brephrase\b|\breword\b|\belaborate\b|\bexpand\b|\bmore (?:detail|details|about (?:it|that|this))\b|\bin (?:more )?detail\b|\b(?:give|show) (?:me )?(?:an? )?(?:another )?(?:example|analogy)\b|\bfor example\b"
+                         r"|\b(?:explain|say|tell me|describe)\b[^?.!]{0,12}\b(?:again|better|differently|more|once more)\b|\b(?:i )?(?:did ?n[o'\u2019]?t|don[\u2019']?t|do not|can[\u2019']?t) (?:understand|get)\b|\bconfus\w*\b"
+                         r"|\bwhat do you mean\b|\bcan you repeat\b|\bonce more\b|\bsay (?:that|it) again\b", re.I)
+_YN_START = re.compile(r"^\W*(?:please |so |and |but |ok |okay )*(?:do|does|did|is|are|can|could|should|will|would|must|has|have|am)\b", re.I)
+_NEED_Q = re.compile(r"\b(?:do|does|will|would|should) (?:i|we|you|it|my \w+) (?:really |actually |also |still )?(?:need|have to use|have to|must use)\b|\bmust i\b"
+                     r"|\b(?:is|are) (?:it|they|this|that|the [\w\s().-]{1,45}?|a [\w\s().-]{1,45}?)\s*(?:block )?(?:needed|necessary|required|compulsory|mandatory|optional)\b|\bis it (?:needed|necessary|required|optional)\b", re.I)
+_EXISTS_Q = re.compile(r"\bis there (?:a|an|any)\b[^?.!]{0,50}\bblocks?\b|\bare there (?:any )?blocks\b|\bdo(?:es)? (?:the |a |an )?[\w\s-]{1,40}?\s(?:have|has) (?:any |a |an )?blocks?\b", re.I)
+_IFACE_Q = re.compile(r"\b(i2c|uart|analog|digital|usb)\b", re.I)
+_CAN_CONNECT_Q = re.compile(r"\bcan i (?:connect|use|plug|wire|attach|hook)\b|\bis it possible to (?:connect|use)\b|\bdoes (?:the |a )?[\w\s().-]{1,40}? (?:work|connect) (?:with|to|on)\b", re.I)
 _BLOCK_Q = re.compile(r"\b(?:what|how|explain|does|do|tell|describe|purpose|used for|for)\b", re.I)
 
 _LESSON_WORDS = re.compile(r"\bled[ _]?[123]\b|\bheart ?rate\b|\bbpm\b|\bspo2\b|\boxygen\b|\bfinger\b|\boximeter\b|\blesson\b|\bprogram\b|\bthis project\b|\bour project\b", re.I)
 GENERAL_CUE = re.compile(r"^\W*(?:what is|what are|what's|whats|what does [^?]{1,40} mean|define|explain|how does [^?]{1,50} work|how do [^?]{1,50} work|why (?:do|does|is|are)|"
                          r"difference between|meaning of|tell me about|what do you mean by|can you explain)\b", re.I)
 GENERAL_TOPIC = re.compile(r"\b(?:spo2|sp02|oxygen saturation|blood oxygen|oxygen|bpm|heart ?rate|heartbeat|pulse|i2c|i²c|uart|serial|gpio|led|leds|relay|micropython|python|iot|aiot|iiot|"
-                           r"internet of things|gateway|cloud|sensor|sensors|esp32|block coding|block programming|variable|variables|loop|if else|voltage|current|resistor|sda|scl|"
+                           r"internet of things|gateway|cloud|sensor|sensors|esp32|block coding|block programming|variable|variables|loop|if else|voltage|current|resistor|sda|scl|pins?|wires?|ground|vcc|gnd|pwm|adc|breadboard|circuit|"
                            r"infrared|photodetector|light|reflection|refraction|signal|amplifier|baud|sleep|library|import|print|function|conditions?)\b", re.I)
 
 
@@ -128,12 +147,297 @@ class AppKB:
             for al in [s.name, *s.aliases]:
                 self._add(al, "sensor", s.id)
         for b in self.k.blocks.values():
+            if b.order:  # block sheet entries are found by _block_catalog_answer (titles repeat across sensors: "Get Temperature")
+                continue
             for al in [b.title, *b.aliases]:
                 self._add(al, "block", b.id)
+        self._build_palette()
         for kit in self.k.kits.values():
             for al in [kit.name, *kit.aliases]:
                 self._add(al, "kit", kit.id)
         self._strong.sort(key=lambda t: -len(t[0].pattern))
+
+    # ------------------------------------------------------------------ block palette (the block sheet)
+    def _build_palette(self) -> None:
+        self._sheet = sorted((b for b in self.k.blocks.values() if b.order), key=lambda b: b.order)
+        self._cats: dict[str, list[str]] = {}        # category -> sub-categories in sheet order ("" = the category has blocks of its own)
+        for b in self._sheet:
+            if b.sub_category not in self._cats.setdefault(b.category, []):
+                self._cats[b.category].append(b.sub_category)
+        self._cat_alias = {"functions": "Functions", "function": "Functions", "logic": "Logic", "mobile": "Mobile", "loops": "Loops", "loop": "Loops",
+                           "math": "Math", "text": "Text", "variables": "Variables", "variable": "Variables", "common actions": "Common Actions-ESP32",
+                           "common action": "Common Actions-ESP32", "common": "Common Actions-ESP32"}
+        self._cat_alias = {a: c for a, c in self._cat_alias.items() if c in self._cats}
+        self._sub_names: dict[str, str] = {}          # normalised sub-category / sensor name -> sub-category
+        for b in self._sheet:
+            if b.sub_category:
+                self._sub_names[norm(b.sub_category)] = b.sub_category
+                self._sub_names[norm(re.sub(r"\s*(?:sensor|display|board|controller)$", "", b.sub_category, flags=re.I))] = b.sub_category
+        self._sub_names.pop("pulse oximeter", None)  # handled through the sensor entity (three versions)
+        self._sub_names.pop("motor", None)
+
+    def _subs_for(self, e: Entities, msg: str) -> list[str]:
+        """The block sub-categories a message is about: through a detected sensor, or by the sub-category's own name."""
+        subs: list[str] = []
+        for sid in e.sensors:
+            for b in self._sheet:
+                if b.sensor == sid and b.sub_category not in subs:
+                    subs.append(b.sub_category)
+        t = norm(msg)
+        for name, sub in sorted(self._sub_names.items(), key=lambda kv: -len(kv[0])):
+            m = re.search(rf"(?<![a-z0-9]){re.escape(name)}(?![a-z0-9])", t) if len(name) >= 3 else None
+            if m and sub not in subs:
+                short = name != norm(sub)  # "sound" for "Sound Sensor": not when a task verb comes first ("play a sound", "detect motion")
+                if short and re.search(r"\b(?:play|make|detect|measure|read|sense|check|find|monitor|control|show|display|turn|rotate|move|catch|know)\b", t[:m.start()]):
+                    continue
+                subs.append(sub)
+        return subs
+
+    @staticmethod
+    def _place(b) -> str:
+        return f"{b.category} > {b.sub_category}" if b.sub_category else b.category
+
+    def _group(self, cat: str, sub: str):
+        return [b for b in self._sheet if b.category == cat and b.sub_category == sub]
+
+    @staticmethod
+    def _md_list(bl) -> str:
+        """Numbered list for the chat: bold block name, then what it does."""
+        return "\n".join(f"{i}. **{b.title}**: {b.description}" for i, b in enumerate(bl, 1))
+
+    def _block_rows(self, bl) -> list[dict]:
+        return [{"order": i, "title": b.title, "description": b.description} for i, b in enumerate(bl, 1)]
+
+    def find_blocks(self, msg: str, e: Entities) -> list:
+        """Blocks of the sheet named in the message: the title as a phrase, or all its meaningful words."""
+        t = " " + norm(msg) + " "
+        stop = {"on", "off", "a", "an", "the", "at", "as", "of", "to", "in", "for", "with", "from", "and", "or", "pin", "value", "set", "sensor", "block", "blocks"}
+        hits, partial = [], []
+        for b in self._sheet:
+            nt = norm(re.sub(r"\(.*?\)", " ", b.title))
+            if len(nt) < 3:
+                continue
+            if f" {nt} " in t or any(f" {norm(al)} " in t for al in b.aliases):
+                hits.append((2, len(nt), b))
+                continue
+            words = [w for w in nt.split() if w not in stop]
+            if len(words) >= 2 and all(f" {w} " in t for w in words):
+                hits.append((1, len(nt), b))
+            elif len(words) >= 3:  # most of the title's words ("calculate co value" for "Calculate CO value in ppm"): only used when nothing matches fully and one block stands out
+                got = sum(f" {w} " in t for w in words)
+                if got >= 2 and got / len(words) >= 0.6:
+                    partial.append((got / len(words), got, b))
+        if not hits and partial:
+            partial.sort(key=lambda x: (-x[0], -x[1]))
+            if len(partial) == 1 or partial[0][0] > partial[1][0]:
+                return [partial[0][2]]
+        if not hits:
+            return []
+        best = max(h[0] for h in hits)
+        hits = [h for h in hits if h[0] == best]
+        longest = max(h[1] for h in hits)
+        out = [h[2] for h in hits if h[1] >= longest - 12]  # a longer title ("Get Climate Sensor Value from Pin") beats the short one it contains
+        if len(out) > 1:  # the full title including its parentheses, "Set Buzzer (named) as Output at Pin", beats its plain sibling
+            exact = [b for b in out if f" {norm(b.title)} " in t]
+            out = exact or out
+        subs = self._subs_for(e, msg)
+        narrowed = [b for b in out if b.sub_category in subs]
+        return narrowed or out
+
+    def _block_catalog_answer(self, msg: str, e: Entities) -> AppAnswer | None:
+        """Where a block is, which blocks a category / sensor has, and what a block does, from the block sheet (0 tokens)."""
+        if not self._sheet or not re.search(r"\bblocks?\b|\bblock codes?\b|\btoolbox\b|\bpalette\b", msg, re.I) or _CODE.search(msg) and self.k.blocks and e.blocks:
+            return None
+        src = ["Block sheet"]
+        total = len(self._sheet)
+        # 0) a request for the code behind a block: the sheet has none, so the answer is fixed ("block code" alone means "blocks", not Python)
+        if _CODE_WORDS.search(msg) and not e.blocks:
+            bl = self.find_blocks(msg, e)
+            if not bl:
+                own = self.detect(msg)
+                bl = [b for sub in self._subs_for(own, msg) for b in self._group(self._sheet_cat(sub), sub)]
+            if bl:
+                return self._block_code_answer(bl)
+        # 1) what exists at all
+        if re.search(r"\bhow many\b[^?.!]{0,30}\bblocks?\b|\b(?:categories|groups|sections|drawers)\b[^?.!]{0,30}\bblocks?\b|\bblocks?\b[^?.!]{0,30}\b(?:categories|groups|sections|drawers)\b|\bwhat (?:kinds?|types?) of blocks\b", msg, re.I) and not self._subs_for(e, msg):
+            lines = []
+            for c, subs in self._cats.items():
+                if subs == [""]:
+                    lines.append(f"- **{c}**: {len(self._group(c, ''))} blocks")
+                else:
+                    lines.append(f"- **{c}**: {sum(len(self._group(c, x)) for x in subs)} blocks, in {len(subs)} groups (one per sensor or device)")
+            return AppAnswer("blocks", f"**The block editor has {total} blocks** in these categories:\n\n" + "\n".join(lines)
+                             + "\n\nAsk me about a category (for example ‘Math’) or a sensor (for example ‘the buzzer’) and I will list its blocks.", src)
+        # 2) where is a block / what does a block do
+        named = self.find_blocks(msg, e)
+        where_q = re.search(r"\bwhere\b|\bwhich (?:category|group|section|drawer|menu|sub-?category)\b|\bwhat (?:category|group|section|drawer)\b|\b(?:find|found|locate|located|situated|under|belongs?)\b", msg, re.I)
+        what_q = _BLOCK_Q.search(msg) or where_q or _NEED_Q.search(msg)
+        if named and what_q:
+            subs = {b.sub_category for b in named}
+            if len(named) > 1 and len(subs) == 1:
+                return AppAnswer("blocks", f"**{len(named)} blocks match.** They are all in **{self._place(named[0])}**:\n\n" + self._md_list(named), src, footer=PALETTE_FOOTER)
+            if len(named) > 1 and len(subs) > 1:
+                places = "\n".join(f"- {self._place(b)}" for b in named)
+                text = f"**{named[0].title}** exists in {len(named)} places:\n\n{places}\n\nTell me which sensor you mean and I will show you that block."
+                return AppAnswer("block", text, src)
+            b = named[0]
+            grp = self._group(b.category, b.sub_category)
+            idx = grp.index(b) + 1
+            where_line = f"**{b.title}** is in **{self._place(b)}** (block {idx} of {len(grp)} in that group)."
+            asks_what = bool(re.search(r"\bwhat\b|\bexplain\b|\bdescribe\b|\bpurpose\b|\bused for\b|\bhow (?:does|do|is|to)\b|\bmeaning\b", msg, re.I))
+            asks_group = bool(re.search(r"\bgroup\b|\border\b|\bnext\b|\bafter\b|\bbefore\b|\bwith it\b|\balongside\b|\bsiblings?\b", msg, re.I))
+            if where_q and not asks_what:
+                text = where_line
+            elif asks_what and not where_q:
+                text = f"**{b.title}**: {b.description}"
+            else:
+                text = f"{where_line}\n\n**What it does:** {b.description}"
+            if asks_group and b.sub_category and len(grp) > 1:
+                text += "\n\n**The group, in order:**\n\n" + "\n".join(f"{i}. " + (f"**{x.title}** (this one)" if x is b else x.title) for i, x in enumerate(grp, 1))
+            return AppAnswer("block", text, [f"Block: {b.title}"])
+        # 3) the blocks of one sensor / sub-category
+        # a sensor carried over from the previous turn only counts for a real follow-up ("which blocks does it need?"), never for a message that asks about a block we could not find
+        own = self.detect(msg)
+        follow_up = bool(re.search(r"\b(?:it|its|that|this|them|those|these|same)\b", msg, re.I)) and not (where_q and re.search(r"\bblock\b", msg, re.I))
+        subs = self._subs_for(own if own.sensors else (e if follow_up else own), msg)
+        if subs and not self._cat_named(msg):
+            bl = [b for sub in subs for b in self._group(self._sheet_cat(sub), sub)]
+            names = " and ".join(subs)
+            text = (f"**{names}**: {len(bl)} block{'s' if len(bl) != 1 else ''} (in the block editor under {self._sheet_cat(subs[0])} \u203a {subs[0]}).\n\n"
+                    "In this order, from the top:\n\n" + self._md_list(bl))
+            sid = next((b.sensor for b in bl if b.sensor in self.k.sensors and self.k.sensors[b.sensor].kit_connections), None)
+            return AppAnswer("blocks", text, sources=[f"Blocks: {self._sheet_cat(subs[0])} > {n}" for n in subs])
+        # 4) a whole category
+        cat = self._cat_named(msg)
+        if cat:
+            bl = [b for b in self._sheet if b.category == cat]
+            return AppAnswer("blocks", f"**{cat}**: {len(bl)} blocks, in the order they appear in the editor:\n\n" + self._md_list(bl), [f"Block category: {cat}"], footer=PALETTE_FOOTER)
+        if _BLOCKS.search(msg) and not e.sensors and not named and not [w for w in norm(msg).split() if w not in self._TASK_STOP]:  # "Which blocks do I need?": which task or sensor?
+            cats = "\n".join(f"- {c.replace('-ESP32', '')}" for c in self._cats if c != "Sensors-ESP32")
+            return AppAnswer("blocks", f"**I know {total} blocks.** Which ones do you need?\n\n**Tell me a sensor**, for example ‘the buzzer’ or ‘the ultrasonic sensor’, or **a category**:\n\n{cats}\n- Sensors (one group per sensor)", src)
+        # 5) which sensors have blocks
+        if re.search(r"\bsensors?\b", msg, re.I) and re.search(r"\b(?:which|what|list|show|all)\b", msg, re.I) and not e.sensors:
+            subs = [x for x in self._cats.get("Sensors-ESP32", []) if x]
+            return AppAnswer("blocks", f"**{len(subs)} sensors and devices have blocks** (category Sensors-ESP32):\n\n" + ", ".join(subs) + "\n\nAsk me for the blocks of any one, for example ‘Which blocks do I need for the flame sensor?’", src)
+        return None
+
+    _TASK_STOP = frozenset("a an the to of for in on at is are do does i we you my me need needed use used using which what block blocks code want how can should would will "
+                           "make get with and or it this that sensor sensors thing something program build create by from be as into when".split())
+
+    def _carried_sensors(self, msg: str, e: Entities) -> list[str]:
+        """Sensors the message is about: the ones it names; those carried over from the conversation only for a real follow-up ("it", "that sensor")."""
+        own = self.detect(msg).sensors
+        if own:
+            return own
+        return list(e.sensors) if re.search(r"\b(?:it|its|that|this|them|those|these|same)\b", msg, re.I) else []
+
+    _FOLLOW_BLOCKS = re.compile(r"\b(?:explain|describe|tell me (?:more )?about|what (?:do|does)|how (?:do|does)|show)\b[^?.!]{0,30}\b(?:those|these|them|the above|that)\b[^?.!]{0,15}\bblocks?\b"
+                                r"|\b(?:explain|describe)\s+(?:those|these|them)\b", re.I)
+
+    def follow_up(self, message: str, previous_user: str) -> AppAnswer | None:
+        """"Explain those blocks": the blocks of the previous palette answer again, each with what it does (0 tokens)."""
+        if not self._sheet or not previous_user or not self._FOLLOW_BLOCKS.search(message):
+            return None
+        r = self.answer(previous_user, self.detect(previous_user), Entities())
+        return r if r and r.kind in ("blocks", "block") else None
+
+    # ---- wiring hazards: tell the student to stop / not to do it, then show the correct wiring ----------------------------
+    def hazard_answer(self, message: str, e: Entities) -> AppAnswer | None:
+        found = detect_hazard(message)
+        if not found:
+            return None
+        hz, is_question = found
+        if is_question:
+            head, body = "## \u26d4 No, do not do this", hz.never
+        elif hz.fire:
+            head, body = "## \u26d4 Get away and tell an adult now", hz.fix
+        elif hz.id == "shock":
+            head, body = "## \u26d4 Tell an adult right now", hz.fix
+        else:
+            head, body = "## \u26d4 Stop! Unplug the power now", hz.fix
+        out = [head, body]
+        sensors = [self.k.sensors[x] for x in e.sensors if x in self.k.sensors and self.k.sensors[x].kit_connections]
+        if hz.id in ("short_circuit", "power_to_signal", "overvoltage"):
+            if sensors:
+                connect, _src = self._guide_connect(sensors[0], e.kits)
+                out += [f"### The correct wiring for the {sensors[0].name.split(' (')[0]}", connect]
+            else:
+                out += ["### The simple rule", "- **GND** \u2192 GND (ground) only\n- **VCC** \u2192 the voltage written for your sensor (3.3V or 5V)\n- **Signal / data wire** \u2192 a GPIO pin\n\nTell me which sensor you use and I will show its exact wiring."]
+        return AppAnswer("safety_stop", "\n\n".join(out), ["Safety rules"], grounded=True)
+
+    # ---- yes / no questions: the verdict first, then the details -------------------------------------------------------
+    @staticmethod
+    def _lower_first(t: str) -> str:
+        return t[:1].lower() + t[1:] if t and not t[:2].isupper() else t
+
+    def _need_verdict(self, b) -> str:
+        """"Do I need the X block?" from the block's group and purpose (the sheet does not say 'required', so this follows how the group is built)."""
+        t, d = b.title, b.description.rstrip(".")
+        if b.category != "Sensors-ESP32" and b.title not in ("Start", "Use [Sensor]"):
+            return f"**It depends.** Use the {t} block only if your program needs it: {self._lower_first(d)}."
+        if t == "Start":
+            return f"**No.** {d}."   # the course owner: Start is for the reader, the code works without it
+        if t.startswith("Use ["):
+            return f"**Yes.** {d}."
+        if "several" in d or "(named)" in t:
+            return f"**No, not for a single device.** {d}. The simpler block in the same group does the job for one."
+        if re.match(r"(?:Set |Initialize|Take Picture)", t):
+            return f"**Yes.** This is the set-up block of the group: {self._lower_first(d)}. The other blocks of the group need it first."
+        if t.startswith("Calculate") or "Calculate" in t:
+            return f"**Yes.** {d}. Put it before the block that gets the result."
+        if re.match(r"(?:Get|Read)\b", t):
+            return f"**Yes, if you want the reading.** {d}."
+        return f"**It depends on your project.** {d}."
+
+    def _yes_no_lead(self, msg: str, e: Entities) -> str | None:
+        """One line that answers a yes/no question, or None when the files cannot decide it."""
+        # a) "Do I need the Calculate Distance block?"
+        if self._sheet and _NEED_Q.search(msg):
+            named = self.find_blocks(msg, e)
+            if named and len({b.sub_category for b in named}) == 1:
+                verdicts = [self._need_verdict(b) for b in named]
+                if len({v.split("**")[1] for v in verdicts}) == 1:
+                    b0 = named[0]
+                    grp = self._group(b0.category, b0.sub_category)
+                    return verdicts[0] + f"\n\n**Where:** {self._place(b0)} (block {grp.index(b0) + 1} of {len(grp)})."
+        # b) "Is there a block for the buzzer?" / "Does the LoRa have blocks?"
+        if self._sheet and _EXISTS_Q.search(msg):
+            subs = self._subs_for(self.detect(msg), msg)
+            if subs:
+                n = sum(len(self._group(self._sheet_cat(x), x)) for x in subs)
+                titles = ", ".join(b.title for x in subs for b in self._group(self._sheet_cat(x), x))
+                return f"**Yes.** The {' and '.join(subs)} has {n} block{'s' if n != 1 else ''} in the block editor: {titles}."
+        sensors = [self.k.sensors[x] for x in self.detect(msg).sensors if x in self.k.sensors]
+        # c) "Does the pulse oximeter use I2C?"
+        m = _IFACE_Q.search(msg)
+        if m and sensors and re.match(r"^\W*(?:do|does|is|are)\b", msg, re.I):
+            s0, want = sensors[0], m.group(1)
+            have = {s0.interface.lower(), *(kc.interface.lower() for kc in s0.kit_connections if kc.interface)} - {"none", "-", ""}
+            if have:
+                if want.lower() in have:
+                    per_kit = "; ".join(f"{self._kit_short(kc.kit)}: {kc.interface}" for kc in s0.kit_connections if kc.interface)
+                    return f"**Yes.** The {s0.name.split(' (')[0]} uses {want.upper() if want.lower() in ('i2c', 'uart', 'usb') else want.lower()}" + (f" ({per_kit})." if len(have) > 1 and per_kit else ".")
+                return f"**No.** The {s0.name.split(' (')[0]} uses {', '.join(sorted(h.upper() if h in ('i2c', 'uart', 'usb') else h for h in have))}, not {want.upper() if want.lower() in ('i2c', 'uart', 'usb') else want.lower()}."
+        # d) "Can I connect the ultrasonic sensor to the ESP32 kit?"
+        if sensors and _CAN_CONNECT_Q.search(msg) and sensors[0].kit_connections:
+            s0, kits = sensors[0], self.detect(msg).kits
+            have = [kc.kit for kc in s0.kit_connections]
+            if kits:
+                if kits[0] in have:
+                    return f"**Yes.** The {s0.name.split(' (')[0]} is documented for the {self._kit_short(kits[0])}."
+                return f"**I can't confirm that.** The {s0.name.split(' (')[0]} has no documented connection for the {self._kit_short(kits[0])}."
+            return f"**Yes.** The {s0.name.split(' (')[0]} is documented for: " + ", ".join(self._kit_short(k) for k in have) + "."
+        return None
+
+    def _sheet_cat(self, sub: str) -> str:
+        return next((b.category for b in self._sheet if b.sub_category == sub), "")
+
+    def _cat_named(self, msg: str) -> str | None:
+        t = norm(msg)
+        for alias, cat in sorted(self._cat_alias.items(), key=lambda kv: -len(kv[0])):
+            if re.search(rf"(?<![a-z0-9]){alias}(?![a-z0-9])[^?.!]{{0,12}}(?:category|blocks?|drawer|group|section)|(?:category|drawer|group|section)\s+{alias}\b|\b{alias}\s+blocks?\b", t):
+                return cat
+        return None
 
     def detect(self, text: str) -> Entities:
         t = norm(text)
@@ -177,6 +481,64 @@ class AppKB:
         or follows a conversation about the lesson ("what about the LED?")."""
         return bool(e.weak and (_LESSON_WORDS.search(message) or (recent is not None and recent.strong)))
 
+    _NOT_PHENOMENON = frozenset("sensor sensors module modules kit board controller gateway display motor pump input output analog digital block blocks code program "
+                                "pins wires wire wiring connect connection application project lesson ground power supply".split())
+
+    def is_rewrite_request(self, message: str, e: Entities) -> bool:
+        """"simplify it", "explain that again", "give me an example", "shorter please": the student wants the PREVIOUS ANSWER reworked.
+        Only short messages that name nothing new (no sensor, kit, block, wiring)."""
+        if e.strong or e.sensors or len(message.split()) > 12:
+            return False
+        if re.search(r"\b(?:connect\w*|wir(?:e|ing)|pins?|blocks?|code|gpio)\b", message, re.I):
+            return False
+        return bool(_REWRITE_Q.search(message))
+
+    def explain_target(self, message: str, e: Entities, recent: Entities) -> str | None:
+        """"How does the ultrasonic sensor measure distance?", "now explain the same concept in detail and how can I read the distance in centimetres":
+        the sensor whose working principle, formula and calculation is asked (from the message, or the one just discussed)."""
+        if not _CALC_Q.search(message):
+            return None
+        if _WIRING.search(message) and not re.search(r"\bformula\b|\bcalculat\w*|\bconvert\w*|\bunits?\b|\bin detail\b|\bconcept\b|\bprinciple\b", message, re.I):
+            return None   # a wiring question
+        named = [x for x in e.sensors if x in self.k.sensors]
+        if not named and re.search(r"\b(?:same|that|it|this|those|concept|sensor)\b", message, re.I):
+            named = [x for x in recent.sensors if x in self.k.sensors]
+        named = [x for x in named if self.k.sensors[x].working or self.k.sensors[x].description]
+        return named[0] if named else None
+
+    def explain_notes(self, sensor_id: str) -> str:
+        """What is DOCUMENTED about the sensor, without pins or wiring: the model explains the formula from general physics around it."""
+        s = self.k.sensors[sensor_id]
+        lines = [f"SENSOR NOTES: {s.name} ({self._cat(s)}).", f"Working (from the sensor list): {s.working or s.description}"]
+        if s.how_it_measures:
+            lines.append("How the block code measures: " + " ".join(s.how_it_measures))
+        bl = [b for b in self._sheet if b.sensor == s.id]
+        if bl:
+            lines.append("Blocks: " + "; ".join(f"{b.title}: {b.description}" for b in bl))
+        if s.variables:
+            lines.append("Variables: " + ", ".join(s.variables))
+        return "\n".join(lines)
+
+    def is_platform_question(self, message: str, e: Entities) -> bool:
+        """"Tell me about Grovator", "what is this platform?": about the platform itself, not a sensor, kit or page."""
+        if e.strong or e.sensors or e.kits:
+            return False
+        if re.search(r"\b(?:connect\w*|wir(?:e|ing)|pins?|blocks?|code|sensors?|kit)\b", message, re.I):
+            return False
+        return bool(re.search(r"\bgrovator\b|\b(?:this|the) (?:platform|course|website|app|application)\b", message, re.I)
+                    and re.search(r"\b(?:tell me about|what(?:'s| is)|who|explain|describe|about|introduce|what can i|how does|how do (?:i|we) use)\b", message, re.I))
+
+    def is_phenomenon_question(self, message: str, e: Entities) -> bool:
+        """"What is alcohol?", "what is soil?": a question about the substance or physical quantity a sensor measures, NOT about the sensor.
+        Answered from general knowledge, never with the sensor's own description."""
+        if e.strong or not GENERAL_CUE.search(message):
+            return False
+        if re.search(r"\b(?:sensors?|modules?|devices?|kits?|boards?|controllers?|gateway|connect\w*|wir(?:e|ing)|pins?|blocks?|this|these|it|its|here|page|lesson|project|application)\b", message, re.I):
+            return False
+        words = {w for w in norm(message).split() if len(w) >= 4}
+        names = {w for s in self.k.sensors.values() for al in [s.name, *s.aliases] for w in norm(al).split() if len(w) >= 4} - self._NOT_PHENOMENON
+        return bool(words & names)
+
     def is_general(self, message: str, e: Entities, hw_named: bool) -> bool:
         """A "what is X / how does X work" question about a technology: answered from model knowledge in student language."""
         if e.strong or not (GENERAL_CUE.search(message) and GENERAL_TOPIC.search(message)):
@@ -186,9 +548,28 @@ class AppKB:
 
     # ------------------------------------------------------------------ answers
     def answer(self, message: str, e: Entities, recent: Entities, hw_named: bool = False, page_only: bool = False) -> AppAnswer | None:
-        """A deterministic answer, or None to fall through to retrieval / the model."""
+        """A deterministic answer, or None to fall through to retrieval / the model. A yes/no question gets its verdict FIRST ("**Yes.** ...")."""
+        r = self._answer_inner(message, e, recent, hw_named, page_only)
+        if (r is None or r.kind != "not_documented") and _YN_START.search(message) and not (r is not None and r.kind in ("safety_stop", "yes_no")):
+            lead = self._yes_no_lead(message, e)
+            if lead:   # a yes/no question gets the verdict and at most one supporting line: not the whole detail answer
+                sid = (self.detect(message).sensors or [None])[0]
+                src = r.sources if r is not None else ([f"{self.k.sensors[sid].name} > Sensor details"] if sid else ["Block sheet"])
+                return AppAnswer("yes_no", lead, src)
+        if r is not None and r.kind == "blocks" and _WIRING.search(message):   # "how do I connect X and which blocks do I need?": both parts were asked
+            own = [self.k.sensors[x] for x in self.detect(message).sensors if x in self.k.sensors and self.k.sensors[x].kit_connections]
+            if own:
+                conn = self._guide_connect(own[0], self.detect(message).kits)[0]
+                r.text = f"### How to connect the {own[0].name.split(' (')[0]}\n\n{conn}\n\n### Blocks\n\n{r.text}"
+        return r
+
+    def _answer_inner(self, message: str, e: Entities, recent: Entities, hw_named: bool = False, page_only: bool = False) -> AppAnswer | None:
+        """The deterministic answer builders (see answer())."""
         if _SPEC_Q.search(message) and (e.sensors or e.kits or re.search(r"\b(?:sensor|kit|controller|module|board)\b", message, re.I)):
             return AppAnswer("not_documented", NOT_DOCUMENTED + " (The sensor and kit documents do not give weight, size or price.)", ["Sensor list"])
+        palette = self._block_catalog_answer(message, e)
+        if palette:
+            return palette
         if not (hw_named and not page_only and not e.strong):  # a gateway device NAMED in the message (not just an open page) keeps the old flow
             cat = self._catalog_answer(message, e)
             if cat:
@@ -322,13 +703,14 @@ class AppKB:
                 return None  # the lesson's own wiring (verified diagram) is answered by the application
             wiring = _WIRING.search(msg)
             if wiring and not _STEPS.search(msg) and not _CODE.search(msg):
-                return self._sensor_connect(s, e.kits)
+                return self._sensor_guide(s, e.kits, what=bool(re.search(r"\bexplain\b|\bdescribe\b|\btell me about\b|\bwhat (?:is|are)\b|\bhow (?:does|do)\b[^?.!]{0,40}\bwork", msg, re.I)),
+                                          connect=True, program=bool(re.search(r"\bblocks?\b|\bprogram\b|\bcode\b|\bsteps?\b|\bbuild\b|\bcreate\b|\bmake\b|\bproject\b|\bapplication\b", msg, re.I)))
             fact = self._sensor_fact(None, e, msg)
             if fact:
                 return fact
             if _EXAMPLE.search(msg) or (_CODE.search(msg) and s.example_code and sid not in self._lesson_sensors() and not s.blocks):
                 return self._sensor_example(s)
-            if _ABOUT.search(msg) and not _TROUBLE.search(msg):
+            if _ABOUT.search(msg) and not _TROUBLE.search(msg) and not _CALC_Q.search(msg):   # formula / calculation questions go to the explain mode
                 return self._sensor_about(s, e.kits)
             return None
         if _PINRULE_Q.search(msg):
@@ -341,38 +723,82 @@ class AppKB:
         rule = next((r for r in self.k.kits[kit_id].pin_rules if r.name == {"digital": "digital", "analog": "analog"}.get(s.interface, "")), None)
         return f" ({rule.name} pins: {', '.join(rule.pins)})" if rule and rule.name in ("digital", "analog") else ""
 
-    def _sensor_connect(self, s, kit_ids: list[str]) -> AppAnswer:
+    # ---- structured sensor guide: what it is, how to connect, how it fits the block program ------------------------------
+    def _guide_connect(self, s, kit_ids: list[str]) -> tuple[str, list[str]]:
+        """"How to connect" section: one block per kit with a bullet per pin. Returns (markdown, source names)."""
         shown = [kc for kc in s.kit_connections if not kit_ids or kc.kit in kit_ids]
-        src = [f"{s.name} > Sensor details"]
-        if not shown:
-            return AppAnswer("not_documented", f"I don't have that detail yet: the {s.name} has no documented connection for "
-                             + " or ".join(self._kit_short(x) for x in kit_ids) + ". Please check your kit documentation or ask your teacher.", src, grounded=True)
-        lines, rows = [], []
+        parts = []
         for kc in shown:
-            kit = self._kit_short(kc.kit)
-            pins = "; ".join(f"{p.pin} to {p.connects_to}" for p in kc.pins) or "no pins are given"
-            lines.append(f"{kit}{f' ({kc.interface})' if kc.interface else ''}: {pins}." + self._digital_hint(s, kc.kit) + (f" {kc.note}." if kc.note else "") + (f" Warning: {kc.warning}" if kc.warning else ""))
-            rows += [{"sensor_pin": p.pin, "kit_pin": p.connects_to, "note": kit, "verified": True} for p in kc.pins]
-        tail = ""
-        if not kit_ids:
-            missing = [x for x in ("govator_controller_pi", "esp32_kit") if x not in {kc.kit for kc in shown}]
-            tail = (" I showed every kit that documents it; tell me which kit you use." if len(shown) > 1 else
-                    f" For the {' and '.join(self._kit_short(x) for x in missing)} this sensor's connection is not documented in my files.")
-        text = f"{s.name} ({self._cat(s)}, {s.interface}) wiring:\n" + "\n".join(lines) + tail
-        return AppAnswer("sensor_connect", text, src, {"title": f"{s.name}: connections", "columns": ["Sensor pin", "Connects to", "Kit"], "rows": rows,
-                                                       "note": "From the sensor list and the gateway dataset"})
+            head = f"**{self._kit_short(kc.kit)}**" + (f" ({kc.interface})" if kc.interface and kc.interface.lower() not in ("none", "-") else "")
+            pins = "\n".join(f"- **{p.pin}** \u2192 {p.connects_to}" + (f" ({p.note})" if p.note else "") for p in kc.pins) or "- no pins are given"
+            extra = []
+            hint = self._digital_hint(s, kc.kit)
+            if hint:
+                extra.append(f"Usable {hint.strip()[1:-1]}")
+            if kc.note:
+                extra.append(f"Note: {kc.note.rstrip('.')}.")
+            if kc.warning:
+                extra.append(f"Warning: {kc.warning}")
+            parts.append(head + "\n" + pins + ("\n\n" + "\n\n".join(extra) if extra else ""))
+        missing = [x for x in ("esp32_kit", "govator_controller_pi") if x not in {kc.kit for kc in shown} and (not kit_ids or x in kit_ids)]
+        if missing:
+            parts.append("**Not documented:** " + ", ".join(self._kit_short(x) for x in missing) + " (this sensor's connection for that kit is not in my files).")
+        if not kit_ids and len(shown) > 1:
+            parts.append("Tell me which kit you use if you want only one.")
+        return "\n\n".join(parts), [f"{s.name} > Sensor details"]
+
+    def _guide_program(self, s) -> str:
+        """"Typical program" section from the block sheet: Start, Use [sensor], the sensor's own blocks in order, then use the reading."""
+        bl = [b for b in self._sheet if b.sensor == s.id]
+        if not bl:
+            return ""
+        use = next((b for b in self._sheet if b.title.startswith("Use [")), None)
+        steps = []   # the Start block is only a reader's marker: the program works without it, so it is not a step
+        if use:
+            steps.append(f"**Use [sensor]** (Common Actions): {use.description} Pick the {s.name.split(' (')[0]} in the dropdown if it is listed.")
+        steps += [f"**{b.title}**: {b.description}" for b in bl]
+        steps.append("Use the reading: keep it in a variable (Variables \u203a Set \u2026 to) and show it with a Print block (Text \u203a Print), or send it to the mobile app with a Print text to mobile block (Mobile).")
+        return "\n".join(f"{i}. {t}" for i, t in enumerate(steps, 1))
+
+    def _guide_facts(self, s) -> str:
+        facts = []
+        if s.i2c:
+            facts.append(f"I2C address: {s.i2c.address}" + (f" (SCL {s.i2c.scl}, SDA {s.i2c.sda})" if s.i2c.scl else ""))
+        for kc in s.kit_connections:
+            if kc.example_code:
+                facts.append(f"Example program for the {self._kit_short(kc.kit)}: {kc.example_code} (its code is not in my files)")
+        if s.example_code and not any(kc.example_code for kc in s.kit_connections):
+            facts.append(f"Example program: {s.example_code} (its code is not in my files)")
+        return "\n".join(f"- {f}" for f in facts)
+
+    def _sensor_guide(self, s, kit_ids: list[str], what: bool = False, connect: bool = True, program: bool = False) -> AppAnswer:
+        """Only the parts the student asked for: what it is, how to connect it, the block program. Nothing else."""
+        name = s.name
+        if connect and kit_ids and not [kc for kc in s.kit_connections if kc.kit in kit_ids]:
+            return AppAnswer("not_documented", f"I don't have that detail yet: the {name} has no documented connection for "
+                             + " or ".join(self._kit_short(x) for x in kit_ids) + ". Please check your kit documentation or ask your teacher.", [f"{name} > Sensor details"], grounded=True)
+        src = [f"{name} > Sensor details"]
+        out = [f"## {name}", f"{self._cat(s).capitalize()}" + (f" \u00b7 {s.interface} interface" if s.interface not in ("none", "") else "")]
+        if what:
+            out += ["### What it is", s.working or s.description]
+        if connect and s.kit_connections:
+            out += ["### How to connect", self._guide_connect(s, kit_ids)[0]]
+        prog = self._guide_program(s) if program else ""
+        if prog:
+            out += ["### Typical program in the ESP32 block editor", prog]
+            src.append(f"Blocks: Sensors-ESP32 > {next(b.sub_category for b in self._sheet if b.sensor == s.id)}")
+        return AppAnswer("sensor_about" if what and not connect else "sensor_connect", "\n\n".join(out), src)
+
+    def _sensor_connect(self, s, kit_ids: list[str]) -> AppAnswer:
+        return self._sensor_guide(s, kit_ids, what=False, connect=True)
 
     def _sensor_about(self, s, kit_ids: list[str]) -> AppAnswer:
-        text = f"{s.name} ({self._cat(s)}, {s.interface}): {s.working or s.description}"
-        if s.kit_connections:
-            text += "\n\nHow it connects: " + " ".join(
-                f"{self._kit_short(kc.kit)}: " + "; ".join(f"{p.pin} to {p.connects_to}" for p in kc.pins) + "." for kc in s.kit_connections if not kit_ids or kc.kit in kit_ids)
-        return AppAnswer("sensor_about", text, [f"{s.name} > Sensor details"])
+        return self._sensor_guide(s, kit_ids, what=True, connect=False)
 
     def _sensor_example(self, s) -> AppAnswer:
         files = [(self._kit_short(kc.kit), kc.example_code) for kc in s.kit_connections if kc.example_code] or ([("sensor list", s.example_code)] if s.example_code else [])
-        text = (f"The sensor lists name these example programs for the {s.name}: " + "; ".join(f"{k}: {f}" for k, f in files)
-                + ". I don't have their code, so I can't show it." if files else f"The sensor lists give no example program for the {s.name}. I don't have that detail yet.")
+        text = (f"**Example programs for the {s.name}**\n\n" + "\n".join(f"- {k}: {f}" for k, f in files)
+                + "\n\nI don't have their code, so I can't show it." if files else f"The sensor lists give no example program for the {s.name}. I don't have that detail yet.")
         return AppAnswer("sensor_example", text, [f"{s.name} > Sensor details"])
 
     def _pin_rules(self, msg: str, kit_ids: list[str]) -> AppAnswer:
@@ -385,14 +811,17 @@ class AppKB:
         lines, src = [], []
         for kit in kits:
             rules = [r for r in kit.pin_rules if not wanted or any(w in r.name for w in wanted)]
+            block = [f"### {self._kit_short(kit.id)}"]
             if re.search(r"\bwiring rules\b", msg, re.I) and kit.wiring_rules:
-                lines.append(f"{self._kit_short(kit.id)} wiring rules:\n" + "\n".join(f"- {r}" for r in kit.wiring_rules))
-            for r in rules:
-                lines.append(f"{self._kit_short(kit.id)} {r.name}: {', '.join(r.pins)}" + (f" ({r.note})" if r.note else ""))
+                block.append("**Wiring rules**\n" + "\n".join(f"{n}. {r}" for n, r in enumerate(kit.wiring_rules, 1)))
+            if rules:
+                block.append("\n".join(f"- **{r.name}**: {', '.join(r.pins)}" + (f" ({r.note})" if r.note else "") for r in rules))
+            if len(block) > 1:
+                lines.append("\n\n".join(block))
             src.append(f"Kit: {kit.name}")
         if not lines:
             return AppAnswer("not_documented", NOT_DOCUMENTED, src or ["kits"])
-        return AppAnswer("pin_rules", "\n".join(lines) + ("\n\nTell me which kit you use if you want only one." if len(kits) > 1 and not kit_ids else ""), src)
+        return AppAnswer("pin_rules", "\n\n".join(lines) + ("\n\nTell me which kit you use if you want only one." if len(kits) > 1 and not kit_ids else ""), src)
 
     def _sensor_list(self, msg: str) -> AppAnswer:
         iface_words = {"i2c": "I2C", "uart": "UART", "analog": "analog", "digital": "digital", "usb": "USB", "relay": "relay"}
@@ -406,7 +835,7 @@ class AppKB:
         groups: dict[str, list[str]] = {}
         for s in items:
             groups.setdefault(f"{s.category if s.category not in ('', '-') else 'Other'} - {s.interface}", []).append(s.name)
-        text = f"{len(items)} documented:\n" + "\n".join(f"{g}: {', '.join(sorted(n))}" for g, n in sorted(groups.items()))
+        text = f"**{len(items)} documented**\n\n" + "\n\n".join(f"**{g}**\n{', '.join(sorted(n))}" for g, n in sorted(groups.items()))
         return AppAnswer("sensor_list", text + "\n\nAsk me how any of them works or connects.", ["Sensor list"])
 
     # ---- generic mode (no application installed) -------------------------------------------------------
@@ -429,6 +858,8 @@ class AppKB:
                 return self._block_code_answer([b])
             if _BLOCK_Q.search(msg):
                 return self._block_detail(b)
+        carried = self._carried_sensors(msg, e)
+        s = self.k.sensors[carried[0]] if carried else None   # a stale sensor must not answer a block question about something else
         if _BLOCKS.search(msg) or _CODE.search(msg) or (s and s.blocks and re.search(r"\bblocks?\b", msg, re.I)):
             if s and s.blocks:
                 bl = [self.k.blocks[b] for b in s.blocks]
@@ -439,13 +870,16 @@ class AppKB:
                         "Ask me to show the code of any block or what it does.")
                 return AppAnswer("blocks", text, [f"Block: {b.title}" for b in bl],
                                  blocks=[{"order": i, "title": b.title, "description": b.description} for i, b in enumerate(bl, 1)])
-            having = [x for x in self.k.sensors.values() if x.blocks]
-            if having:
-                lines = [f"{x.name.split(' (')[0]}: " + " -> ".join(self.k.blocks[b].title for b in x.blocks) for x in having]
-                return AppAnswer("blocks", "Block code is documented for these sensors (tell me which one you need):\n" + "\n".join(lines), ["Blocks"])
         return None
 
     def _block_code_answer(self, bl) -> AppAnswer:
+        if not any(b.code for b in bl):
+            sid = next((b.sensor for b in bl if b.sensor), None)
+            bl = [b for b in self.k.blocks.values() if sid and b.sensor == sid and b.code] or bl
+        bl = [b for b in bl if b.code]
+        if not bl:
+            return AppAnswer("not_documented", "**No code available.**\n\nThe block sheet lists which blocks exist, where they are and what they do, but it gives no code for them. "
+                             + NOT_DOCUMENTED + "\n\nI can show you ‘where the block is’ or ‘what it does’ instead.", ["Block sheet"])
         code = [{"title": b.title, "language": b.language, "code": b.code.rstrip(), "note": " ".join(b.code_notes)} for b in bl]
         return AppAnswer("code", "Here is the code behind " + ("this block." if len(bl) == 1 else "these blocks, in the order you stack them."),
                          [f"Block: {b.title}" for b in bl], code=code)

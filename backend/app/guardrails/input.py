@@ -83,6 +83,15 @@ OFF_TOPIC_TASK = _rx(
     r"\b(?:pretend|role-?play|act (?:like|as)|imagine)\b[^?.!]{0,60}\b(?:talk|talks|speak|speaks|conversation|chat|human|person|character|alive)\b",
 )
 
+# Hands-on dangerous activities (mains electricity, live wires, opening power supplies, battery abuse, fire): fixed safety reply, 0 tokens.
+DANGEROUS_ACTIVITY = _rx(
+    r"\b(?:connect|wire|plug|attach|hook|join|touch|bypass|tap|splice|short|power)\w*\b[^?.!]{0,60}\b(?:mains|220 ?v|230 ?v|240 ?v|110 ?v|120 ?v|wall (?:socket|outlet)|live wires?|household (?:power|electricity)|ac (?:mains|power|supply|line))\b",
+    r"\b(?:mains|220 ?v|230 ?v|240 ?v|110 ?v|120 ?v|wall (?:socket|outlet)|live wires?|household (?:power|electricity))\b[^?.!]{0,60}\b(?:connect|wire|plug|attach|hook|join|touch|bypass|tap|splice)\w*\b",
+    r"\b(?:open|take apart|dismantle|break open|cut open|disassemble)\b[^?.!]{0,30}\b(?:power supply|adapter|adaptor|charger|microwave|capacitor|socket)\b",
+    r"\b(?:short(?:ing)?|puncture|overcharg\w*|crush|heat(?:ing)?|burn(?:ing)?)\b[^?.!]{0,20}\bbatter\w+",
+    r"\b(?:electrocute|shock (?:myself|someone|him|her|a person))\b|\bset (?:fire|something on fire)\b|\bstart a fire\b|\bmake (?:it )?explode\b",
+)
+
 ABUSE = _rx(
     r"\b(?:fuck\w*|shit\w*|bitch\w*|asshole|bastard|dick|pussy|cunt|slut|whore|porn\w*|nude|naked|rape|sexy|sex)\b",
     r"\bkill (?:him|her|them|you|people|someone|everyone)\b",
@@ -151,6 +160,8 @@ def check_input(message: str, role: Role, max_chars: int = 1000) -> InputVerdict
             return _refuse("privilege_claim", P.PRIVILEGE_REPLY, clean)
     if _any(PII_REQUEST, text, leet):
         return _refuse("pii_request", P.PII_REQUEST_REPLY, clean)
+    if _any(DANGEROUS_ACTIVITY, text):
+        return _refuse("unsafe_activity", P.DANGEROUS_ACTIVITY_REPLY, clean)
     if _any(ABUSE, text, leet):
         return _refuse("abuse", P.ABUSE_REPLY, clean)
     if _any(ADVICE, text):

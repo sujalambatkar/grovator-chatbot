@@ -12,8 +12,7 @@ MIN_CONTEXT = 150
 def build_answer_messages(
     *, summary: str, turns: list[Turn], hits: list[Hit], question: str,
     total_budget: int, context_cap: int, summary_cap: int = 120, turn_cap: int = 80,
-    memories: list[str] | None = None, memory_cap: int = 80,
-) -> tuple[list[dict[str, str]], list[Hit]]:
+    memories: list[str] | None = None, memory_cap: int = 80, system_hint: str = "") -> tuple[list[dict[str, str]], list[Hit]]:
     summary = truncate_tokens(summary, summary_cap)
     turns = [Turn(truncate_tokens(t.user, turn_cap), truncate_tokens(t.assistant, turn_cap)) for t in turns]
     question = truncate_tokens(question, 300)
@@ -47,7 +46,7 @@ def build_answer_messages(
         parts.append(f"ABOUT THE USER:\n{mem_block}")
     parts.append(f"CONTEXT:\n{context}")
     parts.append(f"QUESTION: {question}")
-    messages = [{"role": "system", "content": ANSWER_SYSTEM}]
+    messages = [{"role": "system", "content": ANSWER_SYSTEM + system_hint}]
     for t in turns:
         messages += [{"role": "user", "content": t.user}, {"role": "assistant", "content": t.assistant}]
     messages.append({"role": "user", "content": "\n\n".join(parts)})

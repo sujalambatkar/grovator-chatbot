@@ -1,0 +1,16 @@
+id: loops_repeat_n_times
+title: Repeat n times
+category: Loops
+sub_category: ''
+platform: ESP32
+order: 22
+aliases:
+- repeat
+- loop
+sensor: null
+description: Repeats the blocks inside a fixed number of times.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

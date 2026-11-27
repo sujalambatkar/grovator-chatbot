@@ -1,0 +1,14 @@
+id: button_set_button_as_input_at_pin
+title: Set Button as Input at Pin
+category: Sensors-ESP32
+sub_category: Button
+platform: ESP32
+order: 76
+aliases: []
+sensor: null
+description: Sets the pin the push button is wired to as an input.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

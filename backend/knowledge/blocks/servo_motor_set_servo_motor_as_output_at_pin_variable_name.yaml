@@ -1,0 +1,14 @@
+id: servo_motor_set_servo_motor_as_output_at_pin_variable_name
+title: Set Servo Motor as Output at Pin (Variable name)
+category: Sensors-ESP32
+sub_category: Servo Motor
+platform: ESP32
+order: 169
+aliases: []
+sensor: servo_motor
+description: Attaches a servo motor to a pin and gives it a variable name.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

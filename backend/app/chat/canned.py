@@ -62,7 +62,7 @@ class CannedAnswers:
         concept = self.gw.concept_for(key)
         if not concept:
             return None  # the dataset has no definition for this device: a model may explain it in general terms, a template must not
-        return CannedAnswer(f"{concept} On the {self.gw.name}: {self._where(key)}", [self._title(key), "Electronics Concepts"], "what")
+        return CannedAnswer(concept, [self._title(key), "Electronics Concepts"], "what")
 
     def connect(self, key: str) -> CannedAnswer:
         dev = self.gw.devices[key]
@@ -76,20 +76,20 @@ class CannedAnswers:
     def pins(self, key: str) -> CannedAnswer:
         dev = self.gw.devices[key]
         ik = self.gw.interface_key(key, dev)
-        parts = []
+        parts = [f"## {pretty(key)}: pins"]
         if "pins" in dev:
-            parts.append("Module pins: " + "; ".join(f"{p} to {t}" for p, t in dev["pins"].items()) + ".")
+            parts.append("### On the module\n" + "\n".join(f"- **{p}** \u2192 {t}" for p, t in dev["pins"].items()))
         elif "signal" in dev:
-            parts.append(f"Signal pin on the module: {dev['signal']}; it connects to {dev.get('connect_to', 'the gateway')}.")
+            parts.append(f"### On the module\n- **{dev['signal']}** \u2192 {dev.get('connect_to', 'the gateway')}")
         if ik:
-            parts.append(f"Gateway {pretty(ik)}: " + "; ".join(l[2:].rstrip(".") for l in self.gw._iface_lines(ik)) + ".")
+            parts.append(f"### On the gateway ({pretty(ik)})\n" + "\n".join(f"- {l[2:].rstrip('.')}" for l in self.gw._iface_lines(ik)))
         else:
             parts.append(f"It connects to the {dev.get('connect_to', 'gateway')}; the dataset lists no GPIO pins for it.")
-        return CannedAnswer(f"{pretty(key)}: " + " ".join(parts), [self._title(key)], "pins")
+        return CannedAnswer("\n\n".join(parts), [self._title(key)], "pins")
 
     def list_devices(self) -> CannedAnswer:
         names = ", ".join(pretty(k) for k in self.gw.devices)
-        return CannedAnswer(f"The {self.gw.name} documents these sensors, actuators and modules: {names}. Ask about any of them to see how to connect it.",
+        return CannedAnswer(f"**The {self.gw.name} documents these sensors, actuators and modules:**\n\n{names}\n\nAsk about any of them to see how to connect it.",
                             [f"{self.gw.name}: Overview"], "list")
 
     def gateway(self) -> CannedAnswer:
@@ -99,9 +99,9 @@ class CannedAnswers:
 
     def interface(self, ik: str) -> CannedAnswer:
         users = self.gw.devices_on(ik)
-        text = f"{pretty(ik)} on the gateway: " + "; ".join(l[2:].rstrip(".") for l in self.gw._iface_lines(ik)) + "."
+        text = f"## {pretty(ik)} on the gateway\n\n" + "\n".join(f"- {l[2:].rstrip('.')}" for l in self.gw._iface_lines(ik))
         if users:
-            text += " Devices that use it: " + ", ".join(pretty(u) for u in users) + "."
+            text += "\n\n**Devices that use it:** " + ", ".join(pretty(u) for u in users)
         return CannedAnswer(text, [f"Gateway Interface: {pretty(ik)}"], "interface")
 
     def rules(self) -> CannedAnswer:
@@ -163,7 +163,7 @@ class CannedAnswers:
         cands: list[str] = []
         if focus:
             name = pretty(key)
-            cands = ["How do I connect this to the gateway?", "Which pins does it use?", "What is it?", f"How do I connect the {name}?"]
+            cands = [f"How do I connect the {name} to the gateway?", f"Which pins does the {name} use?", f"What is the {name}?", f"How do I connect the {name}?"]
         elif kind == "interfaces" and key in self.gw.interfaces:
             cands = [f"Which pins are {w.upper() if w in ('i2c', 'uart') else w}?" for w, ik in _IFACE_KEYWORDS.items() if ik == key]
         cands += ["Which sensors can I connect?", "What are the wiring rules?", "Which pins support analog input?", "What is the gateway?"]

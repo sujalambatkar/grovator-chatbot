@@ -1,0 +1,15 @@
+id: common_actions_esp32_exit_program
+title: Exit program
+category: Common Actions-ESP32
+sub_category: ''
+platform: ESP32
+order: 61
+aliases:
+- exit
+sensor: null
+description: Stops the program.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

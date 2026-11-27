@@ -1,0 +1,14 @@
+id: mq_2_sensor_read_mq_2_data_with_analog_input_channel
+title: Read MQ-2 Data with Analog Input Channel
+category: Sensors-ESP32
+sub_category: MQ-2 Sensor
+platform: ESP32
+order: 135
+aliases: []
+sensor: gas_sensor_analog
+description: Reads the MQ-2 gas/smoke level on an analog channel.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

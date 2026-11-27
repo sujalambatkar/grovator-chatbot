@@ -1,0 +1,14 @@
+id: weight_sensor_set_weight_sensor_as_input_with_pin_dt_and_sck
+title: Set Weight Sensor as input with pin DT and SCK
+category: Sensors-ESP32
+sub_category: Weight Sensor
+platform: ESP32
+order: 196
+aliases: []
+sensor: weight_sensor
+description: Sets the data (DT) and clock (SCK) pins of the load-cell amplifier (HX711).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

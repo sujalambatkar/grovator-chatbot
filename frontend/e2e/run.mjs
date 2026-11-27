@@ -83,12 +83,12 @@ try {
     await page.getByTestId("nav-item").filter({ hasText: "Ultrasonic Sensor" }).click();   // the next steps are about a gateway device page
     assert.match(await page.getByTestId("article-title").innerText(), /Ultrasonic Sensor/);
     await page.getByTestId("new-chat").click();
-    assert.match(await page.getByTestId("welcome").innerText(), /How do I connect this to the gateway\?/);
+    assert.match(await page.getByTestId("welcome").innerText(), /How do I connect the Ultrasonic Sensor to the gateway\?/);
     assert.equal(await page.getByTestId("memory-toggle").count(), 0, "memory panel hidden in the demo");
   }, page);
 
-  await step("'how do I connect this' is answered about the open page (page-aware RAG) with its source", async () => {
-    await page.getByRole("button", { name: "How do I connect this to the gateway?" }).click();
+  await step("a suggested question names its sensor and is answered with its source (the open page itself is not used)", async () => {
+    await page.getByRole("button", { name: "How do I connect the Ultrasonic Sensor to the gateway?" }).click();
     await until(async () => (await page.getByTestId("send").count()) === 1 && (await bot(page).count()) === 1, 20000, "answer");
     assert.match(await bot(page).last().innerText(), /ultrasonic|VCC|TRIG|connect/i);
     assert.match(await page.getByTestId("sources").last().textContent(), /Ultrasonic Sensor/);
@@ -118,12 +118,12 @@ try {
     await page.screenshot({ path: path.join(OUT, "03-meter.png") });
   }, page);
 
-  await step("switching page changes what the assistant is anchored to", async () => {
+  await step("a question about the wiring rules is answered from the rules, whatever page is open", async () => {
     await page.getByTestId("nav-item").filter({ hasText: "Gateway Wiring Rules" }).click();
     assert.match(await page.getByTestId("article-title").innerText(), /Wiring Rules/);
-    const text = await ask(page, "Explain these rules");
+    const text = await ask(page, "What are the wiring rules?");
     assert.match(text, /label|voltage|GPIO|datasheet|wiring/i);
-    assert.match(await page.getByTestId("sources").last().textContent(), /Wiring Rules/);
+    assert.match(await page.getByTestId("sources").last().textContent(), /Wiring Rules|ESP32 kit/);
   }, page);
 
   await step("off-topic and injection attempts get fixed refusals", async () => {
@@ -152,11 +152,15 @@ try {
     const d = await open(browser);
     await ask(d.page, "How do I connect the pulse oximeter?");
     const panel = d.page.getByTestId("chat-panel");
-    const rows = await panel.getByTestId("connection-table").innerText();
+    const rows = await bot(d.page).last().innerText();   // the sensor guide lists the pins as bullets, one block per kit
     assert.match(rows, /GPIO21/); assert.match(rows, /any SDA pin/); assert.doesNotMatch(rows, /\bRX\b|\bTX\b/);
+    assert.match(rows, /Switch the kit off and unplug it/);       // safety reminder (config/safety.yaml)
+    assert.equal(await panel.getByTestId("safety-warnings").last().isVisible(), true);
     assert.equal(await panel.getByTestId("sources").first().evaluate((el) => el.open), false, "sources start collapsed");
     await ask(d.page, "Which blocks do I need for the pulse oximeter?");
-    assert.match(await panel.getByTestId("block-stack").last().innerText(), /Use \[Pulseoximeter\(Max30102\)\][\s\S]*Read PulseOximeter Data[\s\S]*Store Heart rate/);
+    const blocksAnswer = await bot(d.page).last().innerText();   // the block sheet answer is a numbered list with a small-print footer
+    assert.match(blocksAnswer, /Initialize max30100[\s\S]*Store Heartrate and Oximeter Data[\s\S]*Get SpO2/);
+    assert.doesNotMatch(await d.page.getByTestId("chat-panel").innerText(), /inferred from block names/);   // students do not see the sheet caveat
     await ask(d.page, "Show me the code of the Read PulseOximeter Data block");
     assert.match(await panel.getByTestId("code-card").last().innerText(), /def get_heart_rate_spo2/);
     await panel.getByTestId("copy-code").last().click();

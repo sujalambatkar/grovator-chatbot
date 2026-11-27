@@ -1,0 +1,14 @@
+id: rainfall_sensor_get_run_time
+title: Get Run time
+category: Sensors-ESP32
+sub_category: Rainfall Sensor
+platform: ESP32
+order: 163
+aliases: []
+sensor: rainfall_sensor
+description: Returns how long the rain gauge has been running.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

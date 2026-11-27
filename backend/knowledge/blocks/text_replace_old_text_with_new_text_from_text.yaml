@@ -1,0 +1,14 @@
+id: text_replace_old_text_with_new_text_from_text
+title: Replace old text with new text from text
+category: Text
+sub_category: ''
+platform: ESP32
+order: 54
+aliases: []
+sensor: null
+description: Replaces every occurrence of the old text with new text inside the given text.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: bme_sensor_calculate_bme_data
+title: Calculate BME Data
+category: Sensors-ESP32
+sub_category: BME Sensor
+platform: ESP32
+order: 71
+aliases: []
+sensor: bme_sensor
+description: Triggers the BME sensor to take a fresh reading (call before reading values).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

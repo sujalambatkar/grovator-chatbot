@@ -65,6 +65,8 @@ class ChatResponse(BaseModel):
     block_stack: list[dict] = []
     code_blocks: list[dict] = []
     images: list[dict] = []
+    footer: str = ""
+    warnings: list[dict] = []   # student safety warnings (config/safety.yaml), shown in a highlighted box
 
 
 @router.post("/chat", response_model=ChatResponse)

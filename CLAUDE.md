@@ -42,6 +42,12 @@ cd backend  && .venv/bin/python -m scripts.demo_compare           # measured tok
 ## Where things live (backend/app)
 `chat/` pipeline (`service.py` is the entry), router shortcut, semantic cache, prompt building · `guardrails/` input rules, output guard, PII · `rag/` chunking, hybrid retriever, compression · `memory/` Redis sessions + long-term memory · `tools/` read-only scoped tools + policy · `content/` page catalog · `core/` auth, rate limits, budgets, usage · `api/` routes · `llm/` Groq client + all prompts (`prompts.py`).
 
+- **Block sheet** (`backend/knowledge/blocks/*.yaml`, 201 blocks, regenerate with `python -m ingest.import_block_sheet`): category / sub-category / palette order, no code. `chat/appkb.py: _block_catalog_answer` answers where / which / what-does; task questions go to retrieval (keyword matching of tasks to sensors was wrong). Tests: `tests/test_block_palette.py`.
+
+- **Student safety** (D100): rules in `backend/config/safety.yaml` -> `guardrails/safety.py` -> `done.warnings` -> highlighted box in the widget; `DANGEROUS_ACTIVITY` in `guardrails/input.py` refuses mains / live wire / battery-abuse requests with a fixed reply. Add or edit warnings in the YAML, no code change. Tests: `tests/test_safety.py`.
+
+- **No page awareness** (D102): the bot does not use the open page; `page` is accepted and ignored. Follow-ups use the conversation (`service._last_sensor`). Do not re-add page pinning without asking.
+
 ## Application assistant (backend/knowledge/, newest layer; the live KB is GENERIC: sensors, kits, blocks, no application)
 - Files, not code: `backend/knowledge/{applications,sensors,blocks,kits,media}/*.yaml` (+ `GAPS.md`). Models in `knowledge/models.py`; `python -m knowledge.validate`, `python -m ingest.run`. Adding content = adding files. Read `knowledge/GAPS.md` before answering questions about pins/kits: it lists conflicts (I2C vs UART sensor, ESP32 kit vs Grovator controller) and what is NOT documented.
 - `chat/appkb.py` builds wiring tables, block stack, code, thresholds, FAQ, "not documented" answers in code (0 tokens); `service._general` handles general technology questions (GENERAL_SYSTEM). Prompts: `backend/config/system_prompt.yaml` (answer <= 200 tokens, asserted).

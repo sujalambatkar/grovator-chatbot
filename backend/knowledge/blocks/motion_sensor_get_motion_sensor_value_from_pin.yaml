@@ -1,0 +1,14 @@
+id: motion_sensor_get_motion_sensor_value_from_pin
+title: Get Motion Sensor Value from Pin
+category: Sensors-ESP32
+sub_category: Motion Sensor
+platform: ESP32
+order: 122
+aliases: []
+sensor: motion_sensor
+description: Reads the motion sensor's value (motion detected or not).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

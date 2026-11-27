@@ -1,0 +1,17 @@
+id: common_actions_esp32_pause_for_n_second_s
+title: Pause for n second(s)
+category: Common Actions-ESP32
+sub_category: ''
+platform: ESP32
+order: 64
+aliases:
+- pause
+- wait
+- delay
+sensor: null
+description: Waits the typed number of seconds before moving on.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

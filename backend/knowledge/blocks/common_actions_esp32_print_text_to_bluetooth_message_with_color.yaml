@@ -1,0 +1,14 @@
+id: common_actions_esp32_print_text_to_bluetooth_message_with_color
+title: 'Print text to Bluetooth: Message with color'
+category: Common Actions-ESP32
+sub_category: ''
+platform: ESP32
+order: 67
+aliases: []
+sensor: null
+description: Sends a typed message over Bluetooth to a paired device in the chosen colour.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

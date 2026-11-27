@@ -1,0 +1,14 @@
+id: ldr_sensor_get_ldr_sensor_value_from_pin
+title: Get LDR Sensor Value from Pin
+category: Sensors-ESP32
+sub_category: LDR Sensor
+platform: ESP32
+order: 112
+aliases: []
+sensor: ldr_sensor
+description: Reads the light level from the LDR.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,17 @@
+id: common_actions_esp32_pause_for_value_second_s
+title: Pause for [value] second(s)
+category: Common Actions-ESP32
+sub_category: ''
+platform: ESP32
+order: 65
+aliases:
+- pause
+- wait
+- delay
+sensor: null
+description: Waits for the number of seconds supplied by the connected block/variable.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

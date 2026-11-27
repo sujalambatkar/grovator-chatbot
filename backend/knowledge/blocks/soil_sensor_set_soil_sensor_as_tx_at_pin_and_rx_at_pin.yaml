@@ -1,0 +1,14 @@
+id: soil_sensor_set_soil_sensor_as_tx_at_pin_and_rx_at_pin
+title: Set Soil Sensor as Tx at Pin and Rx at Pin
+category: Sensors-ESP32
+sub_category: Soil Sensor
+platform: ESP32
+order: 173
+aliases: []
+sensor: soil_sensor
+description: Sets the serial (Tx/Rx) pins used to talk to the multi-parameter soil sensor.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

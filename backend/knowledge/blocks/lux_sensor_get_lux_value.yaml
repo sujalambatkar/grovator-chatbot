@@ -1,0 +1,14 @@
+id: lux_sensor_get_lux_value
+title: Get Lux Value
+category: Sensors-ESP32
+sub_category: Lux Sensor
+platform: ESP32
+order: 118
+aliases: []
+sensor: null
+description: Returns the ambient light level in lux.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

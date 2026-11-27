@@ -1,0 +1,14 @@
+id: carbon_monoxide_sensor_read_co_data_in_ppm_with_analog_input_channel
+title: Read CO Data in ppm with Analog Input Channel
+category: Sensors-ESP32
+sub_category: Carbon Monoxide Sensor
+platform: ESP32
+order: 82
+aliases: []
+sensor: co_sensor
+description: Reads the CO sensor on an analog channel and gives the value in ppm.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

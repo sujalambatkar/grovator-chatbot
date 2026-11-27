@@ -1,0 +1,14 @@
+id: mobile_erase_mobile_data_at_key
+title: 'Erase mobile data at: key'
+category: Mobile
+sub_category: ''
+platform: ESP32
+order: 19
+aliases: []
+sensor: null
+description: Clears the stored mobile data for the given key.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

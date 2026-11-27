@@ -98,11 +98,35 @@ def render_all(k: Knowledge) -> list[Section]:
         if s.how_it_measures:
             out.append(Section(f"sensors/{s.id}/measure", f"{s.name} > How the block code measures",
                                _bullets(s.how_it_measures), {"type": "sensor", "sensor": s.id, "topic": "measure"}))
+    sheet: dict[tuple[str, str], list] = {}
     for b in k.blocks.values():
+        if b.sub_category or b.order:
+            sheet.setdefault((b.category, b.sub_category), []).append(b)
+            continue
+        if b.sensor and any(x.sensor == b.sensor and x.order for x in k.blocks.values()):
+            continue  # the block sheet is the palette for this sensor; the older code-bearing blocks stay reachable by name ("show the code of ...") but are not indexed
         body = (f"Block title: {b.title}. Connection: {b.connection}. {b.description}\nVersion: {b.variant}\n"
-                + (f"Variables: {', '.join(b.variables)}\n" if b.variables else "") + _bullets(b.code_notes) + f"\nCode:\n{b.code}")
+                + (f"Variables: {', '.join(b.variables)}\n" if b.variables else "") + _bullets(b.code_notes) + (f"\nCode:\n{b.code}" if b.code else ""))
         out.append(Section(f"blocks/{b.id}", f"Block: {b.title}", body,
                            {"type": "block", "sensor": b.sensor or "", "topic": "block", "verified": b.verified}))
+    # block sheet: one section per sub-category (its blocks together, in palette order) plus one toolbox map
+    cats: dict[str, list[str]] = {}
+    for (cat, sub), bl in sheet.items():
+        bl.sort(key=lambda x: x.order)
+        sensor = next((b.sensor for b in bl if b.sensor), "")
+        where = f"{cat} > {sub}" if sub else cat
+        what = ""
+        if sensor in k.sensors:
+            what = f" It is the block set for the {k.sensors[sensor].name.split(' (')[0]}: {k.sensors[sensor].description.split('. ')[0].rstrip('.')}."
+        lines = "\n".join(f"{i}. {b.title}: {b.description}" for i, b in enumerate(bl, 1))
+        out.append(Section(f"blocks/{(cat + '-' + sub).lower().replace(' ', '_')}", f"Blocks: {where}",
+                           f"Block palette (ESP32 block editor) category '{cat}'" + (f", sub-category '{sub}'" if sub else "") + f", {len(bl)} blocks, in this order:{what}\n{lines}",
+                           {"type": "block", "sensor": sensor, "topic": "block", "verified": False}))
+        cats.setdefault(cat, []).append(f"{sub} ({len(bl)})" if sub else f"{len(bl)} blocks")
+    if cats:
+        total = sum(len(v) for v in sheet.values())
+        body = f"The block editor lists {total} blocks in these categories:\n" + "\n".join(f"{c}: {', '.join(v)}" for c, v in cats.items())
+        out.append(Section("blocks/toolbox", "Block palette: categories and sub-categories", body, {"type": "block", "topic": "block", "verified": False}))
     for kit in k.kits.values():
         groups = "\n".join(f"{g.name}: {', '.join(g.pins)}" for g in kit.port_groups)
         rules = "\n".join(f"{r.name}: {', '.join(r.pins)}" + (f" ({r.note})" if r.note else "") for r in kit.pin_rules)

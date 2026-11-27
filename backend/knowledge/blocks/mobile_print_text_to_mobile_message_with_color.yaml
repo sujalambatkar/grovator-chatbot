@@ -1,0 +1,14 @@
+id: mobile_print_text_to_mobile_message_with_color
+title: 'Print text to mobile: Message with color'
+category: Mobile
+sub_category: ''
+platform: ESP32
+order: 16
+aliases: []
+sensor: null
+description: Sends a typed message to the mobile app, shown in the chosen colour.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

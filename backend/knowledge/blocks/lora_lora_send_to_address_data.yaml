@@ -1,0 +1,14 @@
+id: lora_lora_send_to_address_data
+title: LoRa Send (To Address, Data)
+category: Sensors-ESP32
+sub_category: LoRa
+platform: ESP32
+order: 116
+aliases: []
+sensor: null
+description: Sends data over LoRa to the device with the given address.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

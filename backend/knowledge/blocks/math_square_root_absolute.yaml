@@ -1,0 +1,14 @@
+id: math_square_root_absolute
+title: Square root / absolute / ...
+category: Math
+sub_category: ''
+platform: ESP32
+order: 27
+aliases: []
+sensor: null
+description: 'Applies a maths function to a number: square root, absolute, −, ln, log10, e^, 10^.'
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

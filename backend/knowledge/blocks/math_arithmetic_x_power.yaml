@@ -1,0 +1,14 @@
+id: math_arithmetic_x_power
+title: Arithmetic (+, -, x, /, power)
+category: Math
+sub_category: ''
+platform: ESP32
+order: 26
+aliases: []
+sensor: null
+description: Arithmetic on two numbers (+, −, ×, ÷, power).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

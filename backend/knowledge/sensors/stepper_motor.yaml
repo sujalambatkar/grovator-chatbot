@@ -4,8 +4,8 @@ aliases:
 - stepper motor
 - stepper
 category: Output
-working: Turns in fixed steps for precise position, speed and direction. Control pulses go through a motor driver. It plugs into the
-  stepper motor slot.
+working: Turns in fixed steps for precise position, speed and direction. Control pulses go through a motor driver. It plugs into the stepper motor
+  slot.
 example_code: ''
 gateway_key: stepper_motor
 description: Turns in fixed steps for precise position, speed and direction.
@@ -32,7 +32,8 @@ kit_connections:
   pins:
   - pin: connection
     connects_to: Dedicated stepper connector
-  warning: ''
+  warning: The stepper connector is internally connected to the motor interface (9 to 12V depending on the supplied power). Connect only the stepper
+    motor there, never a sensor or a GPIO pin.
   note: 'interface: stepper'
   source:
     file: grovator-esp32-gateway.json

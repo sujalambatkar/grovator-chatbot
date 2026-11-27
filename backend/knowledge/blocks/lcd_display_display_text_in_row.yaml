@@ -1,0 +1,14 @@
+id: lcd_display_display_text_in_row
+title: Display Text in Row
+category: Sensors-ESP32
+sub_category: LCD Display
+platform: ESP32
+order: 109
+aliases: []
+sensor: lcd_display
+description: Shows the given text on the chosen row of the LCD.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

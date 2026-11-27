@@ -1,0 +1,14 @@
+id: flow_sensor_read_flow_rate_in_l_min
+title: Read flow rate in L/min
+category: Sensors-ESP32
+sub_category: Flow Sensor
+platform: ESP32
+order: 100
+aliases: []
+sensor: flow_sensor
+description: Returns the flow rate in litres per minute.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

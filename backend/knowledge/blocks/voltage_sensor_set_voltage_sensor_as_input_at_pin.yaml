@@ -1,0 +1,14 @@
+id: voltage_sensor_set_voltage_sensor_as_input_at_pin
+title: Set Voltage Sensor as input at Pin
+category: Sensors-ESP32
+sub_category: Voltage Sensor
+platform: ESP32
+order: 193
+aliases: []
+sensor: voltage_sensor
+description: Sets the pin the voltage sensor is connected to.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -56,4 +56,18 @@ describe("headings and code blocks", () => {
   it("does not treat # inside text as a heading", () => {
     expect(parseMarkdown("use C# or the # key")[0]).toMatchObject({ type: "p" });
   });
+
+  it("renders a markdown table as a table block, not raw pipes", () => {
+    const b = parseMarkdown("| A | B |\n|---|---|\n| **x** | y<br>z |\n\nafter");
+    expect(b[0]).toMatchObject({ type: "table" });
+    const t = b[0] as { head: unknown[][]; rows: unknown[][][] };
+    expect(t.head).toHaveLength(2);
+    expect(t.rows).toHaveLength(1);
+    expect(b[1]).toMatchObject({ type: "p" });
+  });
+
+  it("turns <br> into a line break instead of showing it", () => {
+    const b = parseMarkdown("one<br>two");
+    expect(JSON.stringify(b)).not.toContain("<br>");
+  });
 });

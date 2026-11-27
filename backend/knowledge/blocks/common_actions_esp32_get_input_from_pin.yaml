@@ -1,0 +1,14 @@
+id: common_actions_esp32_get_input_from_pin
+title: Get Input from Pin
+category: Common Actions-ESP32
+sub_category: ''
+platform: ESP32
+order: 62
+aliases: []
+sensor: null
+description: Reads the digital input value from the chosen pin number.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: variables_variable
+title: Variable
+category: Variables
+sub_category: ''
+platform: ESP32
+order: 57
+aliases: []
+sensor: null
+description: 'Variable getter: gives the current value stored in the variable.'
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

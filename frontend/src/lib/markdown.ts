@@ -5,7 +5,8 @@ export type Block =
   | { type: "p"; inline: Inline[] }
   | { type: "h"; level: 1 | 2 | 3; inline: Inline[] }
   | { type: "pre"; text: string }
-  | { type: "ul" | "ol"; items: Inline[][] };
+  | { type: "ul" | "ol"; items: Inline[][] }
+  | { type: "table"; head: Inline[][]; rows: Inline[][][] };
 
 export function parseInline(s: string): Inline[] {
   const out: Inline[] = [];
@@ -26,6 +27,10 @@ const OL = /^\s*\d{1,2}[.)]\s+(.*)$/;
 const HEADING = /^(#{1,3})\s+(.*)$/;
 const UL = /^\s*[-*•]\s+(.*)$/;
 
+const TABLE_ROW = /^\s*\|.*\|\s*$/;
+const TABLE_SEP = /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/;
+const cells = (line: string) => line.trim().replace(/^\||\|$/g, "").split("|").map((c) => parseInline(c.replace(/<\s*br\s*\/?\s*>/gi, " ").trim()));
+
 export function parseMarkdown(text: string): Block[] {
   const blocks: Block[] = [];
   let para: string[] = [];
@@ -34,7 +39,20 @@ export function parseMarkdown(text: string): Block[] {
     para = [];
   };
   let fence: string[] | null = null;
-  for (const line of text.replace(/\r\n/g, "\n").split("\n")) {
+  // <br> is a line break everywhere except inside a table row (its cells are split later)
+  const lines = text.replace(/\r\n/g, "\n").split("\n").flatMap((l) => (TABLE_ROW.test(l) ? [l] : l.replace(/<\s*br\s*\/?\s*>/gi, "\n").split("\n")));
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li]!;
+    if (!fence && TABLE_ROW.test(line) && TABLE_SEP.test(lines[li + 1] ?? "")) {   // a markdown table: render it as a table, never as raw pipes
+      flush();
+      const head = cells(line);
+      const rows: Inline[][][] = [];
+      li += 2;
+      while (li < lines.length && TABLE_ROW.test(lines[li]!)) rows.push(cells(lines[li++]!));
+      li--;
+      blocks.push({ type: "table", head, rows });
+      continue;
+    }
     if (line.trim().startsWith("```")) {
       if (fence) {
         blocks.push({ type: "pre", text: fence.join("\n").replace(/\n+$/, "") });

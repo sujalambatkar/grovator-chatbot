@@ -1,0 +1,15 @@
+id: functions_to_do_something_function
+title: To do something (function)
+category: Functions
+sub_category: ''
+platform: ESP32
+order: 1
+aliases: []
+sensor: null
+description: Defines a reusable function with no return value. Put the steps inside; the gear lets you add inputs, the ? icon
+  holds help text.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

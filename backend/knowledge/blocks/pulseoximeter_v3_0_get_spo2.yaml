@@ -1,0 +1,14 @@
+id: pulseoximeter_v3_0_get_spo2
+title: Get spO2
+category: Sensors-ESP32
+sub_category: Pulseoximeter V3.0
+platform: ESP32
+order: 159
+aliases: []
+sensor: null
+description: Returns the SpO2 level from the V3.0 sensor.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: motor_controller_turn_on_off_motor
+title: Turn On/Off Motor
+category: Sensors-ESP32
+sub_category: Motor Controller
+platform: ESP32
+order: 124
+aliases: []
+sensor: dc_motor
+description: Switches the specified motor on or off.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

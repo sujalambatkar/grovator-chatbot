@@ -1,0 +1,14 @@
+id: mobile_get_sensor_data
+title: Get Sensor Data
+category: Mobile
+sub_category: ''
+platform: ESP32
+order: 13
+aliases: []
+sensor: null
+description: Fetches the sensor data / value the mobile side needs, using the connected input.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

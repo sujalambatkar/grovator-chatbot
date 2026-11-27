@@ -1,0 +1,14 @@
+id: ldr_sensor_set_ldr_sensor_as_input_at_pin
+title: Set LDR Sensor as Input at Pin
+category: Sensors-ESP32
+sub_category: LDR Sensor
+platform: ESP32
+order: 111
+aliases: []
+sensor: ldr_sensor
+description: Sets the pin the LDR (light-dependent resistor) is connected to.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

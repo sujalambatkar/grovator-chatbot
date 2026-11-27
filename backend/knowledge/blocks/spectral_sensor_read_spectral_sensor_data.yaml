@@ -1,0 +1,14 @@
+id: spectral_sensor_read_spectral_sensor_data
+title: Read Spectral Sensor Data
+category: Sensors-ESP32
+sub_category: Spectral Sensor
+platform: ESP32
+order: 182
+aliases: []
+sensor: spectral_sensor
+description: Takes a reading from the spectral (light colour spectrum) sensor.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

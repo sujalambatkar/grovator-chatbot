@@ -1,0 +1,14 @@
+id: bme_sensor_get_gas
+title: Get Gas
+category: Sensors-ESP32
+sub_category: BME Sensor
+platform: ESP32
+order: 75
+aliases: []
+sensor: bme_sensor
+description: Returns the BME sensor's gas (air quality) reading.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,15 @@
+id: mobile_get_input_from_mobile_and_machine
+title: Get input from Mobile and Machine
+category: Mobile
+sub_category: ''
+platform: ESP32
+order: 21
+aliases: []
+sensor: null
+description: Takes an input from the mobile app and a machine/GPIO pin, storing it in the chosen variable for the given GPIO
+  pin.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

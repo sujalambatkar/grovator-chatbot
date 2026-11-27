@@ -1,0 +1,14 @@
+id: functions_if_return
+title: If ... return
+category: Functions
+sub_category: ''
+platform: ESP32
+order: 3
+aliases: []
+sensor: null
+description: 'Inside a function: if the condition is true, immediately return the given value and stop the function.'
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

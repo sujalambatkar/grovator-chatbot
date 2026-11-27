@@ -1,0 +1,14 @@
+id: text_in_text_find_occurrence_of_text
+title: In text find occurrence of text
+category: Text
+sub_category: ''
+platform: ESP32
+order: 47
+aliases: []
+sensor: null
+description: Gives the position of the first (or last) occurrence of a piece of text inside another text; 0 if not found.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

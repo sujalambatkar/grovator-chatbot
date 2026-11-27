@@ -1,0 +1,14 @@
+id: voltage_sensor_calculate_voltage_value_function
+title: Calculate Voltage value Function
+category: Sensors-ESP32
+sub_category: Voltage Sensor
+platform: ESP32
+order: 194
+aliases: []
+sensor: voltage_sensor
+description: Converts the raw reading into an actual voltage value.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

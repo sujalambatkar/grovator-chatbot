@@ -1,0 +1,14 @@
+id: text_print_text
+title: Print text
+category: Text
+sub_category: ''
+platform: ESP32
+order: 52
+aliases: []
+sensor: null
+description: Outputs the text/value (to the serial monitor / console).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

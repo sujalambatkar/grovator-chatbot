@@ -1,0 +1,14 @@
+id: mobile_read_data_from_mobile_for_key
+title: 'Read data from mobile for: key'
+category: Mobile
+sub_category: ''
+platform: ESP32
+order: 18
+aliases: []
+sensor: null
+description: Reads the value the mobile app sent for the given key.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

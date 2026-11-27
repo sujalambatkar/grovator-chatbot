@@ -1,0 +1,14 @@
+id: current_sensor_set_current_sensor_as_input_at_pin
+title: Set Current Sensor as input at Pin
+category: Sensors-ESP32
+sub_category: Current Sensor
+platform: ESP32
+order: 94
+aliases: []
+sensor: current_sensor
+description: Sets the pin the current sensor is connected to.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

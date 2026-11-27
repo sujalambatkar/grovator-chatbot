@@ -1,0 +1,14 @@
+id: ultrasonic_sensor_calculate_distance_logic
+title: Calculate Distance (Logic)
+category: Sensors-ESP32
+sub_category: Ultrasonic Sensor
+platform: ESP32
+order: 189
+aliases: []
+sensor: ultrasonic_sensor
+description: Runs the logic that measures the echo time and works out the distance.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

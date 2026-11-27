@@ -1,0 +1,14 @@
+id: ultrasonic_sensor_get_distance_with_echo_and_trigger_pin
+title: Get Distance with Echo and Trigger Pin
+category: Sensors-ESP32
+sub_category: Ultrasonic Sensor
+platform: ESP32
+order: 190
+aliases: []
+sensor: ultrasonic_sensor
+description: Returns the distance measured by the ultrasonic sensor.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

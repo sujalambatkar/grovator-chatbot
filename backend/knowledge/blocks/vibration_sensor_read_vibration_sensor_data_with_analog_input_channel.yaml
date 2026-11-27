@@ -1,0 +1,14 @@
+id: vibration_sensor_read_vibration_sensor_data_with_analog_input_channel
+title: Read Vibration sensor Data with Analog input Channel
+category: Sensors-ESP32
+sub_category: Vibration Sensor
+platform: ESP32
+order: 192
+aliases: []
+sensor: vibration_sensor
+description: Reads the vibration level on an analog channel.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

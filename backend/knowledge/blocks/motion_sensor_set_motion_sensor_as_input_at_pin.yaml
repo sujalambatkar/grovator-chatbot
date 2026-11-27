@@ -1,0 +1,14 @@
+id: motion_sensor_set_motion_sensor_as_input_at_pin
+title: Set Motion Sensor as Input at Pin
+category: Sensors-ESP32
+sub_category: Motion Sensor
+platform: ESP32
+order: 121
+aliases: []
+sensor: motion_sensor
+description: Sets the pin the motion sensor is connected to.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

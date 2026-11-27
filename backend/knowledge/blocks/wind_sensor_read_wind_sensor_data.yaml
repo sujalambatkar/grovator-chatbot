@@ -1,0 +1,14 @@
+id: wind_sensor_read_wind_sensor_data
+title: Read Wind Sensor Data
+category: Sensors-ESP32
+sub_category: Wind Sensor
+platform: ESP32
+order: 199
+aliases: []
+sensor: wind_speed_sensor
+description: Returns the wind speed reading.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

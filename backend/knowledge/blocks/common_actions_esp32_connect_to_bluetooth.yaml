@@ -1,0 +1,14 @@
+id: common_actions_esp32_connect_to_bluetooth
+title: Connect to Bluetooth
+category: Common Actions-ESP32
+sub_category: ''
+platform: ESP32
+order: 59
+aliases: []
+sensor: null
+description: Starts the Bluetooth connection of the ESP32.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

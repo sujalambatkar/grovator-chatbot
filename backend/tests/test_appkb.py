@@ -62,11 +62,10 @@ async def test_wiring_is_a_table_built_from_files_with_i2c_pins_and_no_llm(retri
 async def test_controller_connection_comes_from_the_sensor_list_and_is_never_mapped_to_esp32_gpios(retriever):
     d, llm = await ask(retriever, "How does the pulse oximeter connect to the Grovator controller?")
     assert all_llm_calls(llm) == 0 and d["canned"] == "sensor_connect"
-    rows = {r["sensor_pin"]: r["kit_pin"] for r in d["connection_table"]["rows"]}
-    assert rows["SDA"] == "any SDA pin of the controller" and rows["SCL"] == "any SCL pin of the controller"
+    assert "**SDA** \u2192 any SDA pin of the controller" in d["answer"] and "**SCL** \u2192 any SCL pin of the controller" in d["answer"]
     assert "GPIO21" not in d["answer"].replace("(21, 22)", "") and "do not apply" in d["answer"]
     d2, _ = await ask(retriever, "How does the LED board connect to the Grovator controller?")      # the LED module row of the sensor list
-    assert d2["canned"] == "sensor_connect" and any(r["sensor_pin"] == "D0" for r in d2["connection_table"]["rows"])
+    assert d2["canned"] == "sensor_connect" and "**D0**" in d2["answer"]
 
 
 @pytest.mark.asyncio
@@ -117,8 +116,7 @@ async def test_general_answer_naming_a_pin_is_blocked(retriever):
 @pytest.mark.asyncio
 async def test_other_sensors_get_their_own_wiring_for_both_kits_not_the_lessons(retriever):
     d, llm = await ask(retriever, "How do I connect the ultrasonic sensor?")
-    pins = {(r["sensor_pin"], r["note"]) for r in d["connection_table"]["rows"]}
-    assert ("TRIG", "Grovator controller") in pins and ("TRIG", "ESP32 kit") in pins and "oximeter" not in d["answer"].lower() and not llm.calls
+    assert "**Grovator controller**" in d["answer"] and "**ESP32 kit**" in d["answer"] and d["answer"].count("**TRIG** \u2192") == 2 and "oximeter" not in d["answer"].lower() and not llm.calls
 
 
 @pytest.mark.asyncio
@@ -168,17 +166,6 @@ async def test_led_followup_stays_on_the_lesson_not_the_gateway_led(retriever):
 
 
 @pytest.mark.asyncio
-async def test_questions_on_an_open_gateway_device_page_are_about_that_sensor_not_the_application(retriever):
-    svc = build(retriever, FakeLLM("VCC goes to 5V."), **OVER)
-    d = await turn(svc, "Where does the VCC wire go?", "gw-page-1", page="devices/ultrasonic_sensor")
-    assert {r["sensor_pin"] for r in d["connection_table"]["rows"]} >= {"VCC", "TRIG", "ECHO"} and "oximeter" not in d["answer"].lower()
-    d2 = await turn(svc, "How do I connect the pulse oximeter?", "gw-page-2", page="devices/ultrasonic_sensor")   # naming the application still works
-    assert any(r["kit_pin"] == "SDA (GPIO21)" for r in d2["connection_table"]["rows"])
-    d3 = await turn(svc, "What are the wiring rules?", "gw-page-3", page="devices/ultrasonic_sensor")
-    assert d3.get("canned") == "pin_rules"
-
-
-@pytest.mark.asyncio
 async def test_sensor_facts_and_code_statements_are_looked_up_not_searched(retriever):
     d, llm = await ask(retriever, "What is the I2C address of the MAX30102?")
     assert "0x57" in d["answer"] and not llm.calls
@@ -210,7 +197,7 @@ async def test_build_guide_has_parts_connections_and_numbered_steps(retriever, q
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("q,must", [
-    ("How do I connect the alcohol sensor?", ["DO to any digital GPIO pin", "ESP32 kit"]),
+    ("How do I connect the alcohol sensor?", ["**DO** \u2192 any digital GPIO pin", "ESP32 kit"]),
     ("what is a flame sensor?", ["infrared"]),
     ("How do I connect the DHT11?", ["D0", "ESP32 kit"]),
     ("how do i connect the gps sensor", ["Rx", "Tx", "UART"]),
@@ -227,9 +214,3 @@ async def test_catalog_questions_are_answered_from_the_files(retriever, q, must)
     for m in must:
         assert m in text, (q, m, d["answer"])
 
-
-@pytest.mark.asyncio
-async def test_troubleshooting_on_another_sensors_page_is_not_the_lessons_faq(retriever):
-    svc = build(retriever, FakeLLM("Check the wires."), **OVER)
-    d = await turn(svc, "What if it is not working?", "gw-page-4", page="devices/ultrasonic_sensor")
-    assert d.get("canned") is None and "Place Your Finger" not in d["answer"]

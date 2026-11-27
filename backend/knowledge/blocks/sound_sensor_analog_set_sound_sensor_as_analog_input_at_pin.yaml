@@ -1,0 +1,14 @@
+id: sound_sensor_analog_set_sound_sensor_as_analog_input_at_pin
+title: Set Sound Sensor as Analog input at Pin
+category: Sensors-ESP32
+sub_category: Sound Sensor Analog
+platform: ESP32
+order: 181
+aliases: []
+sensor: sound_sensor_analog
+description: Sets the pin the analog sound sensor is connected to as an analog input.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

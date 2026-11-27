@@ -50,6 +50,15 @@ files named in the item and re-run `python -m knowledge.validate && python -m in
 18. **Controller list sensors the ESP list lacks** (the bot says the ESP32 connection is not documented): Accelerometer, Blood Pressure, GPS, Particulate Matter, PH Sensor (V1), Peristaltic pump, Pressure, Power-related rows other than Power Meter, Stepper Motor wiring (C1 to 1B ... is controller-only; the ESP list only says "Stepper Motor - Stepper Motor" slot), Weight and others already listed under B3c.
 19. **Example programs.** Both lists name example files (e.g. "Alcohol_sensor.py.py" for the controller, "Alcohol Sensor.py" for the ESP); the SVG diagrams and the code links ("SVG Drive Link", file links) are links to documents I cannot open, so only the file names are known.
 
+### Block sheet (block_codes_with_purpose.pdf)
+
+- **Start block (correction from the course owner).** The sheet says "Main program entry point". The course owner says it is only there to make the code more readable and the program works without it. The bot follows the owner (importer text + `_need_verdict`).
+
+- **Block sheet vs earlier pulse oximeter block PDFs.** The sheet lists "Initialize max30100", "Store Heartrate and Oximeter Data", "Get heartrate", "Get SpO2" (and V2.0 / V3.0 sets). The earlier PDFs call the blocks "Use [Pulseoximeter(Max30102)]", "Read PulseOximeter Data", "Store Heart rate and Oximeter Data". The bot uses the sheet for block lists; the older code blocks are still returned for "show the code of ...".
+- **No code; purposes are inferred.** The sheet gives name, category, sub-category, picture and a Purpose column, but its footnote says the purposes are inferred from block names and typical sensor behaviour, not from Grovator documentation. Every block is `verified: false` and answers say so. This replaced the first sheet (no purposes), whose descriptions were generated from the names.
+- **Pulseoximeter V3.0, LoRa, Button and Lux Sensor** have blocks but no sensor file, so the bot cannot give their wiring.
+- **Dropdown and slot details** (the options inside a block, which pin slots it has) are read from small pictures; names with several variants are shortened (for example "Turn On/Off Buzzer").
+
 ## B. Not documented (the bot says "I don't have that detail yet")
 
 1. **Pulse oximeter on the Grovator controller: partly resolved.** The sensor list ("RPI" controller) says: VCC to 3.3 or 5V, GND to Ground, SDA to any SDA pin, SCL to any SCL pin. The bot gives exactly that. Still not documented: a GPIO number for them (the ESP32's 21/22 do NOT apply: the controller's GPIO numbers are Raspberry Pi numbers, e.g. GPIO22 is a relay), and which of the three photographed [GND, 3.3V, SDA, SCL] terminal groups to use ("any").

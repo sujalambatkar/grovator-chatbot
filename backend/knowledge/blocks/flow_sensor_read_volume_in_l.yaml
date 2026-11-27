@@ -1,0 +1,14 @@
+id: flow_sensor_read_volume_in_l
+title: Read Volume in L
+category: Sensors-ESP32
+sub_category: Flow Sensor
+platform: ESP32
+order: 101
+aliases: []
+sensor: flow_sensor
+description: Returns the total volume that has flowed, in litres.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

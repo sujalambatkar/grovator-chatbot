@@ -1,0 +1,14 @@
+id: wind_direction_sensor_read_wind_direction_angle_with_analog_input_channel
+title: Read Wind Direction angle with analog input channel
+category: Sensors-ESP32
+sub_category: Wind Direction Sensor
+platform: ESP32
+order: 201
+aliases: []
+sensor: wind_direction_sensor
+description: Reads the wind direction as an angle from an analog channel.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

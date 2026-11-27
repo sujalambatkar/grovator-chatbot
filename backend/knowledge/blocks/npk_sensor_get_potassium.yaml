@@ -1,0 +1,14 @@
+id: npk_sensor_get_potassium
+title: Get Potassium
+category: Sensors-ESP32
+sub_category: NPK Sensor
+platform: ESP32
+order: 141
+aliases: []
+sensor: npk_sensor
+description: Returns the soil potassium level.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

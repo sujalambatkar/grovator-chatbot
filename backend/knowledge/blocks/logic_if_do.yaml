@@ -1,0 +1,14 @@
+id: logic_if_do
+title: If ... do
+category: Logic
+sub_category: ''
+platform: ESP32
+order: 4
+aliases: []
+sensor: null
+description: Runs the blocks inside 'do' only when the condition is true. The gear adds else-if / else branches.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

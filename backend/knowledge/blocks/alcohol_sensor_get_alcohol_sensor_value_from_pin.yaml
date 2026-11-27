@@ -1,0 +1,14 @@
+id: alcohol_sensor_get_alcohol_sensor_value_from_pin
+title: Get Alcohol Sensor Value from Pin
+category: Sensors-ESP32
+sub_category: Alcohol Sensor
+platform: ESP32
+order: 70
+aliases: []
+sensor: alcohol_sensor
+description: Reads the alcohol sensor's value from the given pin.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

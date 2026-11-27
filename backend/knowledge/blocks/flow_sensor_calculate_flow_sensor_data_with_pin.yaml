@@ -1,0 +1,14 @@
+id: flow_sensor_calculate_flow_sensor_data_with_pin
+title: Calculate Flow Sensor Data with pin
+category: Sensors-ESP32
+sub_category: Flow Sensor
+platform: ESP32
+order: 99
+aliases: []
+sensor: flow_sensor
+description: Sets up and processes the water-flow sensor pulses on the given pin.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

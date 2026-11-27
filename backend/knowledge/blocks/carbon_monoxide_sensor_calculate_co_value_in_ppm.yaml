@@ -1,0 +1,14 @@
+id: carbon_monoxide_sensor_calculate_co_value_in_ppm
+title: Calculate CO value in ppm
+category: Sensors-ESP32
+sub_category: Carbon Monoxide Sensor
+platform: ESP32
+order: 81
+aliases: []
+sensor: co_sensor
+description: Converts the carbon monoxide sensor's raw reading into ppm (parts per million).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

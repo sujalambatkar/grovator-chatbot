@@ -1,0 +1,14 @@
+id: functions_to_do_something_with_return_function
+title: To do something, with return (function)
+category: Functions
+sub_category: ''
+platform: ESP32
+order: 2
+aliases: []
+sensor: null
+description: Defines a reusable function that hands a value back to whoever calls it.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

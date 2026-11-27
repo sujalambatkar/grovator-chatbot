@@ -1,0 +1,14 @@
+id: text_in_text_get_substring
+title: In text get substring
+category: Text
+sub_category: ''
+platform: ESP32
+order: 49
+aliases: []
+sensor: null
+description: Extracts part of a text between two positions.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

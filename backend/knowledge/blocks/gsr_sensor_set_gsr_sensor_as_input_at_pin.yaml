@@ -1,0 +1,14 @@
+id: gsr_sensor_set_gsr_sensor_as_input_at_pin
+title: Set GSR Sensor as input at Pin
+category: Sensors-ESP32
+sub_category: GSR Sensor
+platform: ESP32
+order: 102
+aliases: []
+sensor: gsr_sensor
+description: Sets the pin the GSR (skin conductance) sensor is connected to.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

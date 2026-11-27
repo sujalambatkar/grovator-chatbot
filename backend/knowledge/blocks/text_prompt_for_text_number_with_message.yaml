@@ -1,0 +1,14 @@
+id: text_prompt_for_text_number_with_message
+title: Prompt for text / number with message
+category: Text
+sub_category: ''
+platform: ESP32
+order: 53
+aliases: []
+sensor: null
+description: Asks the user to type in text (or a number) with the message shown.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: logic_true_false
+title: True / False
+category: Logic
+sub_category: ''
+platform: ESP32
+order: 8
+aliases: []
+sensor: null
+description: A fixed true or false value (switch with the dropdown).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

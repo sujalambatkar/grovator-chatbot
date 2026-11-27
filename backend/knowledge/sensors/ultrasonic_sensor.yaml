@@ -5,8 +5,8 @@ aliases:
 - ultrasonic
 - distance sensor
 category: Input
-working: Measures distance with sound. It sends high-frequency pulses from TRIG and listens for the echo on ECHO; the program times
-  the echo and works out the distance in centimetres.
+working: Measures distance with sound. It sends high-frequency pulses from TRIG and listens for the echo on ECHO; the program times the echo and
+  works out the distance in centimetres.
 example_code: Ultrasonicsensor.py.py
 gateway_key: ultrasonic_sensor
 description: Measures distance with sound.
@@ -45,6 +45,8 @@ kit_connections:
   source:
     file: Sensor Details and Pin Configurations - ESP Sensor Iist.pdf
     where: row for Ultrasonic Sensor
+  warning: Verify ECHO signal voltage compatibility before connecting to an ESP32 GPIO. Do not assume 5V signals are safe for ESP32 GPIOs; use
+    level shifting when required.
 notes:
 - 'generated: true (from the sensor lists; edit this file freely, remove this note to protect it from re-import)'
 sources:

@@ -66,8 +66,19 @@ def load(root: Path | None = None) -> Knowledge:
         _read(p, Media, k.media, k, expect_id=p.stem)
     for p in sorted((k.root / "applications").glob("*/docs/*.md")):
         k.docs[str(p.relative_to(k.root / "applications"))] = p.read_text(encoding="utf-8")
+    _link_sheet_blocks(k)
     _cross_check(k)
     return k
+
+
+def _link_sheet_blocks(k: Knowledge) -> None:
+    """A sensor's `blocks:` follows the block sheet when the sheet lists blocks for it (in sheet order); otherwise its own list stays."""
+    by_sensor: dict[str, list] = {}
+    for b in k.blocks.values():
+        if b.sub_category and b.sensor in k.sensors:
+            by_sensor.setdefault(b.sensor, []).append(b)
+    for sid, bl in by_sensor.items():
+        k.sensors[sid].blocks = [b.id for b in sorted(bl, key=lambda x: x.order)]
 
 
 def _cross_check(k: Knowledge) -> None:

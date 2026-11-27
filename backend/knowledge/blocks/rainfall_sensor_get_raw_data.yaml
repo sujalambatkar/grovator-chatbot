@@ -1,0 +1,14 @@
+id: rainfall_sensor_get_raw_data
+title: Get Raw data
+category: Sensors-ESP32
+sub_category: Rainfall Sensor
+platform: ESP32
+order: 165
+aliases: []
+sensor: rainfall_sensor
+description: Returns the raw rain-gauge reading.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

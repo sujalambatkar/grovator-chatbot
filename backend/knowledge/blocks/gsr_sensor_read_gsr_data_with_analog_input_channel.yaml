@@ -1,0 +1,14 @@
+id: gsr_sensor_read_gsr_data_with_analog_input_channel
+title: Read GSR Data with Analog Input Channel
+category: Sensors-ESP32
+sub_category: GSR Sensor
+platform: ESP32
+order: 103
+aliases: []
+sensor: gsr_sensor
+description: Reads galvanic skin response on an analog channel.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

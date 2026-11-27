@@ -1,0 +1,14 @@
+id: climate_sensor_get_climate_sensor_value_from_pin
+title: Get Climate Sensor Value from Pin
+category: Sensors-ESP32
+sub_category: Climate Sensor
+platform: ESP32
+order: 86
+aliases: []
+sensor: dht11_climate_sensor
+description: Reads the climate sensor's value from the given pin.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

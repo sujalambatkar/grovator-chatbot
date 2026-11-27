@@ -1,0 +1,14 @@
+id: keypad_read_key_value
+title: Read key value
+category: Sensors-ESP32
+sub_category: Keypad
+platform: ESP32
+order: 108
+aliases: []
+sensor: keypad
+description: Returns the key pressed on the keypad.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

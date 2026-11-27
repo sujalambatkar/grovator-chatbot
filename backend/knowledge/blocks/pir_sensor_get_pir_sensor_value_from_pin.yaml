@@ -1,0 +1,14 @@
+id: pir_sensor_get_pir_sensor_value_from_pin
+title: Get PIR Sensor Value from Pin
+category: Sensors-ESP32
+sub_category: PIR Sensor
+platform: ESP32
+order: 145
+aliases: []
+sensor: motion_sensor
+description: Reads whether the PIR sensor detects movement.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

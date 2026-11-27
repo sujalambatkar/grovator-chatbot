@@ -1,0 +1,15 @@
+id: loops_break_out_of_loop
+title: Break out of loop
+category: Loops
+sub_category: ''
+platform: ESP32
+order: 24
+aliases:
+- break
+sensor: null
+description: Exits the loop immediately, or skips to the next round ('continue') via dropdown.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: mobile_check_message
+title: Check Message
+category: Mobile
+sub_category: ''
+platform: ESP32
+order: 11
+aliases: []
+sensor: null
+description: Checks whether a new message has arrived from the mobile app.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

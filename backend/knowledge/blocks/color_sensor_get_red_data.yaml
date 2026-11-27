@@ -1,0 +1,14 @@
+id: color_sensor_get_red_data
+title: Get Red Data
+category: Sensors-ESP32
+sub_category: Color Sensor
+platform: ESP32
+order: 90
+aliases: []
+sensor: color_sensor
+description: Returns the red channel value from the colour sensor.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

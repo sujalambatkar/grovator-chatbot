@@ -26,7 +26,7 @@ async def ask(retriever, msg, llm=None):
 
 def test_live_knowledge_is_generic():
     k = validate(GENERIC_DIR)
-    assert not k.applications and len(k.sensors) >= 55 and len(k.blocks) >= 7 and set(k.kits) == {"esp32_kit", "govator_controller_pi"}
+    assert not k.applications and len(k.sensors) >= 55 and len(k.blocks) >= 208 and set(k.kits) == {"esp32_kit", "govator_controller_pi"}
     text = " ".join(p.read_text(encoding="utf-8").lower() for d in ("sensors", "kits", "blocks") for p in (GENERIC_DIR / d).glob("*.yaml"))
     assert "lesson" not in text and "led_1" not in text and "challenge" not in text   # no seeded application text
 
@@ -35,9 +35,9 @@ def test_live_knowledge_is_generic():
 @pytest.mark.parametrize("q,must", [
     ("How do I connect the pulse oximeter to the ESP32 kit?", ["SDA (GPIO21)", "3.3V"]),
     ("How do I connect the pulse oximeter to the Grovator controller?", ["any SDA pin"]),
-    ("Which blocks do I need for the pulse oximeter?", ["Use [Pulseoximeter(Max30102)]", "Read PulseOximeter Data", "Store Heart rate and Oximeter Data"]),
+    ("Which blocks do I need for the pulse oximeter?", ["Initialize max30100", "Store Heartrate and Oximeter Data", "Get SpO2"]),
     ("Show me the code of the read pulseoximeter data block", ["get_heart_rate_spo2"]),
-    ("Which blocks do I need?", ["Block code is documented for these sensors"]),
+    ("Which blocks do I need?", ["I know 201 blocks"]),
     ("What is the I2C address of the MAX30102?", ["0x57"]),
     ("How does the block code find a heartbeat?", ["30000"]),
     ("How do I connect the alcohol sensor?", ["Grovator controller", "ESP32 kit"]),

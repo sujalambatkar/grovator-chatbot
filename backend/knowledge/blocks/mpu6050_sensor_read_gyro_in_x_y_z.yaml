@@ -1,0 +1,14 @@
+id: mpu6050_sensor_read_gyro_in_x_y_z
+title: Read gyro in X/Y/Z
+category: Sensors-ESP32
+sub_category: MPU6050 Sensor
+platform: ESP32
+order: 133
+aliases: []
+sensor: gyroscope_sensor
+description: Returns rotation rate on the chosen axis (X, Y or Z).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

@@ -1,0 +1,14 @@
+id: ultrasonic_sensor_set_ultrasonic_sensor_as_echo_input_at_pin_and_trigger_output_at_pin
+title: Set Ultrasonic Sensor as Echo Input at Pin and Trigger Output at Pin
+category: Sensors-ESP32
+sub_category: Ultrasonic Sensor
+platform: ESP32
+order: 188
+aliases: []
+sensor: ultrasonic_sensor
+description: Sets the echo (input) and trigger (output) pins of the ultrasonic distance sensor.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

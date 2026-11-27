@@ -1,0 +1,14 @@
+id: soil_sensor_get_temperature
+title: Get Temperature
+category: Sensors-ESP32
+sub_category: Soil Sensor
+platform: ESP32
+order: 174
+aliases: []
+sensor: soil_sensor
+description: Returns the soil temperature.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

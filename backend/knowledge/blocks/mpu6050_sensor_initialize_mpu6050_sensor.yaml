@@ -1,0 +1,14 @@
+id: mpu6050_sensor_initialize_mpu6050_sensor
+title: Initialize MPU6050 sensor
+category: Sensors-ESP32
+sub_category: MPU6050 Sensor
+platform: ESP32
+order: 131
+aliases: []
+sensor: gyroscope_sensor
+description: Starts the MPU6050 accelerometer/gyroscope so it can be read.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

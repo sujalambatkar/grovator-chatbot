@@ -1,0 +1,81 @@
+# Student safety warnings. Shown as a highlighted box under an answer; decided in code (app/guardrails/safety.py), never by the model.
+#
+# A rule fires when ANY of sensors / message_words / answer_words matches (and the kinds gate, if any, passes):
+#   sensors         catalog sensor ids the question is about (found in the message, or in the sources of the answer)
+#   message_words   regex on what the student asked
+#   answer_words    regex on the answer text
+#   kinds           a GATE: when present, the answer kind (canned) must be one of these (sensor_connect, sensor_about, ...)
+# level: danger (red, "do not do this by yourself") or caution (amber). At most 3 warnings are shown, danger first.
+# Keep the texts short and in plain language for students aged ~10-16. They are general safety advice, not Grovator documentation.
+
+rules:
+  - id: mains
+    level: danger
+    title: "Danger: mains electricity"
+    sensors: [power_meter]
+    message_words: '\b(?:mains|220 ?v|230 ?v|240 ?v|110 ?v|120 ?v|wall (?:socket|outlet|plug)|household (?:power|electricity)|ac (?:power|supply|line|voltage)|lamp|bulb|appliance|heater)\b'
+    text: "Never connect anything to mains (the wall socket) yourself; only a teacher or qualified adult may do this, with the power off."
+
+  - id: relay
+    level: caution
+    title: "Relay: be careful with what it switches"
+    sensors: [relay_module]
+    text: "A relay switches other devices: use it only with the low-voltage parts from your lesson, never with anything plugged into the wall."
+
+  - id: measuring
+    level: caution
+    title: "Measuring voltage or current"
+    sensors: [voltage_sensor, current_sensor]
+    text: "Measure only the small low-voltage circuits from your lesson, never the wall socket or an appliance."
+
+  - id: moving_parts
+    level: caution
+    title: "Moving parts"
+    sensors: [dc_motor, servo_motor, stepper_motor, peristaltic_pump, water_pump]
+    text: "Keep fingers, hair and loose wires away from moving parts, and switch the power off before touching them."
+
+  - id: water
+    level: caution
+    title: "Water and electricity do not mix"
+    sensors: [flow_sensor, water_pump, peristaltic_pump, tds_sensor, ph_sensor, ph_sensor_v2, rainfall_sensor, raindrop_sensor, soil_moisture_sensor, soil_sensor]
+    message_words: '\b(?:water|liquid|wet|rain|pour)\b'
+    text: "Keep water and liquids away from the board and the power; switch off before handling anything wet."
+
+  - id: fire_gas
+    level: danger
+    title: "Fire, gas and alcohol"
+    sensors: [flame_sensor, gas_sensor_analog, air_quality_sensor, co_sensor, alcohol_sensor]
+    message_words: '\b(?:fire|flame|lighter|match|burn|gas|smoke|alcohol|sanitizer|sanitiser)\b'
+    text: "Do not test this sensor with real fire, flammable liquid or gas by yourself; ask your teacher for a safe way."
+
+  - id: body
+    level: caution
+    title: "Sensors that touch your body"
+    sensors: [pulseoximeter_max30102, pulseoximeter_v2_uart, ecg_sensor, gsr_sensor, blood_pressure_sensor]
+    text: "For learning only, not medical use: try it with a teacher nearby."
+
+  - id: battery
+    level: danger
+    title: "Batteries"
+    message_words: '\b(?:batter(?:y|ies)|li-?po|li-?ion|lithium|charg(?:e|ing) (?:a |the )?(?:cell|battery))\b'
+    text: "Never short, puncture or charge a battery without an adult."
+
+  - id: tools
+    level: caution
+    title: "Tools"
+    message_words: '\b(?:solder\w*|soldering iron|knife|blade|cutter|drill|cut (?:the )?wire|strip (?:the )?wire)\b'
+    text: "Soldering irons are hot and cutting tools are sharp: use them only with an adult."
+
+  - id: power_off
+    level: caution
+    title: "Before you connect wires"
+    message_words: '\b(?:connect\w*|wir(?:e|es|ed|ing)|plug\w*|attach\w*|hook\w*|pinout)\b'
+    kinds: [sensor_connect, sensor_about, wiring, build_guide, pin_rules, grounded]
+    text: "Switch the kit off and unplug it before changing any wire, and check VCC and GND twice before switching on."
+  - id: voltage
+    level: caution
+    title: "Use the right voltage"
+    answer_words: '\b(?:3\.3 ?v|5 ?v|12 ?v|24 ?v)\b'
+    kinds: [sensor_connect, sensor_about, wiring, build_guide]
+    text: "Use only the voltage written for your sensor: 5V on a 3.3V pin can damage the board (a level shifter may be needed)."
+

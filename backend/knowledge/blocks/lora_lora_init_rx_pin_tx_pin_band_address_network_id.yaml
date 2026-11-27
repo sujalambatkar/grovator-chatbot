@@ -1,0 +1,15 @@
+id: lora_lora_init_rx_pin_tx_pin_band_address_network_id
+title: LoRa Init (RX Pin, TX Pin, Band, Address, Network ID)
+category: Sensors-ESP32
+sub_category: LoRa
+platform: ESP32
+order: 115
+aliases: []
+sensor: null
+description: 'Initialises the LoRa radio module: pins used, frequency band (865 MHz default), this device''s address and the
+  network ID.'
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

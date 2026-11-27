@@ -1,0 +1,14 @@
+id: math_trigonometry_sin_cos_tan
+title: Trigonometry (sin, cos, tan ...)
+category: Math
+sub_category: ''
+platform: ESP32
+order: 28
+aliases: []
+sensor: null
+description: Trigonometric function (sin, cos, tan, asin, acos, atan) of an angle in degrees.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

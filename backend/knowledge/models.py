@@ -88,12 +88,15 @@ class Block(_Model):
     id: str
     title: str
     category: str = "Sensor"
+    sub_category: str = ""     # block sheet: the sensor / group inside the category ("Alcohol Sensor"); empty for older code-bearing blocks
+    platform: str = ""         # block sheet: which editor lists the block ("ESP32")
+    order: int = 0             # block sheet: position of the block in the sheet (palette order); 0 = not from the sheet
     aliases: list[str] = []
     sensor: str | None = None
     connection: str = "Top - bottom"
     description: str
     language: str = "python"
-    code: str                  # VERBATIM from the source document (normalised indentation only, see notes)
+    code: str = ""             # VERBATIM from the source document (normalised indentation only, see notes); empty = the block sheet gives no code
     code_notes: list[str] = []
     variables: list[str] = []
     variant: str = ""          # which version of the sensor code this block belongs to

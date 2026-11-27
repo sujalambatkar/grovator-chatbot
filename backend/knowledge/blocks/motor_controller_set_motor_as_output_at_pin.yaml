@@ -1,0 +1,14 @@
+id: motor_controller_set_motor_as_output_at_pin
+title: Set Motor as Output at Pin
+category: Sensors-ESP32
+sub_category: Motor Controller
+platform: ESP32
+order: 123
+aliases: []
+sensor: dc_motor
+description: Sets a given motor on a given pin as an output.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

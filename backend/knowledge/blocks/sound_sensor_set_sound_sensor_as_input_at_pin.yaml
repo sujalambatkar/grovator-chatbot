@@ -1,0 +1,14 @@
+id: sound_sensor_set_sound_sensor_as_input_at_pin
+title: Set Sound Sensor as Input at Pin
+category: Sensors-ESP32
+sub_category: Sound Sensor
+platform: ESP32
+order: 178
+aliases: []
+sensor: sound_sensor
+description: Sets the pin the sound sensor is connected to.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

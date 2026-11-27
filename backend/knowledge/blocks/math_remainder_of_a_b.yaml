@@ -1,0 +1,14 @@
+id: math_remainder_of_a_b
+title: Remainder of a / b
+category: Math
+sub_category: ''
+platform: ESP32
+order: 33
+aliases: []
+sensor: null
+description: Gives the remainder after dividing the first number by the second (modulo).
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

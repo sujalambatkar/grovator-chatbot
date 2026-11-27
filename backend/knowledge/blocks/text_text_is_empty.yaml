@@ -1,0 +1,14 @@
+id: text_text_is_empty
+title: Text is empty
+category: Text
+sub_category: ''
+platform: ESP32
+order: 46
+aliases: []
+sensor: null
+description: True if the text has no characters.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf

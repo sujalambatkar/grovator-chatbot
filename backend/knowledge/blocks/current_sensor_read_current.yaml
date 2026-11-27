@@ -1,0 +1,14 @@
+id: current_sensor_read_current
+title: Read Current
+category: Sensors-ESP32
+sub_category: Current Sensor
+platform: ESP32
+order: 95
+aliases: []
+sensor: current_sensor
+description: Returns the measured electrical current.
+verified: false
+code_notes:
+- 'generated: true (from block_codes_with_purpose.pdf)'
+sources:
+- file: block_codes_with_purpose.pdf
